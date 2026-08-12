@@ -16,8 +16,8 @@ from petatto_kanban.storage import load_board, save_board
 APP_TITLE = "Petatto-Kanban"
 CARD_BG = "#fffef8"
 CARD_FG = "#222222"
-CARD_ACTIVE_BG = "#e8e8e0"
-CARD_WIDTH = 220
+CARD_MIN_WIDTH = 220
+CARD_MIN_HEIGHT = 88
 TOOLBAR_BG = "#f0f0f0"
 DEFAULT_CARD_X = 120
 DEFAULT_CARD_Y = 120
@@ -41,6 +41,7 @@ class KanbanApp:
         self.display_settings = load_display_settings()
         self._card_widgets: dict[str, tk.Frame] = {}
         self._drag_state: dict[int, tuple[int, int]] = {}
+        self._title_drag_moved = False
         self._inline_edit_card_id: str | None = None
         self._monitors = list_monitors()
 
@@ -87,6 +88,7 @@ class KanbanApp:
     def refresh(self) -> None:
         """カードを再描画する."""
         self._inline_edit_card_id = None
+        self._title_drag_moved = False
         for widget in self._card_widgets.values():
             widget.destroy()
         self._card_widgets.clear()
@@ -116,19 +118,10 @@ class KanbanApp:
             fg=CARD_FG,
             cursor="xterm",
         )
-        title_label.pack(anchor=tk.W, fill=tk.X)
-        title_label.bind(
-            "<Double-Button-1>",
-            lambda _e, c=card, f=frame, label=title_label: self._begin_inline_title_edit(
-                c, f, label
-            ),
-        )
-
-        edit_btn = self._card_button(frame, "編集", width=6, command=lambda: self._edit_card(card))
-        edit_btn.pack(anchor=tk.W, pady=(8, 0))
+        title_label.pack(anchor=tk.NW, fill=tk.X)
 
         self._finalize_card_frame(frame)
-        self._bind_card_interactions(frame, card, skip_drag={title_label})
+        self._bind_card_interactions(frame, card, title_label)
 
     def _card_label(self, parent: tk.Misc, **kwargs) -> tk.Label:
         defaults = {
@@ -143,8 +136,8 @@ class KanbanApp:
     def _finalize_card_frame(self, frame: tk.Frame) -> None:
         frame.update_idletasks()
         frame.config(
-            width=max(CARD_WIDTH, frame.winfo_reqwidth()),
-            height=frame.winfo_reqheight(),
+            width=max(CARD_MIN_WIDTH, frame.winfo_reqwidth()),
+            height=max(CARD_MIN_HEIGHT, frame.winfo_reqheight()),
         )
         frame.pack_propagate(False)
 
@@ -199,19 +192,57 @@ class KanbanApp:
         self,
         frame: tk.Frame,
         card: Card,
-        *,
-        skip_drag: set[tk.Misc],
+        title_label: tk.Label,
     ) -> None:
         def on_delete(_event: tk.Event) -> None:
             self._delete_card(card)
 
-        for widget in (frame, *frame.winfo_children()):
-            widget.bind("<ButtonRelease-3>", on_delete)
-            if widget in skip_drag:
-                continue
+        def bind_drag(widget: tk.Misc) -> None:
             widget.bind("<Button-1>", lambda e, f=frame: self._start_drag(e, f))
             widget.bind("<B1-Motion>", lambda e, c=card, f=frame: self._on_drag(e, c, f))
             widget.bind("<ButtonRelease-1>", lambda _e, c=card: self._end_drag(c))
+
+        frame.bind("<ButtonRelease-3>", on_delete)
+        bind_drag(frame)
+
+        title_label.bind("<ButtonRelease-3>", on_delete)
+        title_label.bind(
+            "<Button-1>",
+            lambda e, f=frame: self._on_title_press(e, f),
+        )
+        title_label.bind(
+            "<B1-Motion>",
+            lambda e, c=card, f=frame: self._on_title_drag(e, c, f),
+        )
+        title_label.bind(
+            "<ButtonRelease-1>",
+            lambda e, c=card, f=frame: self._on_title_release(e, c, f),
+        )
+        title_label.bind(
+            "<Double-Button-1>",
+            lambda _e, c=card, f=frame, label=title_label: self._on_title_double_click(
+                c, f, label
+            ),
+        )
+
+    def _on_title_press(self, event: tk.Event, frame: tk.Frame) -> None:
+        self._title_drag_moved = False
+        self._start_drag(event, frame)
+
+    def _on_title_drag(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        self._title_drag_moved = True
+        self._on_drag(event, card, frame)
+
+    def _on_title_release(self, _event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._title_drag_moved:
+            self._end_drag(card)
+        self._drag_state.pop(frame.winfo_id(), None)
+        self._title_drag_moved = False
+
+    def _on_title_double_click(self, card: Card, frame: tk.Frame, title_label: tk.Label) -> None:
+        self._drag_state.pop(frame.winfo_id(), None)
+        self._title_drag_moved = False
+        self._begin_inline_title_edit(card, frame, title_label)
 
     def _default_card_position(self) -> tuple[int, int]:
         index = len(self.board.cards)
@@ -248,20 +279,6 @@ class KanbanApp:
 
         card_x, card_y = self._default_card_position()
         self.board.cards.append(Card(title=title.strip(), x=card_x, y=card_y))
-        self._persist_and_refresh()
-
-    def _edit_card(self, card: Card) -> None:
-        dialog = _CardEditDialog(self.root, card.title)
-        if dialog.result is None:
-            return
-
-        title = dialog.result
-        if not title.strip():
-            messagebox.showwarning(APP_TITLE, "タイトルは空にできません。", parent=self.root)
-            return
-
-        card.title = title.strip()
-        card.touch()
         self._persist_and_refresh()
 
     def _delete_card(self, card: Card) -> None:
@@ -306,26 +323,6 @@ class KanbanApp:
         save_board(self.board)
         save_display_settings(self.display_settings)
         self.root.destroy()
-
-
-class _CardEditDialog(simpledialog.Dialog):
-    """カード編集ダイアログ（タイトルのみ）."""
-
-    def __init__(self, parent: tk.Misc, title: str) -> None:
-        self._initial_title = title
-        self.result: str | None = None
-        super().__init__(parent, title="カード編集")
-
-    def body(self, master: tk.Misc) -> tk.Widget:
-        ttk.Label(master, text="タイトル").grid(row=0, column=0, sticky=tk.W, pady=(0, 4))
-        self.title_entry = ttk.Entry(master, width=40)
-        self.title_entry.grid(row=1, column=0, sticky=tk.EW)
-        self.title_entry.insert(0, self._initial_title)
-        master.columnconfigure(0, weight=1)
-        return self.title_entry
-
-    def apply(self) -> None:
-        self.result = self.title_entry.get()
 
 
 class _SettingsDialog(simpledialog.Dialog):
