@@ -12,20 +12,24 @@ MENU_CIRCLE_OUTLINE = "#888888"
 MENU_CIRCLE_FILL = "#ffffff"
 MENU_CIRCLE_FG = "#333333"
 MENU_CIRCLE_PAD = 2
+MENU_ACTION_CIRCLE_PAD = 0
 MENU_CIRCLE_FONT = ("Segoe UI", 14, "bold")
 MENU_DEFAULT_MARGIN_X = 16
 MENU_DEFAULT_MARGIN_Y = 16
-MENU_HOVER_PADX = 4
+MENU_ACTIONS_GAP = 4
 MENU_ACTION_LABELS = ("＋", "⚙", "×")
 
 
 def _action_canvas_width() -> int:
-    count = len(MENU_ACTION_LABELS)
-    return count * MENU_CIRCLE_SIZE + (count - 1) * MENU_HOVER_PADX
+    return len(MENU_ACTION_LABELS) * MENU_CIRCLE_SIZE
 
 
 def _action_center_x(index: int) -> int:
-    return MENU_CIRCLE_SIZE // 2 + index * (MENU_CIRCLE_SIZE + MENU_HOVER_PADX)
+    return MENU_CIRCLE_SIZE // 2 + index * MENU_CIRCLE_SIZE
+
+
+def _circle_radius(*, pad: int) -> int:
+    return MENU_CIRCLE_SIZE // 2 - pad
 
 
 def _draw_circle(
@@ -35,8 +39,9 @@ def _draw_circle(
     *,
     text: str,
     font: tuple[str, int, str] = MENU_CIRCLE_FONT,
+    pad: int = MENU_CIRCLE_PAD,
 ) -> None:
-    radius = MENU_CIRCLE_SIZE // 2 - MENU_CIRCLE_PAD
+    radius = _circle_radius(pad=pad)
     canvas.create_oval(
         center_x - radius,
         center_y - radius,
@@ -133,6 +138,10 @@ class MenuPanel:
         self._circle.bind("<B1-Motion>", self._on_drag_motion)
         self._circle.bind("<ButtonRelease-1>", self._on_drag_release)
 
+    def _actions_expansion_width(self) -> int:
+        """展開時に `<` 円の左側へ追加される幅."""
+        return _action_canvas_width() + MENU_ACTIONS_GAP
+
     def _bind_hover(self, widget: tk.Misc) -> None:
         widget.bind("<Enter>", self._on_enter, add="+")
         widget.bind("<Leave>", self._on_leave, add="+")
@@ -141,34 +150,18 @@ class MenuPanel:
 
     def _draw_action_buttons(self) -> None:
         center_y = MENU_CIRCLE_SIZE // 2
-        radius = MENU_CIRCLE_SIZE // 2 - MENU_CIRCLE_PAD
-        top = center_y - radius
-        bottom = center_y + radius
-
-        for index in range(len(MENU_ACTION_LABELS) - 1):
-            left = _action_center_x(index) + radius
-            right = _action_center_x(index + 1) - radius
-            if right > left:
-                self._actions.create_rectangle(
-                    left,
-                    top,
-                    right,
-                    bottom,
-                    outline="",
-                    fill=MENU_CIRCLE_FILL,
-                )
-
         for index, label in enumerate(MENU_ACTION_LABELS):
             _draw_circle(
                 self._actions,
                 _action_center_x(index),
                 center_y,
                 text=label,
+                pad=MENU_ACTION_CIRCLE_PAD,
             )
 
     def _action_index_at(self, x: int, y: int) -> int | None:
         center_y = MENU_CIRCLE_SIZE // 2
-        hit_radius = MENU_CIRCLE_SIZE // 2
+        hit_radius = _circle_radius(pad=MENU_ACTION_CIRCLE_PAD)
         for index in range(len(MENU_ACTION_LABELS)):
             center_x = _action_center_x(index)
             if abs(x - center_x) <= hit_radius and abs(y - center_y) <= hit_radius:
@@ -226,24 +219,16 @@ class MenuPanel:
     def _show_actions(self) -> None:
         if self._actions.winfo_ismapped():
             return
-        before_width = self._widget_width()
-        self._actions.pack(side=tk.RIGHT, padx=(0, MENU_HOVER_PADX))
-        self.widget.update_idletasks()
-        after_width = self._widget_width()
-        delta = after_width - before_width
-        if delta > 0:
-            self.place_at(self._place_x - delta, self._place_y)
+        delta = self._actions_expansion_width()
+        self.place_at(self._place_x - delta, self._place_y)
+        self._actions.pack(side=tk.RIGHT, padx=(0, MENU_ACTIONS_GAP))
 
     def _hide_actions(self) -> None:
         if not self._actions.winfo_ismapped():
             return
-        before_width = self._widget_width()
+        delta = self._actions_expansion_width()
         self._actions.pack_forget()
-        self.widget.update_idletasks()
-        after_width = self._widget_width()
-        delta = before_width - after_width
-        if delta > 0:
-            self.place_at(self._place_x + delta, self._place_y)
+        self.place_at(self._place_x + delta, self._place_y)
 
     def _on_enter(self, _event: tk.Event) -> None:
         self._hover_depth += 1
