@@ -8,12 +8,17 @@ from dataclasses import dataclass
 from datetime import date
 from tkinter import messagebox, simpledialog, ttk
 
+from petatto_kanban.card_ui import (
+    CardUiRefs,
+    ClickReleaseTracker,
+    double_click_interval_ms,
+)
 from petatto_kanban.display import list_monitors, load_display_settings, save_display_settings
 from petatto_kanban.display.desktop import TRANSPARENT_COLOR
 from petatto_kanban.display.monitors import Monitor, get_monitor, monitor_index_for_name
 from petatto_kanban.display.overlay import apply_overlay_mode
 from petatto_kanban.due_date import due_date_panel_style, format_due_date
-from petatto_kanban.due_date_picker import DueDatePicker
+from petatto_kanban.due_date_picker import DueDatePickerHost
 from petatto_kanban.models import Card
 from petatto_kanban.progress import PROGRESS_STEP, clamp_progress, progress_color
 from petatto_kanban.storage import load_board, save_board
@@ -51,21 +56,19 @@ class KanbanApp:
         self.root = root
         self.board = load_board()
         self.display_settings = load_display_settings()
-        self._card_widgets: dict[str, tk.Frame] = {}
+        self._card_ui: dict[str, CardUiRefs] = {}
         self._card_progress_widgets: dict[str, tk.Canvas] = {}
         self._drag_state: dict[int, tuple[int, int]] = {}
-        self._title_drag_moved = False
+        self._card_drag_moved: dict[str, bool] = {}
         self._inline_edit_card_id: str | None = None
-        self._inline_edit_finish: Callable[[bool], None] | None = None
-        self._due_date_edit_card_id: str | None = None
-        self._due_date_picker_host: tk.Frame | None = None
-        self._due_date_picker: DueDatePicker | None = None
-        self._due_date_picker_cancel: Callable[[], None] | None = None
-        self._due_date_outside_click_bound = False
-        self._due_panel_last_release_time = 0
-        self._due_panel_last_release_card_id: str | None = None
-        self._due_drag_moved = False
-        self._progress_drag_moved = False
+        self._inline_edit_entry: tk.Entry | None = None
+        self._due_date_picker = DueDatePickerHost(
+            root,
+            bg=CARD_BG,
+            panel_width=DUE_PICKER_PANEL_WIDTH,
+            on_outside_click=self._cancel_due_date_picker,
+        )
+        self._due_panel_clicks = ClickReleaseTracker()
         self._monitors = list_monitors()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -82,10 +85,10 @@ class KanbanApp:
 
     def _lift_ui(self) -> None:
         """カードの上にツールバーが来るよう Z 順を整える."""
-        for frame in self._card_widgets.values():
-            frame.lift()
-        if self._due_date_picker_host is not None:
-            self._due_date_picker_host.lift()
+        for ui in self._card_ui.values():
+            ui.frame.lift()
+        if self._due_date_picker.host_frame is not None:
+            self._due_date_picker.host_frame.lift()
         self.toolbar.lift()
 
     def _build_toolbar(self) -> None:
@@ -117,16 +120,13 @@ class KanbanApp:
         begin_due_edit_for: str | None = None,
     ) -> None:
         """カードを再描画する."""
-        self._close_due_date_picker()
-        self._inline_edit_card_id = None
-        self._inline_edit_finish = None
-        self._title_drag_moved = False
-        self._due_drag_moved = False
-        self._progress_drag_moved = False
-        self._reset_due_panel_click_tracking()
-        for widget in self._card_widgets.values():
-            widget.destroy()
-        self._card_widgets.clear()
+        self._due_date_picker.close()
+        self._commit_inline_title_edit_if_any(refresh_after=False)
+        self._card_drag_moved.clear()
+        self._due_panel_clicks.reset()
+        for ui in self._card_ui.values():
+            ui.frame.destroy()
+        self._card_ui.clear()
         self._card_progress_widgets.clear()
         self._drag_state.clear()
 
@@ -154,7 +154,6 @@ class KanbanApp:
             highlightthickness=0,
         )
         frame.place(x=card.x, y=card.y)
-        self._card_widgets[card.id] = frame
 
         title_frame = tk.Frame(
             frame,
@@ -183,15 +182,16 @@ class KanbanApp:
         progress_canvas.pack(side=tk.BOTTOM, fill=tk.X, pady=(6, 0))
 
         self._finalize_card_frame(frame)
-        self._bind_card_interactions(
-            frame,
-            card,
-            title_frame,
-            title_label,
-            due_panel,
-            due_label,
-            progress_canvas,
+        ui = CardUiRefs(
+            frame=frame,
+            title_frame=title_frame,
+            title_label=title_label,
+            due_panel=due_panel,
+            due_label=due_label,
+            progress_canvas=progress_canvas,
         )
+        self._card_ui[card.id] = ui
+        self._bind_card_interactions(card, ui)
 
     def _card_label(self, parent: tk.Misc, **kwargs) -> tk.Label:
         defaults = {
@@ -286,89 +286,8 @@ class KanbanApp:
         due_label.pack(anchor=tk.W, fill=tk.X)
         return due_panel, due_label
 
-    @staticmethod
-    def _widget_is_descendant(widget: tk.Misc, ancestor: tk.Misc) -> bool:
-        current: tk.Misc | None = widget
-        while current is not None:
-            if current == ancestor:
-                return True
-            current = current.master if isinstance(current.master, tk.Misc) else None
-        return False
-
-    def _double_click_interval_ms(self) -> int:
-        try:
-            return int(self.root.tk.call("set", "tk_clicktime"))
-        except tk.TclError:
-            return 500
-
-    def _reset_due_panel_click_tracking(self) -> None:
-        self._due_panel_last_release_time = 0
-        self._due_panel_last_release_card_id = None
-
-    def _bind_due_date_picker_outside_click(self) -> None:
-        if self._due_date_outside_click_bound:
-            return
-        self.root.bind_all("<Button-1>", self._on_due_date_picker_outside_click, add="+")
-        self.root.bind_all("<ButtonRelease-1>", self._on_due_date_picker_outside_click, add="+")
-        self._due_date_outside_click_bound = True
-
-    def _unbind_due_date_picker_outside_click(self) -> None:
-        if not self._due_date_outside_click_bound:
-            return
-        self.root.unbind_all("<Button-1>")
-        self.root.unbind_all("<ButtonRelease-1>")
-        self._due_date_outside_click_bound = False
-
-    def _on_due_date_picker_outside_click(self, event: tk.Event) -> None:
-        if self._due_date_picker_host is None:
-            return
-        widget = event.widget
-        host = self._due_date_picker_host
-        if isinstance(widget, tk.Misc) and self._widget_is_descendant(widget, host):
-            return
-        host.update_idletasks()
-        x, y = event.x_root, event.y_root
-        left = host.winfo_rootx()
-        top = host.winfo_rooty()
-        right = left + host.winfo_width()
-        bottom = top + host.winfo_height()
-        if left <= x <= right and top <= y <= bottom:
-            return
-        self._cancel_due_date_picker_if_any()
-
-    def _cancel_due_date_picker_if_any(self) -> bool:
-        """進行中の期限編集があれば「閉じる」と同様にキャンセルする."""
-        if self._due_date_picker_cancel is None:
-            return False
-        self._due_date_picker_cancel()
-        return True
-
-    def _close_due_date_picker(self) -> None:
-        self._unbind_due_date_picker_outside_click()
-        self._reset_due_panel_click_tracking()
-        if self._due_date_picker_host is not None:
-            self._due_date_picker_host.destroy()
-            self._due_date_picker_host = None
-        self._due_date_picker = None
-        self._due_date_edit_card_id = None
-        self._due_date_picker_cancel = None
-
-    def _place_due_date_picker_panel(self, host: tk.Frame, anchor: tk.Misc) -> None:
-        """期限パネル付近に、カード外へフロート表示する."""
-        self.root.update_idletasks()
-        host.update_idletasks()
-        root_width = self.root.winfo_width()
-        root_height = self.root.winfo_height()
-        anchor_x = anchor.winfo_rootx() - self.root.winfo_rootx()
-        anchor_y = anchor.winfo_rooty() - self.root.winfo_rooty()
-        anchor_height = anchor.winfo_height()
-        panel_width = max(DUE_PICKER_PANEL_WIDTH, host.winfo_reqwidth())
-        panel_height = host.winfo_reqheight()
-        x = min(max(0, anchor_x), max(0, root_width - panel_width))
-        y = anchor_y + anchor_height + 4
-        if y + panel_height > root_height:
-            y = max(0, anchor_y - panel_height - 4)
-        host.place(x=x, y=y, width=panel_width)
+    def _cancel_due_date_picker(self) -> None:
+        self._due_date_picker.cancel_if_any()
 
     def _set_card_due_date(self, card: Card, value: date | None) -> None:
         if card.due_date == value:
@@ -377,78 +296,38 @@ class KanbanApp:
         card.touch()
         save_board(self.board)
 
-    def _open_due_date_picker(
-        self,
-        card: Card,
-        due_panel: tk.Frame,
-    ) -> None:
+    def _open_due_date_picker(self, card: Card, due_panel: tk.Frame) -> None:
         if self._inline_edit_card_id is not None:
             return
-        self._close_due_date_picker()
-        self._due_date_edit_card_id = card.id
 
-        def apply(value: date | None) -> None:
+        def on_apply(value: date | None) -> None:
             self._set_card_due_date(card, value)
-            self._close_due_date_picker()
             self.refresh()
 
-        def cancel() -> None:
-            self._close_due_date_picker()
-
-        host = tk.Frame(
-            self.root,
-            bg=CARD_BG,
-            bd=1,
-            relief=tk.RIDGE,
-            padx=2,
-            pady=2,
-            highlightthickness=0,
-        )
-        picker = DueDatePicker(
-            host,
+        self._due_date_picker.open(
+            card_id=card.id,
+            due_panel=due_panel,
             initial=card.due_date,
-            on_apply=apply,
-            on_cancel=cancel,
-            bg=CARD_BG,
+            on_apply=on_apply,
+            lift_targets=[self.toolbar],
         )
-        picker.pack(fill=tk.BOTH, expand=True)
-        self._due_date_picker_host = host
-        self._due_date_picker = picker
-        self._due_date_picker_cancel = cancel
-        self._place_due_date_picker_panel(host, due_panel)
-        self._bind_due_date_picker_outside_click()
-        host.lift()
-        self.toolbar.lift()
-        picker.focus_set()
 
     def _open_due_date_picker_for_card(self, card_id: str) -> None:
-        frame = self._card_widgets.get(card_id)
+        ui = self._card_ui.get(card_id)
         card = self.board.find_card(card_id)
-        if frame is None or card is None:
+        if ui is None or card is None:
             return
+        self._open_due_date_picker(card, ui.due_panel)
 
-        children = frame.winfo_children()
-        if len(children) < 2 or not isinstance(children[1], tk.Frame):
-            return
-
-        due_panel = children[1]
-        self._open_due_date_picker(card, due_panel)
-
-    def _begin_inline_title_edit(
-        self,
-        card: Card,
-        frame: tk.Frame,
-        title_frame: tk.Frame,
-        title_label: tk.Label,
-    ) -> None:
+    def _begin_inline_title_edit(self, card: Card, ui: CardUiRefs) -> None:
         if self._inline_edit_card_id is not None:
             return
 
         self._inline_edit_card_id = card.id
-        title_label.pack_forget()
+        ui.title_label.pack_forget()
 
         entry = tk.Entry(
-            title_frame,
+            ui.title_frame,
             bg=CARD_BG,
             fg=CARD_FG,
             font=("Segoe UI", 10, "bold"),
@@ -460,79 +339,98 @@ class KanbanApp:
         entry.insert(0, card.title)
         entry.select_range(0, tk.END)
         entry.focus_set()
+        self._inline_edit_entry = entry
 
-        def finish(save: bool) -> None:
-            if self._inline_edit_card_id != card.id:
-                return
-
-            if save:
-                new_title = entry.get().strip()
-                if not new_title:
-                    messagebox.showwarning(
-                        APP_TITLE,
-                        "タイトルは空にできません。",
-                        parent=self.root,
-                    )
-                    entry.focus_set()
-                    return
-                card.title = new_title
-                card.touch()
-                save_board(self.board)
-
-            self._inline_edit_card_id = None
-            self._inline_edit_finish = None
-            self.refresh()
-
-        self._inline_edit_finish = finish
-        entry.bind("<Return>", lambda _e: finish(save=True))
-        entry.bind("<Escape>", lambda _e: finish(save=False))
-        entry.bind("<FocusOut>", lambda _e: finish(save=True))
+        entry.bind("<Return>", lambda _e: self._commit_inline_title_edit_if_any())
+        entry.bind("<Escape>", lambda _e: self._commit_inline_title_edit_if_any(save=False))
+        entry.bind("<FocusOut>", lambda _e: self._commit_inline_title_edit_if_any())
 
     def _begin_inline_edit_for_card(self, card_id: str) -> None:
-        frame = self._card_widgets.get(card_id)
+        ui = self._card_ui.get(card_id)
         card = self.board.find_card(card_id)
-        if frame is None or card is None:
+        if ui is None or card is None:
             return
+        self._begin_inline_title_edit(card, ui)
 
-        children = frame.winfo_children()
-        if not children or not isinstance(children[0], tk.Frame):
-            return
-
-        title_frame = children[0]
-        label_children = title_frame.winfo_children()
-        if not label_children or not isinstance(label_children[0], tk.Label):
-            return
-
-        title_label = label_children[0]
-        self._begin_inline_title_edit(card, frame, title_frame, title_label)
-
-    def _commit_inline_title_edit_if_any(self, save: bool = True) -> bool:
+    def _commit_inline_title_edit_if_any(
+        self,
+        save: bool = True,
+        *,
+        refresh_after: bool = True,
+    ) -> bool:
         """進行中のタイトル編集があれば確定またはキャンセルする."""
-        if self._inline_edit_finish is None:
+        if self._inline_edit_card_id is None:
             return False
-        self._inline_edit_finish(save)
+        if not self._apply_inline_title_edit(save):
+            return True
+        if refresh_after:
+            self.refresh()
         return True
 
-    def _bind_card_interactions(
+    def _apply_inline_title_edit(self, save: bool) -> bool:
+        """タイトル編集内容を反映する。空タイトル時は False."""
+        card_id = self._inline_edit_card_id
+        entry = self._inline_edit_entry
+        if card_id is None or entry is None:
+            self._clear_inline_edit_state()
+            return True
+
+        card = self.board.find_card(card_id)
+        if card is None:
+            self._clear_inline_edit_state()
+            return True
+
+        if save:
+            new_title = entry.get().strip()
+            if not new_title:
+                messagebox.showwarning(
+                    APP_TITLE,
+                    "タイトルは空にできません。",
+                    parent=self.root,
+                )
+                entry.focus_set()
+                return False
+            card.title = new_title
+            card.touch()
+            save_board(self.board)
+
+        self._clear_inline_edit_state()
+        return True
+
+    def _clear_inline_edit_state(self) -> None:
+        self._inline_edit_card_id = None
+        self._inline_edit_entry = None
+
+    def _prepare_card_pointer_down(
         self,
-        frame: tk.Frame,
         card: Card,
-        title_frame: tk.Frame,
-        title_label: tk.Label,
-        due_panel: tk.Frame,
-        due_label: tk.Label,
-        progress_canvas: tk.Canvas,
-    ) -> None:
+        *,
+        skip_inline_commit_for_card: bool = False,
+        skip_due_picker_cancel_for_card: bool = False,
+    ) -> bool:
+        """期限パネル／インライン編集を処理。True なら呼び出し元は続行しない."""
+        if (
+            not skip_due_picker_cancel_for_card
+            and not (
+                self._due_date_picker.is_open
+                and self._due_date_picker.edit_card_id == card.id
+            )
+            and self._due_date_picker.cancel_if_any()
+        ):
+            return True
+
+        if skip_inline_commit_for_card and self._inline_edit_card_id == card.id:
+            return False
+
+        if self._inline_edit_card_id == card.id:
+            self._commit_inline_title_edit_if_any()
+            return True
+
+        return bool(self._commit_inline_title_edit_if_any())
+
+    def _bind_card_interactions(self, card: Card, ui: CardUiRefs) -> None:
         def on_delete(_event: tk.Event) -> None:
             self._delete_card(card)
-
-        def bind_drag(widget: tk.Misc) -> None:
-            widget.bind(
-                "<Button-1>",
-                lambda e, c=card, f=frame: self._on_frame_press(e, c, f),
-            )
-            widget.bind("<B1-Motion>", lambda e, c=card, f=frame: self._on_drag(e, c, f))
-            widget.bind("<ButtonRelease-1>", lambda _e, c=card: self._end_drag(c))
 
         def bind_scroll(widget: tk.Misc) -> None:
             def on_wheel(event: tk.Event) -> str:
@@ -550,154 +448,123 @@ class KanbanApp:
             widget.bind("<Button-4>", on_wheel)
             widget.bind("<Button-5>", on_wheel)
 
-        def bind_title_interactions(widget: tk.Misc) -> None:
+        def bind_drag_region(
+            widget: tk.Misc,
+            *,
+            on_press: Callable[[tk.Event], None] | None = None,
+            on_release: Callable[[tk.Event], None] | None = None,
+        ) -> None:
+            def press(event: tk.Event) -> None:
+                if on_press is not None:
+                    on_press(event)
+                    return
+                self._on_card_drag_press(event, card, ui.frame)
+
+            def release(event: tk.Event) -> None:
+                if on_release is not None:
+                    on_release(event)
+                    return
+                self._on_card_drag_release(event, card, ui.frame)
+
+            widget.bind("<Button-1>", press)
+            widget.bind("<B1-Motion>", lambda e: self._on_card_drag_motion(e, card, ui.frame))
+            widget.bind("<ButtonRelease-1>", release)
+
+        ui.frame.bind("<ButtonRelease-3>", on_delete)
+        bind_drag_region(ui.frame)
+        bind_scroll(ui.frame)
+
+        for widget in (ui.title_frame, ui.title_label):
             widget.bind("<ButtonRelease-3>", on_delete)
-            widget.bind(
-                "<Button-1>",
-                lambda e, c=card, f=frame: self._on_title_press(e, c, f),
+            bind_drag_region(
+                widget,
+                on_press=lambda e: self._on_title_press(e, card, ui.frame),
+                on_release=lambda e: self._on_card_drag_release(e, card, ui.frame),
             )
-            widget.bind(
-                "<B1-Motion>",
-                lambda e, c=card, f=frame: self._on_title_drag(e, c, f),
-            )
-            widget.bind(
-                "<ButtonRelease-1>",
-                lambda e, c=card, f=frame: self._on_title_release(e, c, f),
-            )
-            widget.bind(
-                "<Double-Button-1>",
-                lambda _e, c=card, f=frame, tf=title_frame, label=title_label: (
-                    self._on_title_double_click(c, f, tf, label)
-                ),
-            )
+            bind_scroll(widget)
+        ui.title_label.bind(
+            "<Double-Button-1>",
+            lambda _e: self._on_title_double_click(card, ui),
+        )
 
-        def bind_due_interactions(widget: tk.Misc) -> None:
+        for widget in (ui.due_panel, ui.due_label):
             widget.bind("<ButtonRelease-3>", on_delete)
-            widget.bind(
-                "<Button-1>",
-                lambda e, c=card, f=frame: self._on_due_press(e, c, f),
+            bind_drag_region(
+                widget,
+                on_press=lambda e: self._on_due_press(e, card, ui.frame),
+                on_release=lambda e: self._on_due_release(e, card, ui),
             )
-            widget.bind(
-                "<B1-Motion>",
-                lambda e, c=card, f=frame: self._on_due_drag(e, c, f),
-            )
-            widget.bind(
-                "<ButtonRelease-1>",
-                lambda e, c=card, f=frame, panel=due_panel: self._on_due_release(
-                    e, c, f, panel
-                ),
-            )
+            bind_scroll(widget)
 
-        def bind_progress_interactions(widget: tk.Misc) -> None:
-            widget.bind("<ButtonRelease-3>", on_delete)
-            widget.bind(
-                "<Button-1>",
-                lambda e, c=card, f=frame: self._on_progress_press(e, c, f),
-            )
-            widget.bind(
-                "<B1-Motion>",
-                lambda e, c=card, f=frame: self._on_progress_drag(e, c, f),
-            )
-            widget.bind(
-                "<ButtonRelease-1>",
-                lambda e, c=card, f=frame: self._on_progress_release(e, c, f),
-            )
+        ui.progress_canvas.bind("<ButtonRelease-3>", on_delete)
+        bind_drag_region(
+            ui.progress_canvas,
+            on_press=lambda e: self._on_card_region_press(e, card, ui.frame),
+            on_release=lambda e: self._on_card_drag_release(e, card, ui.frame),
+        )
+        bind_scroll(ui.progress_canvas)
 
-        frame.bind("<ButtonRelease-3>", on_delete)
-        bind_drag(frame)
-        bind_scroll(frame)
-
-        bind_title_interactions(title_frame)
-        bind_title_interactions(title_label)
-        bind_scroll(title_frame)
-        bind_scroll(title_label)
-        bind_due_interactions(due_panel)
-        bind_due_interactions(due_label)
-        bind_scroll(due_panel)
-        bind_scroll(due_label)
-        bind_scroll(progress_canvas)
-        bind_progress_interactions(progress_canvas)
-
-    def _on_frame_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
-        if self._cancel_due_date_picker_if_any():
-            return
-        if self._inline_edit_card_id == card.id:
-            self._commit_inline_title_edit_if_any()
-            return
-        if self._commit_inline_title_edit_if_any():
-            return
-        self._start_drag(event, frame)
-
-    def _on_title_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
-        if self._cancel_due_date_picker_if_any():
-            return
-        if self._inline_edit_card_id == card.id:
-            return
-        if self._commit_inline_title_edit_if_any():
-            return
-        self._title_drag_moved = False
-        self._start_drag(event, frame)
-
-    def _on_title_drag(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
-        self._title_drag_moved = True
-        self._on_drag(event, card, frame)
-
-    def _on_title_release(self, _event: tk.Event, card: Card, frame: tk.Frame) -> None:
-        if self._title_drag_moved:
-            self._end_drag(card)
-        self._drag_state.pop(frame.winfo_id(), None)
-        self._title_drag_moved = False
-
-    def _on_title_double_click(
-        self,
-        card: Card,
-        frame: tk.Frame,
-        title_frame: tk.Frame,
-        title_label: tk.Label,
-    ) -> None:
-        if self._cancel_due_date_picker_if_any():
-            return
-        if self._commit_inline_title_edit_if_any():
-            return
-        self._drag_state.pop(frame.winfo_id(), None)
-        self._title_drag_moved = False
-        self._begin_inline_title_edit(card, frame, title_frame, title_label)
-
-    def _on_due_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
-        if (
-            self._due_date_picker_host is not None
-            and self._due_date_edit_card_id == card.id
-        ):
-            if self._commit_inline_title_edit_if_any():
-                return
-            self._due_drag_moved = False
-            self._start_drag(event, frame)
-            return
-        if self._cancel_due_date_picker_if_any():
-            return
-        if self._commit_inline_title_edit_if_any():
-            return
-        self._due_drag_moved = False
-        self._start_drag(event, frame)
-
-    def _on_due_drag(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
-        self._due_drag_moved = True
-        self._on_drag(event, card, frame)
-
-    def _on_due_release(
+    def _on_card_region_press(
         self,
         event: tk.Event,
         card: Card,
         frame: tk.Frame,
-        due_panel: tk.Frame,
     ) -> None:
-        if self._due_drag_moved:
-            self._end_drag(card)
-            self._reset_due_panel_click_tracking()
-        else:
-            self._handle_due_panel_release(event, card, due_panel)
+        if self._prepare_card_pointer_down(card):
+            return
+        self._on_card_drag_press(event, card, frame)
+
+    def _on_title_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._prepare_card_pointer_down(card, skip_inline_commit_for_card=True):
+            return
+        self._on_card_drag_press(event, card, frame)
+
+    def _on_due_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._prepare_card_pointer_down(
+            card,
+            skip_due_picker_cancel_for_card=True,
+        ):
+            return
+        self._on_card_drag_press(event, card, frame)
+
+    def _on_card_drag_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        self._card_drag_moved[card.id] = False
+        self._drag_state[frame.winfo_id()] = (event.x, event.y)
+
+    def _on_card_drag_motion(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        origin = self._drag_state.get(frame.winfo_id())
+        if origin is None:
+            return
+        self._card_drag_moved[card.id] = True
+        new_x = frame.winfo_x() + event.x - origin[0]
+        new_y = frame.winfo_y() + event.y - origin[1]
+        frame.place(x=new_x, y=new_y)
+        card.x = new_x
+        card.y = new_y
+
+    def _on_card_drag_release(self, _event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._card_drag_moved.get(card.id):
+            card.touch()
+            save_board(self.board)
         self._drag_state.pop(frame.winfo_id(), None)
-        self._due_drag_moved = False
+        self._card_drag_moved.pop(card.id, None)
+
+    def _on_title_double_click(self, card: Card, ui: CardUiRefs) -> None:
+        if self._prepare_card_pointer_down(card):
+            return
+        self._drag_state.pop(ui.frame.winfo_id(), None)
+        self._card_drag_moved.pop(card.id, None)
+        self._begin_inline_title_edit(card, ui)
+
+    def _on_due_release(self, event: tk.Event, card: Card, ui: CardUiRefs) -> None:
+        if self._card_drag_moved.get(card.id):
+            card.touch()
+            save_board(self.board)
+            self._due_panel_clicks.reset()
+        else:
+            self._handle_due_panel_release(event, card, ui.due_panel)
+        self._drag_state.pop(ui.frame.winfo_id(), None)
+        self._card_drag_moved.pop(card.id, None)
 
     def _handle_due_panel_release(
         self,
@@ -705,54 +572,27 @@ class KanbanApp:
         card: Card,
         due_panel: tk.Frame,
     ) -> None:
-        now = event.time
-        interval = self._double_click_interval_ms()
-        is_second_release = (
-            self._due_panel_last_release_card_id == card.id
-            and now - self._due_panel_last_release_time <= interval
-        )
-
-        if is_second_release:
-            self._reset_due_panel_click_tracking()
+        interval = double_click_interval_ms(self.root)
+        if self._due_panel_clicks.is_second_release(card.id, event.time, interval):
+            self._due_panel_clicks.reset()
             if (
-                self._due_date_picker_host is not None
-                and self._due_date_edit_card_id == card.id
+                self._due_date_picker.is_open
+                and self._due_date_picker.edit_card_id == card.id
             ):
                 return
-            if self._due_date_picker_host is not None:
-                self._cancel_due_date_picker_if_any()
-            if self._commit_inline_title_edit_if_any():
+            if self._prepare_card_pointer_down(card):
                 return
             self._open_due_date_picker(card, due_panel)
             return
 
-        self._due_panel_last_release_time = now
-        self._due_panel_last_release_card_id = card.id
+        self._due_panel_clicks.record(card.id, event.time)
 
         if (
-            self._due_date_picker_host is not None
-            and self._due_date_edit_card_id == card.id
+            self._due_date_picker.is_open
+            and self._due_date_picker.edit_card_id == card.id
         ):
-            self._cancel_due_date_picker_if_any()
-            self._reset_due_panel_click_tracking()
-
-    def _on_progress_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
-        if self._cancel_due_date_picker_if_any():
-            return
-        if self._commit_inline_title_edit_if_any():
-            return
-        self._progress_drag_moved = False
-        self._start_drag(event, frame)
-
-    def _on_progress_drag(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
-        self._progress_drag_moved = True
-        self._on_drag(event, card, frame)
-
-    def _on_progress_release(self, _event: tk.Event, card: Card, frame: tk.Frame) -> None:
-        if self._progress_drag_moved:
-            self._end_drag(card)
-        self._drag_state.pop(frame.winfo_id(), None)
-        self._progress_drag_moved = False
+            self._cancel_due_date_picker()
+            self._due_panel_clicks.reset()
 
     def _card_position_near_add_button(self, stack_index: int) -> tuple[int, int]:
         """ツールバー「+ カード」付近に新規カードを置く座標を返す."""
@@ -768,25 +608,9 @@ class KanbanApp:
             base_y + (stack_index // 4) * NEW_CARD_STACK_OFFSET,
         )
 
-    def _start_drag(self, event: tk.Event, frame: tk.Frame) -> None:
-        self._drag_state[frame.winfo_id()] = (event.x, event.y)
-
-    def _on_drag(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
-        origin = self._drag_state.get(frame.winfo_id())
-        if origin is None:
-            return
-        new_x = frame.winfo_x() + event.x - origin[0]
-        new_y = frame.winfo_y() + event.y - origin[1]
-        frame.place(x=new_x, y=new_y)
-        card.x = new_x
-        card.y = new_y
-
-    def _end_drag(self, card: Card) -> None:
-        card.touch()
-        save_board(self.board)
-
     def _add_card(self) -> None:
-        self._cancel_due_date_picker_if_any()
+        self._due_date_picker.cancel_if_any()
+        self._commit_inline_title_edit_if_any(refresh_after=False)
         stack_index = len(self.board.cards)
         card_x, card_y = self._card_position_near_add_button(stack_index)
         card = Card(title=DEFAULT_NEW_CARD_TITLE, x=card_x, y=card_y)
@@ -806,7 +630,8 @@ class KanbanApp:
         self._persist_and_refresh()
 
     def _open_settings(self) -> None:
-        self._cancel_due_date_picker_if_any()
+        self._due_date_picker.cancel_if_any()
+        self._commit_inline_title_edit_if_any(refresh_after=False)
         dialog = _SettingsDialog(
             self.root,
             confirm_delete=self.display_settings.confirm_delete,
@@ -834,6 +659,8 @@ class KanbanApp:
         self.refresh()
 
     def _on_close(self) -> None:
+        self._due_date_picker.cancel_if_any()
+        self._commit_inline_title_edit_if_any(refresh_after=False)
         save_board(self.board)
         save_display_settings(self.display_settings)
         self.root.destroy()
