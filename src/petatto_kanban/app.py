@@ -20,8 +20,9 @@ CARD_TITLE_FRAME_BD = 1
 CARD_MIN_WIDTH = 220
 CARD_MIN_HEIGHT = 88
 TOOLBAR_BG = "#f0f0f0"
-DEFAULT_CARD_X = 120
-DEFAULT_CARD_Y = 120
+NEW_CARD_NEAR_TOOLBAR_OFFSET_X = 0
+NEW_CARD_NEAR_TOOLBAR_OFFSET_Y = 8
+NEW_CARD_STACK_OFFSET = 32
 DEFAULT_NEW_CARD_TITLE = "新しいタスク"
 CARD_LABEL_WRAP = 200
 
@@ -87,7 +88,7 @@ class KanbanApp:
             padx=2,
         )
 
-    def refresh(self) -> None:
+    def refresh(self, *, begin_inline_edit_for: str | None = None) -> None:
         """カードを再描画する."""
         self._inline_edit_card_id = None
         self._title_drag_moved = False
@@ -99,6 +100,11 @@ class KanbanApp:
         for card in self.board.cards:
             self._render_card(card)
         self._lift_ui()
+
+        if begin_inline_edit_for is not None:
+            self.root.after_idle(
+                lambda card_id=begin_inline_edit_for: self._begin_inline_edit_for_card(card_id)
+            )
 
     def _render_card(self, card: Card) -> None:
         frame = tk.Frame(
@@ -206,6 +212,24 @@ class KanbanApp:
         entry.bind("<Escape>", lambda _e: finish(save=False))
         entry.bind("<FocusOut>", lambda _e: finish(save=True))
 
+    def _begin_inline_edit_for_card(self, card_id: str) -> None:
+        frame = self._card_widgets.get(card_id)
+        card = self.board.find_card(card_id)
+        if frame is None or card is None:
+            return
+
+        children = frame.winfo_children()
+        if not children or not isinstance(children[0], tk.Frame):
+            return
+
+        title_frame = children[0]
+        label_children = title_frame.winfo_children()
+        if not label_children or not isinstance(label_children[0], tk.Label):
+            return
+
+        title_label = label_children[0]
+        self._begin_inline_title_edit(card, frame, title_frame, title_label)
+
     def _bind_card_interactions(
         self,
         frame: tk.Frame,
@@ -273,11 +297,18 @@ class KanbanApp:
         self._title_drag_moved = False
         self._begin_inline_title_edit(card, frame, title_frame, title_label)
 
-    def _default_card_position(self) -> tuple[int, int]:
-        index = len(self.board.cards)
+    def _card_position_near_add_button(self, stack_index: int) -> tuple[int, int]:
+        """ツールバー「+ カード」付近に新規カードを置く座標を返す."""
+        self.root.update_idletasks()
+        self.toolbar.update_idletasks()
+        toolbar_x = self.toolbar.winfo_x()
+        toolbar_y = self.toolbar.winfo_y()
+        toolbar_height = self.toolbar.winfo_height()
+        base_x = toolbar_x + NEW_CARD_NEAR_TOOLBAR_OFFSET_X
+        base_y = toolbar_y + toolbar_height + NEW_CARD_NEAR_TOOLBAR_OFFSET_Y
         return (
-            DEFAULT_CARD_X + (index % 4) * 32,
-            DEFAULT_CARD_Y + (index // 4) * 32,
+            base_x + (stack_index % 4) * NEW_CARD_STACK_OFFSET,
+            base_y + (stack_index // 4) * NEW_CARD_STACK_OFFSET,
         )
 
     def _start_drag(self, event: tk.Event, frame: tk.Frame) -> None:
@@ -298,11 +329,12 @@ class KanbanApp:
         save_board(self.board)
 
     def _add_card(self) -> None:
-        card_x, card_y = self._default_card_position()
-        self.board.cards.append(
-            Card(title=DEFAULT_NEW_CARD_TITLE, x=card_x, y=card_y)
-        )
-        self._persist_and_refresh()
+        stack_index = len(self.board.cards)
+        card_x, card_y = self._card_position_near_add_button(stack_index)
+        card = Card(title=DEFAULT_NEW_CARD_TITLE, x=card_x, y=card_y)
+        self.board.cards.append(card)
+        save_board(self.board)
+        self.refresh(begin_inline_edit_for=card.id)
 
     def _delete_card(self, card: Card) -> None:
         if self.display_settings.confirm_delete and not messagebox.askyesno(
