@@ -14,7 +14,7 @@ _WEEKDAY_LABELS = ("日", "月", "火", "水", "木", "金", "土")
 
 
 class DueDatePicker(tk.Frame):
-    """カード内インラインの期限選択 UI（別ウィンドウではない）."""
+    """オーバーレイ上のフロート期限選択パネル用 UI."""
 
     def __init__(
         self,

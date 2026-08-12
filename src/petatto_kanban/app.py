@@ -24,6 +24,7 @@ CARD_TITLE_FRAME_BD = 1
 CARD_MIN_WIDTH = 220
 CARD_MIN_HEIGHT = 120
 DUE_PANEL_BD = 1
+DUE_PICKER_PANEL_WIDTH = 240
 TOOLBAR_BG = "#f0f0f0"
 PROGRESS_TRACK_BG = "#e8e8e8"
 PROGRESS_BAR_HEIGHT = 18
@@ -55,6 +56,7 @@ class KanbanApp:
         self._title_drag_moved = False
         self._inline_edit_card_id: str | None = None
         self._due_date_edit_card_id: str | None = None
+        self._due_date_picker_host: tk.Frame | None = None
         self._due_date_picker: DueDatePicker | None = None
         self._due_drag_moved = False
         self._monitors = list_monitors()
@@ -75,6 +77,8 @@ class KanbanApp:
         """カードの上にツールバーが来るよう Z 順を整える."""
         for frame in self._card_widgets.values():
             frame.lift()
+        if self._due_date_picker_host is not None:
+            self._due_date_picker_host.lift()
         self.toolbar.lift()
 
     def _build_toolbar(self) -> None:
@@ -272,18 +276,29 @@ class KanbanApp:
         due_label.pack(anchor=tk.W, fill=tk.X)
         return due_panel, due_label
 
-    def _resize_card_frame(self, frame: tk.Frame) -> None:
-        frame.update_idletasks()
-        frame.config(
-            width=max(CARD_MIN_WIDTH, frame.winfo_reqwidth()),
-            height=max(CARD_MIN_HEIGHT, frame.winfo_reqheight()),
-        )
-
     def _close_due_date_picker(self) -> None:
-        if self._due_date_picker is not None:
-            self._due_date_picker.destroy()
-            self._due_date_picker = None
+        if self._due_date_picker_host is not None:
+            self._due_date_picker_host.destroy()
+            self._due_date_picker_host = None
+        self._due_date_picker = None
         self._due_date_edit_card_id = None
+
+    def _place_due_date_picker_panel(self, host: tk.Frame, anchor: tk.Misc) -> None:
+        """期限パネル付近に、カード外へフロート表示する."""
+        self.root.update_idletasks()
+        host.update_idletasks()
+        root_width = self.root.winfo_width()
+        root_height = self.root.winfo_height()
+        anchor_x = anchor.winfo_rootx() - self.root.winfo_rootx()
+        anchor_y = anchor.winfo_rooty() - self.root.winfo_rooty()
+        anchor_height = anchor.winfo_height()
+        panel_width = max(DUE_PICKER_PANEL_WIDTH, host.winfo_reqwidth())
+        panel_height = host.winfo_reqheight()
+        x = min(max(0, anchor_x), max(0, root_width - panel_width))
+        y = anchor_y + anchor_height + 4
+        if y + panel_height > root_height:
+            y = max(0, anchor_y - panel_height - 4)
+        host.place(x=x, y=y, width=panel_width)
 
     def _set_card_due_date(self, card: Card, value: date | None) -> None:
         if card.due_date == value:
@@ -295,7 +310,6 @@ class KanbanApp:
     def _open_due_date_picker(
         self,
         card: Card,
-        frame: tk.Frame,
         due_panel: tk.Frame,
     ) -> None:
         if self._inline_edit_card_id is not None:
@@ -310,18 +324,29 @@ class KanbanApp:
 
         def cancel() -> None:
             self._close_due_date_picker()
-            self._resize_card_frame(frame)
 
+        host = tk.Frame(
+            self.root,
+            bg=CARD_BG,
+            bd=1,
+            relief=tk.RIDGE,
+            padx=2,
+            pady=2,
+            highlightthickness=0,
+        )
         picker = DueDatePicker(
-            frame,
+            host,
             initial=card.due_date,
             on_apply=apply,
             on_cancel=cancel,
             bg=CARD_BG,
         )
-        picker.pack(after=due_panel, anchor=tk.NW, fill=tk.X, pady=(2, 0))
+        picker.pack(fill=tk.BOTH, expand=True)
+        self._due_date_picker_host = host
         self._due_date_picker = picker
-        self._resize_card_frame(frame)
+        self._place_due_date_picker_panel(host, due_panel)
+        host.lift()
+        self.toolbar.lift()
         picker.focus_set()
 
     def _open_due_date_picker_for_card(self, card_id: str) -> None:
@@ -335,7 +360,7 @@ class KanbanApp:
             return
 
         due_panel = children[1]
-        self._open_due_date_picker(card, frame, due_panel)
+        self._open_due_date_picker(card, due_panel)
 
     def _begin_inline_title_edit(
         self,
@@ -539,7 +564,7 @@ class KanbanApp:
     def _on_due_double_click(self, card: Card, frame: tk.Frame, due_panel: tk.Frame) -> None:
         self._drag_state.pop(frame.winfo_id(), None)
         self._due_drag_moved = False
-        self._open_due_date_picker(card, frame, due_panel)
+        self._open_due_date_picker(card, due_panel)
 
     def _card_position_near_add_button(self, stack_index: int) -> tuple[int, int]:
         """ツールバー「+ カード」付近に新規カードを置く座標を返す."""
