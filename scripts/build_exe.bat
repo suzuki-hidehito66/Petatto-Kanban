@@ -1,25 +1,31 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM Petatto-Kanban Windows 実行ファイル (.exe) ビルドスクリプト
-REM 使用方法: scripts\build_exe.bat
+REM Petatto-Kanban Windows executable (.exe) build script
+REM Usage: scripts\build_exe.bat
+REM Output: dist\Petatto-Kanban.exe
+REM
+REM Log messages are ASCII-only to avoid mojibake on Japanese Windows cmd.exe
+REM when this file is saved as UTF-8 without BOM.
 
 cd /d "%~dp0\.."
 
 where python >nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Python が見つかりません。Python 3.11 以上をインストールしてください。
+    echo ERROR: Python not found. Install Python 3.11 or later.
     exit /b 1
 )
 
-echo [INFO] 依存関係をインストールしています...
+echo INFO: Installing dependencies...
 python -m pip install --upgrade pip
+if errorlevel 1 exit /b 1
+
 python -m pip install -e ".[dev]"
 if errorlevel 1 exit /b 1
 
-echo [INFO] PyInstaller で .exe をビルドしています...
+echo INFO: Building .exe with PyInstaller...
 python -m PyInstaller petatto-kanban.spec --noconfirm
 if errorlevel 1 exit /b 1
 
-echo [SUCCESS] ビルド完了: dist\Petatto-Kanban.exe
+echo SUCCESS: Build finished: dist\Petatto-Kanban.exe
 endlocal
