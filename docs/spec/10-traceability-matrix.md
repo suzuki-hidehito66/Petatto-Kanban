@@ -30,6 +30,7 @@
 | FR-023 | US-011 | AC-023-01 | `app.py` | 手動 | implemented |
 | FR-024 | US-013 | AC-024-01 | `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
 | FR-025 | US-014 | AC-025-01, AC-025-02 | `app.py`, `progress.py` | `test_progress.py`, `test_board_roundtrip_dict_with_progress` | implemented |
+| FR-014 | US-015 | AC-014-01, AC-014-02 | `app.py`, `due_date.py`, `due_date_picker.py` | `test_due_date.py`, `test_board_roundtrip_dict_with_due_date` | implemented |
 | FR-006 | US-005 | AC-006-01 | （M2） | — | deferred |
 | FR-008 | US-006 | AC-008-01 | （M2） | — | deferred |
 | FR-009 | US-006 | AC-009-01 | （M2） | — | deferred |

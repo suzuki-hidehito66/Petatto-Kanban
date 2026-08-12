@@ -13,14 +13,14 @@
 | 関連 FR | FR-007 |
 | ファイルパス | `%USERPROFILE%\.petatto-kanban\board.json` |
 | エンコーディング | UTF-8 |
-| スキーマバージョン | `4` |
+| スキーマバージョン | `5` |
 | 実装 | `src/petatto_kanban/storage.py` |
 
 ### ルートオブジェクト: Board
 
 | フィールド | JSON 型 | 必須 | Python 型 | 説明 |
 |------------|---------|------|-----------|------|
-| `schema_version` | number | ○ | `int` | スキーマバージョン（現在 `4`） |
+| `schema_version` | number | ○ | `int` | スキーマバージョン（現在 `5`） |
 | `id` | string | ○ | `str` (UUID) | ボード一意識別子 |
 | `name` | string | ○ | `str` | ボード名 |
 | `cards` | array | ○ | `list[Card]` | 画面上のカード配列 |
@@ -36,6 +36,7 @@
 | `x` | number | ○ | `int` | 画面上の X 座標（px） |
 | `y` | number | ○ | `int` | 画面上の Y 座標（px） |
 | `progress` | number | ○ | `int` | 進捗率 0〜100 |
+| `due_date` | string \| null | - | `date \| None` | 期限（`YYYY-MM-DD`）。未設定時 `null` |
 | `created_at` | string | ○ | `datetime` | ISO 8601 形式 |
 | `updated_at` | string | ○ | `datetime` | ISO 8601 形式 |
 
@@ -47,12 +48,13 @@
 | INV-2 | 保存時に `board.updated_at` が現在時刻に更新される |
 | INV-3 | 旧スキーマ（`columns` / `description` 付き cards）読み込み時は現行 Card に変換し、`description` は破棄 |
 | INV-4 | `progress` 未指定の旧 cards は `0` として読み込む |
+| INV-5 | `due_date` 未指定の旧 cards は `null`（期限なし）として読み込む |
 
 ### サンプル
 
 ```json
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "My Board",
   "cards": [
@@ -62,6 +64,7 @@
       "x": 120,
       "y": 80,
       "progress": 40,
+      "due_date": "2026-08-20",
       "created_at": "2026-08-12T11:00:00+00:00",
       "updated_at": "2026-08-12T11:30:00+00:00"
     }
@@ -102,6 +105,7 @@
 |------|------|
 | `title` | UI 層で空文字・空白のみを拒否 |
 | `progress` | 0〜100 の整数。未指定時 `0` |
+| `due_date` | 未指定時 `None`（期限なし） |
 | `x`, `y` | 未指定時 `120, 120` |
 | `id` | 未指定時 UUID v4 自動生成 |
 
@@ -151,7 +155,6 @@
 |------------|--------|----------------|
 | `columns` | Board | M2（3 列カンバン再導入時） |
 | `labels` | Card | M2 |
-| `due_date` | Card | M2 |
 | `wip_limit` | Column | M3 |
 
 スキーマ変更時は `schema_version` をインクリメントし、マイグレーション方針を追記する。

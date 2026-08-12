@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
 from petatto_kanban.models import Board, Card
 
 DATA_FILE_NAME = "board.json"
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 
 def get_data_path() -> Path:
@@ -28,6 +28,16 @@ def _parse_datetime(value: str) -> datetime:
     return datetime.fromisoformat(value)
 
 
+def _serialize_due_date(value: date | None) -> str | None:
+    return value.isoformat() if value is not None else None
+
+
+def _parse_due_date(value: str | None) -> date | None:
+    if not value:
+        return None
+    return date.fromisoformat(value)
+
+
 def _card_to_dict(card: Card) -> dict[str, Any]:
     return {
         "id": card.id,
@@ -35,6 +45,7 @@ def _card_to_dict(card: Card) -> dict[str, Any]:
         "x": card.x,
         "y": card.y,
         "progress": card.progress,
+        "due_date": _serialize_due_date(card.due_date),
         "created_at": _serialize_datetime(card.created_at),
         "updated_at": _serialize_datetime(card.updated_at),
     }
@@ -47,6 +58,7 @@ def _card_from_dict(data: dict[str, Any]) -> Card:
         x=int(data.get("x", 120)),
         y=int(data.get("y", 120)),
         progress=int(data.get("progress", 0)),
+        due_date=_parse_due_date(data.get("due_date")),
         created_at=_parse_datetime(data["created_at"]),
         updated_at=_parse_datetime(data["updated_at"]),
     )

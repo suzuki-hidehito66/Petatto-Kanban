@@ -23,6 +23,7 @@
 | [US-012](#us-012-カードをドラッグで移動する) | Must | implemented | M1 |
 | [US-014](#us-014-カードの進捗率を更新する) | Must | implemented | M1 |
 | [US-013](#us-013-削除確認を設定する) | Must | implemented | M1 |
+| [US-015](#us-015-カードの期限を設定する) | Must | implemented | M1 |
 | [US-005](#us-005-カードを別列へ移動する) | Should | deferred | M2 |
 | [US-008](#us-008-ウィンドウモードで使う) | Should | deferred | M2 |
 | [US-009](#us-009-デスクトップモードで使う) | Should | deferred | M2 |
@@ -207,6 +208,20 @@
 |------|-----|
 | 関連 FR | FR-025 |
 | 関連 AC | AC-025-01, AC-025-02 |
+| ステータス | implemented |
+
+---
+
+## US-015: カードの期限を設定する
+
+**As a** 個人開発者  
+**I want to** カードに期限を設定し、当日・超過を色で確認する  
+**So that** 締切を見落とさない
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-014 |
+| 関連 AC | AC-014-01, AC-014-02 |
 | ステータス | implemented |
 
 ---

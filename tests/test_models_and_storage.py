@@ -1,5 +1,6 @@
 """モデルとストレージのテスト."""
 
+from datetime import date
 from pathlib import Path
 
 from petatto_kanban.models import Board, Card
@@ -31,9 +32,10 @@ def test_board_roundtrip_dict() -> None:
     board.cards.append(Card(title="Implement feature", x=10, y=20))
 
     payload = board_to_dict(board)
-    assert payload["schema_version"] == 4
+    assert payload["schema_version"] == 5
     assert "description" not in payload["cards"][0]
     assert payload["cards"][0]["progress"] == 0
+    assert payload["cards"][0]["due_date"] is None
 
     restored = board_from_dict(payload)
 
@@ -52,7 +54,16 @@ def test_board_roundtrip_dict_with_progress() -> None:
     assert restored.cards[0].progress == 50
 
 
-def test_load_legacy_card_without_progress_defaults_to_zero() -> None:
+def test_board_roundtrip_dict_with_due_date() -> None:
+    board = Board.create_default()
+    board.cards.append(Card(title="Due task", x=10, y=20, due_date=date(2026, 8, 20)))
+
+    restored = board_from_dict(board_to_dict(board))
+
+    assert restored.cards[0].due_date == date(2026, 8, 20)
+
+
+def test_load_legacy_card_without_optional_fields_defaults() -> None:
     legacy = {
         "schema_version": 3,
         "id": "board-1",
@@ -72,7 +83,8 @@ def test_load_legacy_card_without_progress_defaults_to_zero() -> None:
     }
     board = board_from_dict(legacy)
     assert board.cards[0].progress == 0
-    assert board_to_dict(board)["schema_version"] == 4
+    assert board.cards[0].due_date is None
+    assert board_to_dict(board)["schema_version"] == 5
 
 
 def test_load_legacy_card_with_description_ignored() -> None:
