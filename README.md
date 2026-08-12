@@ -53,6 +53,8 @@ scripts\build_exe.bat
 .\scripts\build_exe.ps1
 ```
 
+PowerShell 5.x では `"[INFO]"` のような角括弧付き文字列が構文エラーになるため、スクリプト内のログは単一引用符・英語表記にしています。問題があれば方法 1 の `.bat` を使ってください。
+
 ### 方法 3: 手動
 
 ```cmd
