@@ -43,6 +43,8 @@ python -m ruff check src tests
 
 `build_exe.bat` / `build_exe.ps1` のコンソール出力は **ASCII（英語）** です。UTF-8 無 BOM の日本語は cmd / PowerShell 5.x で文字化けするため。
 
+**ビルド前:** 実行中の `Petatto-Kanban.exe` を終了してください。起動中だと `dist\Petatto-Kanban.exe` がロックされ PyInstaller が失敗します（`WinError 5`）。スクリプトは起動検知と旧 exe の退避を試みます。
+
 ### 方法 1: バッチファイル
 
 ```cmd

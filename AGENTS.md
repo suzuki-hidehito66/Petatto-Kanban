@@ -12,7 +12,7 @@ Petatto-Kanban is a Python 3.11+ tkinter desktop app. Linux dev VMs can run unit
 | Run app (needs display) | `python3 -m petatto_kanban` |
 | Tests | `python3 -m pytest` |
 | Lint | `python3 -m ruff check src tests` |
-| Build `.exe` | Windows only: `scripts/build_exe.bat` or `python3 -m PyInstaller petatto-kanban.spec --noconfirm` |
+| Build `.exe` | Windows only: `scripts/build_exe.bat` — close running `Petatto-Kanban.exe` first |
 
 ### Services
 

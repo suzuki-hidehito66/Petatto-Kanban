@@ -23,6 +23,10 @@ if errorlevel 1 exit /b 1
 python -m pip install -e ".[dev]"
 if errorlevel 1 exit /b 1
 
+echo INFO: Preparing dist folder (unlock existing .exe if needed)...
+python scripts\prepare_exe_build.py
+if errorlevel 1 exit /b 1
+
 echo INFO: Building .exe with PyInstaller...
 python -m PyInstaller petatto-kanban.spec --noconfirm
 if errorlevel 1 exit /b 1
