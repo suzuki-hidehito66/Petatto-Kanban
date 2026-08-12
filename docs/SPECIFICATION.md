@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |------|------|
 | 文書種別 | Specification-Driven Development（SDD）索引 |
-| 文書バージョン | 2.0.0 |
+| 文書バージョン | 2.1.0 |
 | 最終更新日 | 2026-08-12 |
 | ステータス | Active |
 
@@ -89,8 +89,18 @@ flowchart LR
 | リポジトリ | https://github.com/suzuki-hidehito66/Petatto-Kanban |
 | ライセンス | MIT License |
 | 実装言語 | Python 3.11+ |
-| プラットフォーム | Windows デスクトップ（.exe 配布） |
+| **初期スコープ** | **単一ユーザーの独立したデスクトップアプリ（Windows `.exe`）** |
+| プラットフォーム | Windows 10 以降 |
 | 現在のマイルストーン | [M1 MVP](./spec/11-release-plan.md#m1-mvp) |
+
+### 初期スコープの要点
+
+- **単一ユーザー** — 1 人・1 PC。アカウント・共同編集なし
+- **独立アプリ** — サーバー・ブラウザ・常時ネットワーク不要
+- **`.exe` 配布** — PyInstaller 単一実行ファイル
+- **ローカルデータ** — `%USERPROFILE%\.petatto-kanban\board.json`
+
+詳細: [01-vision-and-scope.md](./spec/01-vision-and-scope.md#2-初期スコープm1-mvpの定義)
 
 ---
 
@@ -100,3 +110,4 @@ flowchart LR
 |------------|------|----------|
 | 1.0.0 | 2026-08-12 | 初版（モノリシック仕様書） |
 | 2.0.0 | 2026-08-12 | SDD 形式へリファクタリング（`docs/spec/` 分割） |
+| 2.1.0 | 2026-08-12 | 初期スコープを「単一ユーザーの独立デスクトップアプリ（.exe）」と明確化 |
