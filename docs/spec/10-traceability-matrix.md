@@ -29,6 +29,7 @@
 | FR-009 | US-006 | AC-009-01 | `app.py` | 手動 | implemented |
 | FR-019 | US-009 | AC-019-01, AC-019-02 | `display/desktop.py`, `app.py` | 手動 | implemented |
 | FR-021 | US-009 | AC-021-01 | `display/monitors.py`, `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
+| FR-023 | US-011 | AC-023-01 | `app.py` | 手動 | implemented |
 | FR-018 | US-008 | AC-018-01 | （M2） | 手動 | deferred |
 | FR-020 | US-010 | AC-020-01, AC-020-02 | （未実装） | 手動 | specified |
 | FR-022 | US-008〜010 | AC-022-01 | （M2） | 手動 | specified |
@@ -58,7 +59,7 @@
 | DC-001 | FR-007 | `storage.py` | `test_*` | verified |
 | DC-002 | FR-002, FR-007 | `models.py` | `test_create_default_board_has_three_columns` | verified |
 | UC-001 | FR-001, FR-002 | `app.py` | 手動 | verified |
-| UC-002 | FR-008, FR-009 | `app.py` | 手動 | implemented |
+| UC-002 | FR-008, FR-009, FR-023 | `app.py` | 手動 | implemented |
 | UC-003 | FR-002 | `app.py` | 手動 | verified |
 | UC-004 | FR-003〜006 | `app.py` | 手動 | implemented |
 | UC-005 | FR-003 | `app.py` | 手動 | implemented |
