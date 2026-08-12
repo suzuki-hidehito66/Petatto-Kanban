@@ -153,3 +153,35 @@ petatto-kanban/
 | 設定 | SQLite への移行検討 |
 
 M3 着手時に ADR を追加する。
+
+---
+
+## 4. 表示モード実装方針
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-018〜022 |
+| 詳細仕様 | [12-display-modes.md](../spec/12-display-modes.md) |
+| マイルストーン | M1（ウィンドウ）/ M2（デスクトップ・オーバーレイ） |
+
+### Windows API 要件
+
+| モード | 主要 API / 属性 |
+|--------|----------------|
+| ウィンドウ | 標準 `tk.Tk()`、`minsize` |
+| デスクトップ | 全画面 geometry、`-transparentcolor` / Layered Window、`HWND_BOTTOM` |
+| オーバーレイ | 全画面 geometry、Layered Window、`-topmost` / `WS_EX_TOPMOST`、クリック透過 |
+
+### モジュール分割（計画）
+
+| モジュール | 責務 |
+|------------|------|
+| `display/modes.py` | モード定義・状態遷移 |
+| `display/win32.py` | Windows 固有の Z オーダー・透過・モニター列挙 |
+| `app.py` | モード切替 UI、既存カンバン描画 |
+
+### 技術的制約
+
+- tkinter 単体では Z オーダー制御・クリック透過が不足するため、M2 では `ctypes` + Win32 API または `pywin32` の導入を検討
+- マルチディスプレイ座標は `EnumDisplayMonitors` で取得
+- NFR-008（ネットワーク不要）を維持 — 表示モード実装もローカル API のみ

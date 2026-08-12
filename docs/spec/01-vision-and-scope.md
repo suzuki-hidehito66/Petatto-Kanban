@@ -69,6 +69,7 @@ Petatto-Kanban は、**単一ユーザー向けの独立した Windows デスク
 | 列間移動 | コンボボックスによる移動（MVP） |
 | ローカル永続化 | ユーザー PC 内 JSON ファイルへの自動保存 |
 | Windows `.exe` | PyInstaller による単一実行ファイルのビルド |
+| ウィンドウモード | 通常ウィンドウ表示（M1） |
 
 ### 5.2 Out of Scope（M1 MVP）
 
