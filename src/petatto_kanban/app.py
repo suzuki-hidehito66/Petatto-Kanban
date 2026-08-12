@@ -16,7 +16,6 @@ from petatto_kanban.storage import load_board, save_board
 APP_TITLE = "Petatto-Kanban"
 CARD_BG = "#fffef8"
 CARD_FG = "#222222"
-CARD_DESC_FG = "#555555"
 CARD_ACTIVE_BG = "#e8e8e0"
 CARD_WIDTH = 220
 TOOLBAR_BG = "#f0f0f0"
@@ -115,13 +114,6 @@ class KanbanApp:
             fg=CARD_FG,
         ).pack(anchor=tk.W, fill=tk.X)
 
-        if card.description:
-            self._card_label(
-                frame,
-                text=card.description,
-                fg=CARD_DESC_FG,
-            ).pack(anchor=tk.W, pady=(4, 0), fill=tk.X)
-
         edit_btn = self._card_button(frame, "編集", width=6, command=lambda: self._edit_card(card))
         edit_btn.pack(anchor=tk.W, pady=(8, 0))
 
@@ -216,17 +208,16 @@ class KanbanApp:
         self._persist_and_refresh()
 
     def _edit_card(self, card: Card) -> None:
-        dialog = _CardEditDialog(self.root, card.title, card.description)
+        dialog = _CardEditDialog(self.root, card.title)
         if dialog.result is None:
             return
 
-        title, description = dialog.result
+        title = dialog.result
         if not title.strip():
             messagebox.showwarning(APP_TITLE, "タイトルは空にできません。", parent=self.root)
             return
 
         card.title = title.strip()
-        card.description = description.strip()
         card.touch()
         self._persist_and_refresh()
 
@@ -275,31 +266,23 @@ class KanbanApp:
 
 
 class _CardEditDialog(simpledialog.Dialog):
-    """カード編集ダイアログ."""
+    """カード編集ダイアログ（タイトルのみ）."""
 
-    def __init__(self, parent: tk.Misc, title: str, description: str) -> None:
+    def __init__(self, parent: tk.Misc, title: str) -> None:
         self._initial_title = title
-        self._initial_description = description
-        self.result: tuple[str, str] | None = None
+        self.result: str | None = None
         super().__init__(parent, title="カード編集")
 
     def body(self, master: tk.Misc) -> tk.Widget:
         ttk.Label(master, text="タイトル").grid(row=0, column=0, sticky=tk.W, pady=(0, 4))
         self.title_entry = ttk.Entry(master, width=40)
-        self.title_entry.grid(row=1, column=0, sticky=tk.EW, pady=(0, 8))
+        self.title_entry.grid(row=1, column=0, sticky=tk.EW)
         self.title_entry.insert(0, self._initial_title)
-
-        ttk.Label(master, text="説明").grid(row=2, column=0, sticky=tk.W, pady=(0, 4))
-        self.description_text = tk.Text(master, width=40, height=5, wrap=tk.WORD)
-        self.description_text.grid(row=3, column=0, sticky=tk.EW)
-        self.description_text.insert("1.0", self._initial_description)
         master.columnconfigure(0, weight=1)
         return self.title_entry
 
     def apply(self) -> None:
-        title = self.title_entry.get()
-        description = self.description_text.get("1.0", tk.END)
-        self.result = (title, description)
+        self.result = self.title_entry.get()
 
 
 class _SettingsDialog(simpledialog.Dialog):

@@ -28,14 +28,43 @@ def test_save_and_load_board(tmp_path: Path) -> None:
 
 def test_board_roundtrip_dict() -> None:
     board = Board.create_default()
-    board.cards.append(Card(title="Implement feature", description="Details", x=10, y=20))
+    board.cards.append(Card(title="Implement feature", x=10, y=20))
 
-    restored = board_from_dict(board_to_dict(board))
+    payload = board_to_dict(board)
+    assert payload["schema_version"] == 3
+    assert "description" not in payload["cards"][0]
+
+    restored = board_from_dict(payload)
 
     assert restored.name == board.name
     assert len(restored.cards) == 1
     assert restored.cards[0].title == "Implement feature"
     assert restored.cards[0].x == 10
+
+
+def test_load_legacy_card_with_description_ignored() -> None:
+    legacy = {
+        "schema_version": 2,
+        "id": "board-1",
+        "name": "Legacy",
+        "created_at": "2026-08-12T10:00:00+00:00",
+        "updated_at": "2026-08-12T10:00:00+00:00",
+        "cards": [
+            {
+                "id": "card-1",
+                "title": "Old task",
+                "description": "drop me",
+                "x": 10,
+                "y": 20,
+                "created_at": "2026-08-12T10:00:00+00:00",
+                "updated_at": "2026-08-12T10:00:00+00:00",
+            }
+        ],
+    }
+    board = board_from_dict(legacy)
+    assert board.cards[0].title == "Old task"
+    resaved = board_to_dict(board)
+    assert "description" not in resaved["cards"][0]
 
 
 def test_load_missing_file_returns_default(tmp_path: Path) -> None:
