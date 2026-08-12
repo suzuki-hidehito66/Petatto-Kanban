@@ -59,6 +59,7 @@ class KanbanApp:
         self._due_date_picker_host: tk.Frame | None = None
         self._due_date_picker: DueDatePicker | None = None
         self._due_drag_moved = False
+        self._progress_drag_moved = False
         self._monitors = list_monitors()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -114,6 +115,7 @@ class KanbanApp:
         self._inline_edit_card_id = None
         self._title_drag_moved = False
         self._due_drag_moved = False
+        self._progress_drag_moved = False
         for widget in self._card_widgets.values():
             widget.destroy()
         self._card_widgets.clear()
@@ -508,6 +510,21 @@ class KanbanApp:
                 ),
             )
 
+        def bind_progress_interactions(widget: tk.Misc) -> None:
+            widget.bind("<ButtonRelease-3>", on_delete)
+            widget.bind(
+                "<Button-1>",
+                lambda e, f=frame: self._on_progress_press(e, f),
+            )
+            widget.bind(
+                "<B1-Motion>",
+                lambda e, c=card, f=frame: self._on_progress_drag(e, c, f),
+            )
+            widget.bind(
+                "<ButtonRelease-1>",
+                lambda e, c=card, f=frame: self._on_progress_release(e, c, f),
+            )
+
         frame.bind("<ButtonRelease-3>", on_delete)
         bind_drag(frame)
         bind_scroll(frame)
@@ -521,6 +538,7 @@ class KanbanApp:
         bind_scroll(due_panel)
         bind_scroll(due_label)
         bind_scroll(progress_canvas)
+        bind_progress_interactions(progress_canvas)
 
     def _on_title_press(self, event: tk.Event, frame: tk.Frame) -> None:
         self._title_drag_moved = False
@@ -565,6 +583,20 @@ class KanbanApp:
         self._drag_state.pop(frame.winfo_id(), None)
         self._due_drag_moved = False
         self._open_due_date_picker(card, due_panel)
+
+    def _on_progress_press(self, event: tk.Event, frame: tk.Frame) -> None:
+        self._progress_drag_moved = False
+        self._start_drag(event, frame)
+
+    def _on_progress_drag(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        self._progress_drag_moved = True
+        self._on_drag(event, card, frame)
+
+    def _on_progress_release(self, _event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._progress_drag_moved:
+            self._end_drag(card)
+        self._drag_state.pop(frame.winfo_id(), None)
+        self._progress_drag_moved = False
 
     def _card_position_near_add_button(self, stack_index: int) -> tuple[int, int]:
         """ツールバー「+ カード」付近に新規カードを置く座標を返す."""
