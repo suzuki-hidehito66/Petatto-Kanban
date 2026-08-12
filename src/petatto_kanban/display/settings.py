@@ -27,6 +27,8 @@ class DisplaySettings:
     monitor_index: int = 0
     window_geometry: str = "960x540+100+100"
     confirm_delete: bool = True
+    menu_panel_x: int | None = None
+    menu_panel_y: int | None = None
 
 
 def get_settings_path() -> Path:
@@ -44,20 +46,29 @@ def _parse_mode(value: str) -> DisplayMode:
 
 
 def display_settings_to_dict(settings: DisplaySettings) -> dict[str, Any]:
-    return {
+    data: dict[str, Any] = {
         "mode": settings.mode.value,
         "monitor_index": settings.monitor_index,
         "window_geometry": settings.window_geometry,
         "confirm_delete": settings.confirm_delete,
     }
+    if settings.menu_panel_x is not None:
+        data["menu_panel_x"] = settings.menu_panel_x
+    if settings.menu_panel_y is not None:
+        data["menu_panel_y"] = settings.menu_panel_y
+    return data
 
 
 def display_settings_from_dict(data: dict[str, Any]) -> DisplaySettings:
+    menu_x = data.get("menu_panel_x")
+    menu_y = data.get("menu_panel_y")
     return DisplaySettings(
         mode=_parse_mode(data.get("mode", DisplayMode.OVERLAY.value)),
         monitor_index=int(data.get("monitor_index", 0)),
         window_geometry=str(data.get("window_geometry", "960x540+100+100")),
         confirm_delete=bool(data.get("confirm_delete", True)),
+        menu_panel_x=int(menu_x) if menu_x is not None else None,
+        menu_panel_y=int(menu_y) if menu_y is not None else None,
     )
 
 

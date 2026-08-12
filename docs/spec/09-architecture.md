@@ -84,7 +84,8 @@ petatto-kanban/
 |------------|------|------|
 | `models.py` | ドメインエンティティ、不変条件 | 標準ライブラリのみ |
 | `storage.py` | JSON シリアライズ / デシリアライズ | `models` |
-| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display` |
+| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel` |
+| `menu_panel.py` | メニューパネル（円形＜・ホバー展開・ドラッグ） | tkinter |
 | `card_ui.py` | カード UI 参照、二回離しクリック判定 | tkinter |
 | `due_date_picker.py` | フロート期限パネル配置・外側クリック | `due_date`, `card_ui` |
 
