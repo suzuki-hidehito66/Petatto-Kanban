@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
 from petatto_kanban.progress import clamp_progress
@@ -22,6 +22,7 @@ class Card:
     x: int = 120
     y: int = 120
     progress: int = 0
+    due_date: date | None = None
     created_at: datetime = field(default_factory=_utc_now)
     updated_at: datetime = field(default_factory=_utc_now)
 

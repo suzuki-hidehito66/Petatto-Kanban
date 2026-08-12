@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import tkinter as tk
 from dataclasses import dataclass
+from datetime import date
 from tkinter import messagebox, simpledialog, ttk
 
 from petatto_kanban.display import list_monitors, load_display_settings, save_display_settings
 from petatto_kanban.display.desktop import TRANSPARENT_COLOR
 from petatto_kanban.display.monitors import Monitor, get_monitor, monitor_index_for_name
 from petatto_kanban.display.overlay import apply_overlay_mode
+from petatto_kanban.due_date import due_date_panel_style, format_due_date
+from petatto_kanban.due_date_picker import DueDatePicker
 from petatto_kanban.models import Card
 from petatto_kanban.progress import PROGRESS_STEP, clamp_progress, progress_color
 from petatto_kanban.storage import load_board, save_board
@@ -19,7 +22,8 @@ CARD_BG = "#fffef8"
 CARD_FG = "#222222"
 CARD_TITLE_FRAME_BD = 1
 CARD_MIN_WIDTH = 220
-CARD_MIN_HEIGHT = 100
+CARD_MIN_HEIGHT = 120
+DUE_PANEL_BD = 1
 TOOLBAR_BG = "#f0f0f0"
 PROGRESS_TRACK_BG = "#e8e8e8"
 PROGRESS_BAR_HEIGHT = 18
@@ -50,6 +54,9 @@ class KanbanApp:
         self._drag_state: dict[int, tuple[int, int]] = {}
         self._title_drag_moved = False
         self._inline_edit_card_id: str | None = None
+        self._due_date_edit_card_id: str | None = None
+        self._due_date_picker: DueDatePicker | None = None
+        self._due_drag_moved = False
         self._monitors = list_monitors()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -92,10 +99,17 @@ class KanbanApp:
             padx=2,
         )
 
-    def refresh(self, *, begin_inline_edit_for: str | None = None) -> None:
+    def refresh(
+        self,
+        *,
+        begin_inline_edit_for: str | None = None,
+        begin_due_edit_for: str | None = None,
+    ) -> None:
         """カードを再描画する."""
+        self._close_due_date_picker()
         self._inline_edit_card_id = None
         self._title_drag_moved = False
+        self._due_drag_moved = False
         for widget in self._card_widgets.values():
             widget.destroy()
         self._card_widgets.clear()
@@ -109,6 +123,10 @@ class KanbanApp:
         if begin_inline_edit_for is not None:
             self.root.after_idle(
                 lambda card_id=begin_inline_edit_for: self._begin_inline_edit_for_card(card_id)
+            )
+        if begin_due_edit_for is not None:
+            self.root.after_idle(
+                lambda card_id=begin_due_edit_for: self._open_due_date_picker_for_card(card_id)
             )
 
     def _render_card(self, card: Card) -> None:
@@ -144,6 +162,9 @@ class KanbanApp:
         )
         title_label.pack(anchor=tk.NW, fill=tk.X)
 
+        due_panel, due_label = self._create_due_date_panel(frame, card)
+        due_panel.pack(anchor=tk.NW, fill=tk.X, pady=(4, 0))
+
         progress_canvas = self._create_progress_canvas(frame, card)
         progress_canvas.pack(side=tk.BOTTOM, fill=tk.X, pady=(6, 0))
 
@@ -153,6 +174,8 @@ class KanbanApp:
             card,
             title_frame,
             title_label,
+            due_panel,
+            due_label,
             progress_canvas,
         )
 
@@ -225,6 +248,94 @@ class KanbanApp:
         canvas = self._card_progress_widgets.get(card.id)
         if canvas is not None:
             self._draw_progress_canvas(canvas, card.progress)
+
+    def _create_due_date_panel(self, frame: tk.Frame, card: Card) -> tuple[tk.Frame, tk.Label]:
+        panel_bg, panel_fg = due_date_panel_style(card.due_date)
+        due_panel = tk.Frame(
+            frame,
+            bg=panel_bg,
+            bd=DUE_PANEL_BD,
+            relief=tk.GROOVE,
+            highlightthickness=0,
+            padx=6,
+            pady=3,
+        )
+        due_label = tk.Label(
+            due_panel,
+            text=format_due_date(card.due_date),
+            bg=panel_bg,
+            fg=panel_fg,
+            font=("Segoe UI", 9),
+            anchor=tk.W,
+            cursor="hand2",
+        )
+        due_label.pack(anchor=tk.W, fill=tk.X)
+        return due_panel, due_label
+
+    def _resize_card_frame(self, frame: tk.Frame) -> None:
+        frame.update_idletasks()
+        frame.config(
+            width=max(CARD_MIN_WIDTH, frame.winfo_reqwidth()),
+            height=max(CARD_MIN_HEIGHT, frame.winfo_reqheight()),
+        )
+
+    def _close_due_date_picker(self) -> None:
+        if self._due_date_picker is not None:
+            self._due_date_picker.destroy()
+            self._due_date_picker = None
+        self._due_date_edit_card_id = None
+
+    def _set_card_due_date(self, card: Card, value: date | None) -> None:
+        if card.due_date == value:
+            return
+        card.due_date = value
+        card.touch()
+        save_board(self.board)
+
+    def _open_due_date_picker(
+        self,
+        card: Card,
+        frame: tk.Frame,
+        due_panel: tk.Frame,
+    ) -> None:
+        if self._inline_edit_card_id is not None:
+            return
+        self._close_due_date_picker()
+        self._due_date_edit_card_id = card.id
+
+        def apply(value: date | None) -> None:
+            self._set_card_due_date(card, value)
+            self._close_due_date_picker()
+            self.refresh()
+
+        def cancel() -> None:
+            self._close_due_date_picker()
+            self._resize_card_frame(frame)
+
+        picker = DueDatePicker(
+            frame,
+            initial=card.due_date,
+            on_apply=apply,
+            on_cancel=cancel,
+            bg=CARD_BG,
+        )
+        picker.pack(after=due_panel, anchor=tk.NW, fill=tk.X, pady=(2, 0))
+        self._due_date_picker = picker
+        self._resize_card_frame(frame)
+        picker.focus_set()
+
+    def _open_due_date_picker_for_card(self, card_id: str) -> None:
+        frame = self._card_widgets.get(card_id)
+        card = self.board.find_card(card_id)
+        if frame is None or card is None:
+            return
+
+        children = frame.winfo_children()
+        if len(children) < 2 or not isinstance(children[1], tk.Frame):
+            return
+
+        due_panel = children[1]
+        self._open_due_date_picker(card, frame, due_panel)
 
     def _begin_inline_title_edit(
         self,
@@ -302,6 +413,8 @@ class KanbanApp:
         card: Card,
         title_frame: tk.Frame,
         title_label: tk.Label,
+        due_panel: tk.Frame,
+        due_label: tk.Label,
         progress_canvas: tk.Canvas,
     ) -> None:
         def on_delete(_event: tk.Event) -> None:
@@ -349,6 +462,27 @@ class KanbanApp:
                 ),
             )
 
+        def bind_due_interactions(widget: tk.Misc) -> None:
+            widget.bind("<ButtonRelease-3>", on_delete)
+            widget.bind(
+                "<Button-1>",
+                lambda e, f=frame: self._on_due_press(e, f),
+            )
+            widget.bind(
+                "<B1-Motion>",
+                lambda e, c=card, f=frame: self._on_due_drag(e, c, f),
+            )
+            widget.bind(
+                "<ButtonRelease-1>",
+                lambda e, c=card, f=frame: self._on_due_release(e, c, f),
+            )
+            widget.bind(
+                "<Double-Button-1>",
+                lambda _e, c=card, f=frame, panel=due_panel: self._on_due_double_click(
+                    c, f, panel
+                ),
+            )
+
         frame.bind("<ButtonRelease-3>", on_delete)
         bind_drag(frame)
         bind_scroll(frame)
@@ -357,6 +491,10 @@ class KanbanApp:
         bind_title_interactions(title_label)
         bind_scroll(title_frame)
         bind_scroll(title_label)
+        bind_due_interactions(due_panel)
+        bind_due_interactions(due_label)
+        bind_scroll(due_panel)
+        bind_scroll(due_label)
         bind_scroll(progress_canvas)
 
     def _on_title_press(self, event: tk.Event, frame: tk.Frame) -> None:
@@ -383,6 +521,25 @@ class KanbanApp:
         self._drag_state.pop(frame.winfo_id(), None)
         self._title_drag_moved = False
         self._begin_inline_title_edit(card, frame, title_frame, title_label)
+
+    def _on_due_press(self, event: tk.Event, frame: tk.Frame) -> None:
+        self._due_drag_moved = False
+        self._start_drag(event, frame)
+
+    def _on_due_drag(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        self._due_drag_moved = True
+        self._on_drag(event, card, frame)
+
+    def _on_due_release(self, _event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._due_drag_moved:
+            self._end_drag(card)
+        self._drag_state.pop(frame.winfo_id(), None)
+        self._due_drag_moved = False
+
+    def _on_due_double_click(self, card: Card, frame: tk.Frame, due_panel: tk.Frame) -> None:
+        self._drag_state.pop(frame.winfo_id(), None)
+        self._due_drag_moved = False
+        self._open_due_date_picker(card, frame, due_panel)
 
     def _card_position_near_add_button(self, stack_index: int) -> tuple[int, int]:
         """ツールバー「+ カード」付近に新規カードを置く座標を返す."""
