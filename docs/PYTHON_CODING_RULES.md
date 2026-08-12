@@ -56,7 +56,7 @@ scripts/              # ビルドスクリプト（Windows .exe）
 | クラス | `PascalCase` | `KanbanApp`, `Card` |
 | 関数・メソッド | `snake_case` | `load_board`, `save_board` |
 | 定数 | `UPPER_SNAKE_CASE` | `APP_TITLE`, `DATA_FILE_NAME` |
-| プライベート | 先頭 `_` | `_render_column`, `_CardEditDialog` |
+| プライベート | 先頭 `_` | `_render_card`, `_SettingsDialog` |
 | 型エイリアス | `PascalCase` | `CardId = str`（必要時） |
 
 ---
