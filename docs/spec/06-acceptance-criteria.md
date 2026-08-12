@@ -119,7 +119,9 @@ Then カードに "新タイトル" と "詳細" が表示される
 ```gherkin
 Given "削除対象" のカードが存在する
 And confirm_delete が true である
-When ユーザーがカードを右クリックする
+When ユーザーがカードで右クリックを押下する
+Then カードは削除されない
+When ユーザーが右クリックを離す
 Then 確認ダイアログが表示される
 When ユーザーが「はい」を選択する
 Then カードが画面から消える
@@ -136,7 +138,7 @@ And board.json からも削除されている
 
 ```gherkin
 Given confirm_delete が false に設定されている
-When ユーザーがカードを右クリックする
+When ユーザーがカードで右クリックを離す
 Then 確認ダイアログなしでカードが削除される
 And コンテキストメニューは表示されない
 ```
