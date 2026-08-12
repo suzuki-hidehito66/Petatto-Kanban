@@ -69,6 +69,7 @@ class KanbanApp:
             on_outside_click=self._cancel_due_date_picker,
         )
         self._due_panel_clicks = ClickReleaseTracker()
+        self._title_clicks = ClickReleaseTracker()
         self._monitors = list_monitors()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -124,6 +125,7 @@ class KanbanApp:
         self._commit_inline_title_edit_if_any(refresh_after=False)
         self._card_drag_moved.clear()
         self._due_panel_clicks.reset()
+        self._title_clicks.reset()
         for ui in self._card_ui.values():
             ui.frame.destroy()
         self._card_ui.clear()
@@ -479,13 +481,9 @@ class KanbanApp:
             bind_drag_region(
                 widget,
                 on_press=lambda e: self._on_title_press(e, card, ui.frame),
-                on_release=lambda e: self._on_card_drag_release(e, card, ui.frame),
+                on_release=lambda e: self._on_title_release(e, card, ui),
             )
             bind_scroll(widget)
-        ui.title_label.bind(
-            "<Double-Button-1>",
-            lambda _e: self._on_title_double_click(card, ui),
-        )
 
         for widget in (ui.due_panel, ui.due_label):
             widget.bind("<ButtonRelease-3>", on_delete)
@@ -549,12 +547,38 @@ class KanbanApp:
         self._drag_state.pop(frame.winfo_id(), None)
         self._card_drag_moved.pop(card.id, None)
 
-    def _on_title_double_click(self, card: Card, ui: CardUiRefs) -> None:
-        if self._prepare_card_pointer_down(card):
-            return
+    def _on_title_release(self, event: tk.Event, card: Card, ui: CardUiRefs) -> None:
+        if self._card_drag_moved.get(card.id):
+            card.touch()
+            save_board(self.board)
+            self._title_clicks.reset()
+        elif self._inline_edit_card_id == card.id:
+            entry = self._inline_edit_entry
+            if entry is not None and event.widget is not entry:
+                self._commit_inline_title_edit_if_any()
+            self._title_clicks.reset()
+        else:
+            self._handle_title_release(event, card, ui)
         self._drag_state.pop(ui.frame.winfo_id(), None)
         self._card_drag_moved.pop(card.id, None)
-        self._begin_inline_title_edit(card, ui)
+
+    def _handle_title_release(
+        self,
+        event: tk.Event,
+        card: Card,
+        ui: CardUiRefs,
+    ) -> None:
+        interval = double_click_interval_ms(self.root)
+        if self._title_clicks.is_second_release(card.id, event.time, interval):
+            self._title_clicks.reset()
+            if self._inline_edit_card_id == card.id:
+                return
+            if self._prepare_card_pointer_down(card):
+                return
+            self._begin_inline_title_edit(card, ui)
+            return
+
+        self._title_clicks.record(card.id, event.time)
 
     def _on_due_release(self, event: tk.Event, card: Card, ui: CardUiRefs) -> None:
         if self._card_drag_moved.get(card.id):
