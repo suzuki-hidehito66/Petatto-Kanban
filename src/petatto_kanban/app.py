@@ -60,6 +60,8 @@ class KanbanApp:
         self._due_date_edit_card_id: str | None = None
         self._due_date_picker_host: tk.Frame | None = None
         self._due_date_picker: DueDatePicker | None = None
+        self._due_date_picker_cancel: Callable[[], None] | None = None
+        self._due_date_outside_click_bound = False
         self._due_drag_moved = False
         self._progress_drag_moved = False
         self._monitors = list_monitors()
@@ -281,12 +283,49 @@ class KanbanApp:
         due_label.pack(anchor=tk.W, fill=tk.X)
         return due_panel, due_label
 
+    @staticmethod
+    def _widget_is_descendant(widget: tk.Misc, ancestor: tk.Misc) -> bool:
+        current: tk.Misc | None = widget
+        while current is not None:
+            if current == ancestor:
+                return True
+            current = current.master if isinstance(current.master, tk.Misc) else None
+        return False
+
+    def _bind_due_date_picker_outside_click(self) -> None:
+        if self._due_date_outside_click_bound:
+            return
+        self.root.bind_all("<Button-1>", self._on_due_date_picker_outside_click, add="+")
+        self._due_date_outside_click_bound = True
+
+    def _unbind_due_date_picker_outside_click(self) -> None:
+        if not self._due_date_outside_click_bound:
+            return
+        self.root.unbind_all("<Button-1>")
+        self._due_date_outside_click_bound = False
+
+    def _on_due_date_picker_outside_click(self, event: tk.Event) -> None:
+        if self._due_date_picker_host is None:
+            return
+        if self._widget_is_descendant(event.widget, self._due_date_picker_host):
+            return
+        self._cancel_due_date_picker_if_any()
+
+    def _cancel_due_date_picker_if_any(self) -> bool:
+        """進行中の期限編集があれば「閉じる」と同様にキャンセルする."""
+        if self._due_date_picker_cancel is None:
+            return False
+        self._due_date_picker_cancel()
+        return True
+
     def _close_due_date_picker(self) -> None:
+        self._unbind_due_date_picker_outside_click()
         if self._due_date_picker_host is not None:
             self._due_date_picker_host.destroy()
             self._due_date_picker_host = None
         self._due_date_picker = None
         self._due_date_edit_card_id = None
+        self._due_date_picker_cancel = None
 
     def _place_due_date_picker_panel(self, host: tk.Frame, anchor: tk.Misc) -> None:
         """期限パネル付近に、カード外へフロート表示する."""
@@ -349,7 +388,9 @@ class KanbanApp:
         picker.pack(fill=tk.BOTH, expand=True)
         self._due_date_picker_host = host
         self._due_date_picker = picker
+        self._due_date_picker_cancel = cancel
         self._place_due_date_picker_panel(host, due_panel)
+        self._bind_due_date_picker_outside_click()
         host.lift()
         self.toolbar.lift()
         picker.focus_set()
@@ -556,6 +597,8 @@ class KanbanApp:
         bind_progress_interactions(progress_canvas)
 
     def _on_frame_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._cancel_due_date_picker_if_any():
+            return
         if self._inline_edit_card_id == card.id:
             self._commit_inline_title_edit_if_any()
             return
@@ -564,6 +607,8 @@ class KanbanApp:
         self._start_drag(event, frame)
 
     def _on_title_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._cancel_due_date_picker_if_any():
+            return
         if self._inline_edit_card_id == card.id:
             return
         if self._commit_inline_title_edit_if_any():
@@ -588,6 +633,8 @@ class KanbanApp:
         title_frame: tk.Frame,
         title_label: tk.Label,
     ) -> None:
+        if self._cancel_due_date_picker_if_any():
+            return
         if self._commit_inline_title_edit_if_any():
             return
         self._drag_state.pop(frame.winfo_id(), None)
@@ -595,6 +642,8 @@ class KanbanApp:
         self._begin_inline_title_edit(card, frame, title_frame, title_label)
 
     def _on_due_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._cancel_due_date_picker_if_any():
+            return
         if self._commit_inline_title_edit_if_any():
             return
         self._due_drag_moved = False
@@ -611,6 +660,8 @@ class KanbanApp:
         self._due_drag_moved = False
 
     def _on_due_double_click(self, card: Card, frame: tk.Frame, due_panel: tk.Frame) -> None:
+        if self._cancel_due_date_picker_if_any():
+            return
         if self._commit_inline_title_edit_if_any():
             return
         self._drag_state.pop(frame.winfo_id(), None)
@@ -618,6 +669,8 @@ class KanbanApp:
         self._open_due_date_picker(card, due_panel)
 
     def _on_progress_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._cancel_due_date_picker_if_any():
+            return
         if self._commit_inline_title_edit_if_any():
             return
         self._progress_drag_moved = False
