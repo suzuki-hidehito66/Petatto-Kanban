@@ -41,6 +41,8 @@ python -m ruff check src tests
 
 ## Windows 実行ファイル（.exe）のビルド
 
+`build_exe.bat` / `build_exe.ps1` のコンソール出力は **ASCII（英語）** です。UTF-8 無 BOM の日本語は cmd / PowerShell 5.x で文字化けするため。
+
 ### 方法 1: バッチファイル
 
 ```cmd
@@ -53,7 +55,7 @@ scripts\build_exe.bat
 .\scripts\build_exe.ps1
 ```
 
-PowerShell 5.x では `"[INFO]"` のような角括弧付き文字列が構文エラーになるため、スクリプト内のログは単一引用符・英語表記にしています。問題があれば方法 1 の `.bat` を使ってください。
+PowerShell 5.x では `"[INFO]"` のような角括弧付き二重引用符文字列が構文エラーになるため、ログは単一引用符・英語表記にしています。
 
 ### 方法 3: 手動
 
