@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 import tkinter as tk
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -26,6 +27,7 @@ CARD_MIN_WIDTH = 220
 CARD_MIN_HEIGHT = 120
 DUE_PANEL_BD = 1
 DUE_PICKER_PANEL_WIDTH = 240
+DUE_PICKER_OUTSIDE_CLICK_GRACE_SEC = 0.35
 TOOLBAR_BG = "#f0f0f0"
 PROGRESS_TRACK_BG = "#e8e8e8"
 PROGRESS_BAR_HEIGHT = 18
@@ -62,6 +64,8 @@ class KanbanApp:
         self._due_date_picker: DueDatePicker | None = None
         self._due_date_picker_cancel: Callable[[], None] | None = None
         self._due_date_outside_click_bound = False
+        self._due_date_picker_opened_at = 0.0
+        self._due_panel_close_after_id: str | None = None
         self._due_drag_moved = False
         self._progress_drag_moved = False
         self._monitors = list_monitors()
@@ -327,6 +331,9 @@ class KanbanApp:
         host = self._due_date_picker_host
         if host is None:
             return
+        opened_at = self._due_date_picker_opened_at
+        if time.monotonic() - opened_at < DUE_PICKER_OUTSIDE_CLICK_GRACE_SEC:
+            return
         if isinstance(widget, tk.Misc) and self._widget_is_descendant(widget, host):
             return
         host.update_idletasks()
@@ -338,6 +345,27 @@ class KanbanApp:
             return
         self._cancel_due_date_picker_if_any()
 
+    def _cancel_scheduled_due_panel_close(self) -> None:
+        if self._due_panel_close_after_id is not None:
+            self.root.after_cancel(self._due_panel_close_after_id)
+            self._due_panel_close_after_id = None
+
+    def _schedule_due_panel_single_click_close(self, card_id: str) -> None:
+        self._cancel_scheduled_due_panel_close()
+
+        def close_if_still_editing() -> None:
+            self._due_panel_close_after_id = None
+            if self._due_date_edit_card_id != card_id:
+                return
+            if self._due_date_picker_host is None:
+                return
+            opened_at = self._due_date_picker_opened_at
+            if time.monotonic() - opened_at < DUE_PICKER_OUTSIDE_CLICK_GRACE_SEC:
+                return
+            self._cancel_due_date_picker_if_any()
+
+        self._due_panel_close_after_id = self.root.after(250, close_if_still_editing)
+
     def _cancel_due_date_picker_if_any(self) -> bool:
         """進行中の期限編集があれば「閉じる」と同様にキャンセルする."""
         if self._due_date_picker_cancel is None:
@@ -346,6 +374,7 @@ class KanbanApp:
         return True
 
     def _close_due_date_picker(self) -> None:
+        self._cancel_scheduled_due_panel_close()
         self._unbind_due_date_picker_outside_click()
         if self._due_date_picker_host is not None:
             self._due_date_picker_host.destroy()
@@ -417,6 +446,7 @@ class KanbanApp:
         self._due_date_picker = picker
         self._due_date_picker_cancel = cancel
         self._place_due_date_picker_panel(host, due_panel)
+        self._due_date_picker_opened_at = time.monotonic()
         self._bind_due_date_picker_outside_click()
         host.lift()
         self.toolbar.lift()
@@ -669,6 +699,15 @@ class KanbanApp:
         self._begin_inline_title_edit(card, frame, title_frame, title_label)
 
     def _on_due_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if (
+            self._due_date_picker_host is not None
+            and self._due_date_edit_card_id == card.id
+        ):
+            if self._commit_inline_title_edit_if_any():
+                return
+            self._due_drag_moved = False
+            self._start_drag(event, frame)
+            return
         if self._cancel_due_date_picker_if_any():
             return
         if self._commit_inline_title_edit_if_any():
@@ -683,12 +722,23 @@ class KanbanApp:
     def _on_due_release(self, _event: tk.Event, card: Card, frame: tk.Frame) -> None:
         if self._due_drag_moved:
             self._end_drag(card)
+        elif (
+            self._due_date_picker_host is not None
+            and self._due_date_edit_card_id == card.id
+        ):
+            self._schedule_due_panel_single_click_close(card.id)
         self._drag_state.pop(frame.winfo_id(), None)
         self._due_drag_moved = False
 
     def _on_due_double_click(self, card: Card, frame: tk.Frame, due_panel: tk.Frame) -> None:
-        if self._cancel_due_date_picker_if_any():
+        self._cancel_scheduled_due_panel_close()
+        if (
+            self._due_date_edit_card_id == card.id
+            and self._due_date_picker_host is not None
+        ):
             return
+        if self._due_date_picker_host is not None:
+            self._cancel_due_date_picker_if_any()
         if self._commit_inline_title_edit_if_any():
             return
         self._drag_state.pop(frame.winfo_id(), None)
