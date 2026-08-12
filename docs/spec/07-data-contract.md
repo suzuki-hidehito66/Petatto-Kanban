@@ -13,14 +13,14 @@
 | 関連 FR | FR-007 |
 | ファイルパス | `%USERPROFILE%\.petatto-kanban\board.json` |
 | エンコーディング | UTF-8 |
-| スキーマバージョン | `3` |
+| スキーマバージョン | `4` |
 | 実装 | `src/petatto_kanban/storage.py` |
 
 ### ルートオブジェクト: Board
 
 | フィールド | JSON 型 | 必須 | Python 型 | 説明 |
 |------------|---------|------|-----------|------|
-| `schema_version` | number | ○ | `int` | スキーマバージョン（現在 `3`） |
+| `schema_version` | number | ○ | `int` | スキーマバージョン（現在 `4`） |
 | `id` | string | ○ | `str` (UUID) | ボード一意識別子 |
 | `name` | string | ○ | `str` | ボード名 |
 | `cards` | array | ○ | `list[Card]` | 画面上のカード配列 |
@@ -35,6 +35,7 @@
 | `title` | string | ○ | `str` | タイトル（空不可） |
 | `x` | number | ○ | `int` | 画面上の X 座標（px） |
 | `y` | number | ○ | `int` | 画面上の Y 座標（px） |
+| `progress` | number | ○ | `int` | 進捗率 0〜100 |
 | `created_at` | string | ○ | `datetime` | ISO 8601 形式 |
 | `updated_at` | string | ○ | `datetime` | ISO 8601 形式 |
 
@@ -45,12 +46,13 @@
 | INV-1 | ファイル不存在時、`Board.create_default()` の内容が使用される（空の `cards`） |
 | INV-2 | 保存時に `board.updated_at` が現在時刻に更新される |
 | INV-3 | 旧スキーマ（`columns` / `description` 付き cards）読み込み時は現行 Card に変換し、`description` は破棄 |
+| INV-4 | `progress` 未指定の旧 cards は `0` として読み込む |
 
 ### サンプル
 
 ```json
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "My Board",
   "cards": [
@@ -59,6 +61,7 @@
       "title": "仕様書を SDD 形式に更新",
       "x": 120,
       "y": 80,
+      "progress": 40,
       "created_at": "2026-08-12T11:00:00+00:00",
       "updated_at": "2026-08-12T11:30:00+00:00"
     }
@@ -98,6 +101,7 @@
 | 属性 | 制約 |
 |------|------|
 | `title` | UI 層で空文字・空白のみを拒否 |
+| `progress` | 0〜100 の整数。未指定時 `0` |
 | `x`, `y` | 未指定時 `120, 120` |
 | `id` | 未指定時 UUID v4 自動生成 |
 

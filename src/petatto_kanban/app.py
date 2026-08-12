@@ -11,6 +11,7 @@ from petatto_kanban.display.desktop import TRANSPARENT_COLOR
 from petatto_kanban.display.monitors import Monitor, get_monitor, monitor_index_for_name
 from petatto_kanban.display.overlay import apply_overlay_mode
 from petatto_kanban.models import Card
+from petatto_kanban.progress import PROGRESS_STEP, clamp_progress, progress_color
 from petatto_kanban.storage import load_board, save_board
 
 APP_TITLE = "Petatto-Kanban"
@@ -18,8 +19,10 @@ CARD_BG = "#fffef8"
 CARD_FG = "#222222"
 CARD_TITLE_FRAME_BD = 1
 CARD_MIN_WIDTH = 220
-CARD_MIN_HEIGHT = 88
+CARD_MIN_HEIGHT = 100
 TOOLBAR_BG = "#f0f0f0"
+PROGRESS_TRACK_BG = "#e8e8e8"
+PROGRESS_BAR_HEIGHT = 18
 NEW_CARD_NEAR_TOOLBAR_OFFSET_X = 0
 NEW_CARD_NEAR_TOOLBAR_OFFSET_Y = 8
 NEW_CARD_STACK_OFFSET = 32
@@ -43,6 +46,7 @@ class KanbanApp:
         self.board = load_board()
         self.display_settings = load_display_settings()
         self._card_widgets: dict[str, tk.Frame] = {}
+        self._card_progress_widgets: dict[str, tk.Canvas] = {}
         self._drag_state: dict[int, tuple[int, int]] = {}
         self._title_drag_moved = False
         self._inline_edit_card_id: str | None = None
@@ -95,6 +99,7 @@ class KanbanApp:
         for widget in self._card_widgets.values():
             widget.destroy()
         self._card_widgets.clear()
+        self._card_progress_widgets.clear()
         self._drag_state.clear()
 
         for card in self.board.cards:
@@ -139,8 +144,17 @@ class KanbanApp:
         )
         title_label.pack(anchor=tk.NW, fill=tk.X)
 
+        progress_canvas = self._create_progress_canvas(frame, card)
+        progress_canvas.pack(side=tk.BOTTOM, fill=tk.X, pady=(6, 0))
+
         self._finalize_card_frame(frame)
-        self._bind_card_interactions(frame, card, title_frame, title_label)
+        self._bind_card_interactions(
+            frame,
+            card,
+            title_frame,
+            title_label,
+            progress_canvas,
+        )
 
     def _card_label(self, parent: tk.Misc, **kwargs) -> tk.Label:
         defaults = {
@@ -159,6 +173,58 @@ class KanbanApp:
             height=max(CARD_MIN_HEIGHT, frame.winfo_reqheight()),
         )
         frame.pack_propagate(False)
+
+    def _create_progress_canvas(self, parent: tk.Frame, card: Card) -> tk.Canvas:
+        canvas = tk.Canvas(
+            parent,
+            height=PROGRESS_BAR_HEIGHT,
+            bg=PROGRESS_TRACK_BG,
+            highlightthickness=0,
+            bd=0,
+        )
+        self._card_progress_widgets[card.id] = canvas
+
+        def redraw(_event: tk.Event | None = None) -> None:
+            self._draw_progress_canvas(canvas, card.progress)
+
+        canvas.bind("<Configure>", redraw)
+        parent.after_idle(redraw)
+        return canvas
+
+    def _draw_progress_canvas(self, canvas: tk.Canvas, progress: int) -> None:
+        canvas.delete("all")
+        width = max(canvas.winfo_width(), 1)
+        height = max(canvas.winfo_height(), PROGRESS_BAR_HEIGHT)
+        canvas.create_rectangle(0, 0, width, height, fill=PROGRESS_TRACK_BG, outline="")
+        fill_width = width * progress / 100
+        if fill_width > 0:
+            canvas.create_rectangle(
+                0,
+                0,
+                fill_width,
+                height,
+                fill=progress_color(progress),
+                outline="",
+            )
+        text_color = "#ffffff" if progress >= 55 else CARD_FG
+        canvas.create_text(
+            width / 2,
+            height / 2,
+            text=f"{progress}%",
+            fill=text_color,
+            font=("Segoe UI", 9, "bold"),
+        )
+
+    def _adjust_card_progress(self, card: Card, delta: int) -> None:
+        new_progress = clamp_progress(card.progress + delta)
+        if new_progress == card.progress:
+            return
+        card.progress = new_progress
+        card.touch()
+        save_board(self.board)
+        canvas = self._card_progress_widgets.get(card.id)
+        if canvas is not None:
+            self._draw_progress_canvas(canvas, card.progress)
 
     def _begin_inline_title_edit(
         self,
@@ -236,6 +302,7 @@ class KanbanApp:
         card: Card,
         title_frame: tk.Frame,
         title_label: tk.Label,
+        progress_canvas: tk.Canvas,
     ) -> None:
         def on_delete(_event: tk.Event) -> None:
             self._delete_card(card)
@@ -244,6 +311,22 @@ class KanbanApp:
             widget.bind("<Button-1>", lambda e, f=frame: self._start_drag(e, f))
             widget.bind("<B1-Motion>", lambda e, c=card, f=frame: self._on_drag(e, c, f))
             widget.bind("<ButtonRelease-1>", lambda _e, c=card: self._end_drag(c))
+
+        def bind_scroll(widget: tk.Misc) -> None:
+            def on_wheel(event: tk.Event) -> str:
+                button = getattr(event, "num", None)
+                if button == 5:
+                    delta = -PROGRESS_STEP
+                elif button == 4 or event.delta > 0:
+                    delta = PROGRESS_STEP
+                else:
+                    delta = -PROGRESS_STEP
+                self._adjust_card_progress(card, delta)
+                return "break"
+
+            widget.bind("<MouseWheel>", on_wheel)
+            widget.bind("<Button-4>", on_wheel)
+            widget.bind("<Button-5>", on_wheel)
 
         def bind_title_interactions(widget: tk.Misc) -> None:
             widget.bind("<ButtonRelease-3>", on_delete)
@@ -268,9 +351,13 @@ class KanbanApp:
 
         frame.bind("<ButtonRelease-3>", on_delete)
         bind_drag(frame)
+        bind_scroll(frame)
 
         bind_title_interactions(title_frame)
         bind_title_interactions(title_label)
+        bind_scroll(title_frame)
+        bind_scroll(title_label)
+        bind_scroll(progress_canvas)
 
     def _on_title_press(self, event: tk.Event, frame: tk.Frame) -> None:
         self._title_drag_moved = False

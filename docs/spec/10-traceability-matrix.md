@@ -29,6 +29,7 @@
 | FR-021 | US-010 | AC-021-01 | `display/monitors.py`, `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
 | FR-023 | US-011 | AC-023-01 | `app.py` | 手動 | implemented |
 | FR-024 | US-013 | AC-024-01 | `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
+| FR-025 | US-014 | AC-025-01, AC-025-02 | `app.py`, `progress.py` | `test_progress.py`, `test_board_roundtrip_dict_with_progress` | implemented |
 | FR-006 | US-005 | AC-006-01 | （M2） | — | deferred |
 | FR-008 | US-006 | AC-008-01 | （M2） | — | deferred |
 | FR-009 | US-006 | AC-009-01 | （M2） | — | deferred |

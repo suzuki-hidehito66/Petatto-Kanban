@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from petatto_kanban.progress import clamp_progress
+
 
 def _utc_now() -> datetime:
     return datetime.now(tz=UTC)
@@ -19,8 +21,12 @@ class Card:
     id: str = field(default_factory=lambda: str(uuid4()))
     x: int = 120
     y: int = 120
+    progress: int = 0
     created_at: datetime = field(default_factory=_utc_now)
     updated_at: datetime = field(default_factory=_utc_now)
+
+    def __post_init__(self) -> None:
+        self.progress = clamp_progress(self.progress)
 
     def touch(self) -> None:
         """更新日時を現在時刻に更新する."""

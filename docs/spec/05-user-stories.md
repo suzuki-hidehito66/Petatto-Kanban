@@ -21,6 +21,7 @@
 | [US-010](#us-010-オーバーレイモードで使う) | Must | implemented | M1 |
 | [US-011](#us-011-アプリを終了する) | Must | implemented | M1 |
 | [US-012](#us-012-カードをドラッグで移動する) | Must | implemented | M1 |
+| [US-014](#us-014-カードの進捗率を更新する) | Must | implemented | M1 |
 | [US-013](#us-013-削除確認を設定する) | Must | implemented | M1 |
 | [US-005](#us-005-カードを別列へ移動する) | Should | deferred | M2 |
 | [US-008](#us-008-ウィンドウモードで使う) | Should | deferred | M2 |
@@ -192,6 +193,20 @@
 |------|-----|
 | 関連 FR | FR-010 |
 | 関連 AC | AC-010-01 |
+| ステータス | implemented |
+
+---
+
+## US-014: カードの進捗率を更新する
+
+**As a** 個人開発者  
+**I want to** カード上でマウスホイールを回して進捗率を変更する  
+**So that** タスクの完了度を素早く記録できる
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-025 |
+| 関連 AC | AC-025-01, AC-025-02 |
 | ステータス | implemented |
 
 ---
