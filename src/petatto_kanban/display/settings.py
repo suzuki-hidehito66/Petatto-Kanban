@@ -1,0 +1,76 @@
+"""表示設定の永続化."""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from enum import StrEnum
+from pathlib import Path
+from typing import Any
+
+SETTINGS_FILE_NAME = "settings.json"
+
+
+class DisplayMode(StrEnum):
+    """UI 表示モード."""
+
+    WINDOW = "window"
+    DESKTOP = "desktop"
+    OVERLAY = "overlay"
+
+
+@dataclass
+class DisplaySettings:
+    """表示モードとディスプレイ設定."""
+
+    mode: DisplayMode = DisplayMode.DESKTOP
+    monitor_index: int = 0
+    window_geometry: str = "960x540+100+100"
+
+
+def get_settings_path() -> Path:
+    """設定ファイルのパスを返す."""
+    base = Path.home() / ".petatto-kanban"
+    base.mkdir(parents=True, exist_ok=True)
+    return base / SETTINGS_FILE_NAME
+
+
+def _parse_mode(value: str) -> DisplayMode:
+    try:
+        return DisplayMode(value)
+    except ValueError:
+        return DisplayMode.DESKTOP
+
+
+def display_settings_to_dict(settings: DisplaySettings) -> dict[str, Any]:
+    return {
+        "mode": settings.mode.value,
+        "monitor_index": settings.monitor_index,
+        "window_geometry": settings.window_geometry,
+    }
+
+
+def display_settings_from_dict(data: dict[str, Any]) -> DisplaySettings:
+    return DisplaySettings(
+        mode=_parse_mode(data.get("mode", DisplayMode.DESKTOP.value)),
+        monitor_index=int(data.get("monitor_index", 0)),
+        window_geometry=str(data.get("window_geometry", "960x540+100+100")),
+    )
+
+
+def load_display_settings(path: Path | None = None) -> DisplaySettings:
+    """表示設定を読み込む。不存在時はデスクトップモード既定値。"""
+    target = path or get_settings_path()
+    if not target.exists():
+        return DisplaySettings()
+
+    with target.open(encoding="utf-8") as file:
+        data = json.load(file)
+    return display_settings_from_dict(data)
+
+
+def save_display_settings(settings: DisplaySettings, path: Path | None = None) -> None:
+    """表示設定を保存する."""
+    target = path or get_settings_path()
+    with target.open("w", encoding="utf-8") as file:
+        json.dump(display_settings_to_dict(settings), file, ensure_ascii=False, indent=2)

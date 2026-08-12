@@ -27,11 +27,11 @@
 | FR-007 | US-006 | AC-007-01〜03 | `storage.py`, `app.py` | `test_save_and_load_board`, `test_board_roundtrip_dict`, `test_load_missing_file_returns_default` | verified |
 | FR-008 | US-006 | AC-008-01 | `app.py` | 手動 | implemented |
 | FR-009 | US-006 | AC-009-01 | `app.py` | 手動 | implemented |
-| FR-018 | US-008 | AC-018-01 | `app.py` | 手動 | verified |
-| FR-019 | US-009 | AC-019-01, AC-019-02 | （未実装） | 手動 | specified |
+| FR-019 | US-009 | AC-019-01, AC-019-02 | `display/desktop.py`, `app.py` | 手動 | implemented |
+| FR-021 | US-009 | AC-021-01 | `display/monitors.py`, `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
+| FR-018 | US-008 | AC-018-01 | （M2） | 手動 | deferred |
 | FR-020 | US-010 | AC-020-01, AC-020-02 | （未実装） | 手動 | specified |
-| FR-021 | US-009, US-010 | AC-021-01 | （未実装） | 手動 | specified |
-| FR-022 | US-008〜010 | AC-022-01 | （未実装） | 手動 | specified |
+| FR-022 | US-008〜010 | AC-022-01 | （M2） | 手動 | specified |
 
 ---
 
@@ -63,10 +63,10 @@
 | UC-004 | FR-003〜006 | `app.py` | 手動 | implemented |
 | UC-005 | FR-003 | `app.py` | 手動 | implemented |
 | UC-006 | FR-004 | `app.py` | 手動 | implemented |
-| UC-DM-001 | FR-018 | `app.py` | 手動 | verified |
-| UC-DM-002 | FR-019 | （未実装） | 手動 | specified |
+| UC-DM-001 | FR-018 | （M2） | 手動 | deferred |
+| UC-DM-002 | FR-019 | `display/desktop.py`, `app.py` | 手動 | implemented |
 | UC-DM-003 | FR-020 | （未実装） | 手動 | specified |
-| UC-DM-004 | FR-022 | （未実装） | 手動 | specified |
+| UC-DM-004 | FR-022 | （M2） | 手動 | specified |
 
 ---
 

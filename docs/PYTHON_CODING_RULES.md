@@ -26,6 +26,10 @@ src/petatto_kanban/
 ├── __init__.py       # パッケージ公開情報（__version__ 等）
 ├── __main__.py       # CLI / exe エントリポイント
 ├── app.py            # GUI アプリケーション
+├── display/          # 表示モード・モニター列挙（M1: デスクトップ）
+│   ├── desktop.py
+│   ├── monitors.py
+│   └── settings.py
 ├── models.py         # ドメインモデル（Board, Column, Card）
 └── storage.py        # データ永続化
 

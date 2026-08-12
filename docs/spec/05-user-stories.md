@@ -19,8 +19,8 @@
 | [US-005](#us-005-カードを別列へ移動する) | Must | implemented | M1 |
 | [US-006](#us-006-データを保存・復元する) | Must | verified | M1 |
 | [US-007](#us-007-exe-として利用する) | Must | implemented | M1 |
-| [US-008](#us-008-ウィンドウモードで使う) | Must | verified | M1 |
-| [US-009](#us-009-デスクトップモードで使う) | Should | specified | M2 |
+| [US-008](#us-008-ウィンドウモードで使う) | Should | deferred | M2 |
+| [US-009](#us-009-デスクトップモードで使う) | Must | implemented | M1 |
 | [US-010](#us-010-オーバーレイモードで使う) | Should | specified | M2 |
 
 ---

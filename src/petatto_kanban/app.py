@@ -5,12 +5,21 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import messagebox, simpledialog, ttk
 
+from petatto_kanban.display import (
+    list_monitors,
+    load_display_settings,
+    save_display_settings,
+)
+from petatto_kanban.display.desktop import TRANSPARENT_COLOR, apply_desktop_mode
+from petatto_kanban.display.monitors import get_monitor
+from petatto_kanban.display.settings import DisplayMode
 from petatto_kanban.models import Card, Column
 from petatto_kanban.storage import load_board, save_board
 
 APP_TITLE = "Petatto-Kanban"
 WINDOW_MIN_WIDTH = 960
 WINDOW_MIN_HEIGHT = 540
+PANEL_BG = "#f5f5f5"
 
 
 class KanbanApp:
@@ -19,26 +28,71 @@ class KanbanApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.board = load_board()
+        self.display_settings = load_display_settings()
         self._card_widgets: dict[str, tk.Frame] = {}
+        self._monitors = list_monitors()
 
-        self.root.title(APP_TITLE)
-        self.root.minsize(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
+
+        if self.display_settings.mode == DisplayMode.DESKTOP:
+            self.root.configure(bg=TRANSPARENT_COLOR)
+            self.main_panel = tk.Frame(self.root, bg=PANEL_BG, bd=1, relief=tk.RIDGE)
+            self.main_panel.pack(anchor=tk.NW, padx=24, pady=24)
+        else:
+            self.root.title(APP_TITLE)
+            self.root.minsize(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
+            self.main_panel = tk.Frame(self.root, bg=PANEL_BG)
+            self.main_panel.pack(fill=tk.BOTH, expand=True)
 
         self._build_header()
         self._build_board_area()
         self.refresh()
+        self._apply_display_mode()
+
+    def _apply_display_mode(self) -> None:
+        """表示設定に従いデスクトップモード等を適用する."""
+        if self.display_settings.mode != DisplayMode.DESKTOP:
+            return
+
+        monitor = get_monitor(self.display_settings.monitor_index)
+        apply_desktop_mode(self.root, monitor)
 
     def _build_header(self) -> None:
-        header = ttk.Frame(self.root, padding=(12, 8))
+        header = ttk.Frame(self.main_panel, padding=(12, 8))
         header.pack(fill=tk.X)
 
         ttk.Label(header, text=self.board.name, font=("Segoe UI", 14, "bold")).pack(side=tk.LEFT)
+
+        monitor_names = [monitor.name for monitor in self._monitors]
+        self.monitor_var = tk.StringVar(
+            value=monitor_names[min(self.display_settings.monitor_index, len(monitor_names) - 1)]
+        )
+        self.monitor_menu = ttk.Combobox(
+            header,
+            textvariable=self.monitor_var,
+            values=monitor_names,
+            state="readonly",
+            width=14,
+        )
+        self.monitor_menu.pack(side=tk.RIGHT, padx=(8, 0))
+        self.monitor_menu.bind("<<ComboboxSelected>>", self._on_monitor_changed)
+
+        ttk.Label(header, text="ディスプレイ:").pack(side=tk.RIGHT)
+
         ttk.Button(header, text="再読み込み", command=self._reload).pack(side=tk.RIGHT, padx=(8, 0))
         ttk.Button(header, text="保存", command=self._save).pack(side=tk.RIGHT)
 
+    def _on_monitor_changed(self, _event: object = None) -> None:
+        selected = self.monitor_var.get()
+        for monitor in self._monitors:
+            if monitor.name == selected:
+                self.display_settings.monitor_index = monitor.index
+                save_display_settings(self.display_settings)
+                self._apply_display_mode()
+                break
+
     def _build_board_area(self) -> None:
-        container = ttk.Frame(self.root, padding=12)
+        container = ttk.Frame(self.main_panel, padding=12)
         container.pack(fill=tk.BOTH, expand=True)
 
         self.columns_frame = ttk.Frame(container)
@@ -198,6 +252,7 @@ class KanbanApp:
 
     def _save(self) -> None:
         save_board(self.board)
+        save_display_settings(self.display_settings)
         messagebox.showinfo(APP_TITLE, "保存しました。", parent=self.root)
 
     def _reload(self) -> None:
@@ -206,6 +261,7 @@ class KanbanApp:
 
     def _on_close(self) -> None:
         save_board(self.board)
+        save_display_settings(self.display_settings)
         self.root.destroy()
 
 

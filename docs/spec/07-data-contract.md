@@ -136,7 +136,7 @@
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-021, FR-022 |
-| 保存先 | `board.json` 内 `display_settings` または `%USERPROFILE%\.petatto-kanban\settings.json`（実装時決定） |
+| 保存先 | `%USERPROFILE%\.petatto-kanban\settings.json` |
 | マイルストーン | M2 |
 
 ### DisplaySettings
@@ -151,7 +151,7 @@
 
 | フィールド | 既定値 |
 |------------|--------|
-| `mode` | `"window"` |
+| `mode` | `"desktop"` |
 | `monitor_index` | `0`（プライマリ） |
 
 ### サンプル
