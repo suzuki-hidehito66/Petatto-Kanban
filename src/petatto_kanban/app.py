@@ -62,6 +62,8 @@ class KanbanApp:
         self._due_date_picker: DueDatePicker | None = None
         self._due_date_picker_cancel: Callable[[], None] | None = None
         self._due_date_outside_click_bound = False
+        self._due_panel_last_release_time = 0
+        self._due_panel_last_release_card_id: str | None = None
         self._due_drag_moved = False
         self._progress_drag_moved = False
         self._monitors = list_monitors()
@@ -121,6 +123,7 @@ class KanbanApp:
         self._title_drag_moved = False
         self._due_drag_moved = False
         self._progress_drag_moved = False
+        self._reset_due_panel_click_tracking()
         for widget in self._card_widgets.values():
             widget.destroy()
         self._card_widgets.clear()
@@ -292,6 +295,16 @@ class KanbanApp:
             current = current.master if isinstance(current.master, tk.Misc) else None
         return False
 
+    def _double_click_interval_ms(self) -> int:
+        try:
+            return int(self.root.tk.call("set", "tk_clicktime"))
+        except tk.TclError:
+            return 500
+
+    def _reset_due_panel_click_tracking(self) -> None:
+        self._due_panel_last_release_time = 0
+        self._due_panel_last_release_card_id = None
+
     def _bind_due_date_picker_outside_click(self) -> None:
         if self._due_date_outside_click_bound:
             return
@@ -309,32 +322,17 @@ class KanbanApp:
     def _on_due_date_picker_outside_click(self, event: tk.Event) -> None:
         if self._due_date_picker_host is None:
             return
-        x_root = event.x_root
-        y_root = event.y_root
         widget = event.widget
-        self.root.after_idle(
-            lambda w=widget, x=x_root, y=y_root: self._maybe_cancel_due_date_picker_for_click(
-                w, x, y
-            ),
-        )
-
-    def _maybe_cancel_due_date_picker_for_click(
-        self,
-        widget: tk.Misc | str,
-        x_root: int,
-        y_root: int,
-    ) -> None:
         host = self._due_date_picker_host
-        if host is None:
-            return
         if isinstance(widget, tk.Misc) and self._widget_is_descendant(widget, host):
             return
         host.update_idletasks()
+        x, y = event.x_root, event.y_root
         left = host.winfo_rootx()
         top = host.winfo_rooty()
         right = left + host.winfo_width()
         bottom = top + host.winfo_height()
-        if left <= x_root <= right and top <= y_root <= bottom:
+        if left <= x <= right and top <= y <= bottom:
             return
         self._cancel_due_date_picker_if_any()
 
@@ -347,6 +345,7 @@ class KanbanApp:
 
     def _close_due_date_picker(self) -> None:
         self._unbind_due_date_picker_outside_click()
+        self._reset_due_panel_click_tracking()
         if self._due_date_picker_host is not None:
             self._due_date_picker_host.destroy()
             self._due_date_picker_host = None
@@ -584,12 +583,8 @@ class KanbanApp:
             )
             widget.bind(
                 "<ButtonRelease-1>",
-                lambda e, c=card, f=frame: self._on_due_release(e, c, f),
-            )
-            widget.bind(
-                "<Double-Button-1>",
-                lambda _e, c=card, f=frame, panel=due_panel: self._on_due_double_click(
-                    c, f, panel
+                lambda e, c=card, f=frame, panel=due_panel: self._on_due_release(
+                    e, c, f, panel
                 ),
             )
 
@@ -669,6 +664,15 @@ class KanbanApp:
         self._begin_inline_title_edit(card, frame, title_frame, title_label)
 
     def _on_due_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if (
+            self._due_date_picker_host is not None
+            and self._due_date_edit_card_id == card.id
+        ):
+            if self._commit_inline_title_edit_if_any():
+                return
+            self._due_drag_moved = False
+            self._start_drag(event, frame)
+            return
         if self._cancel_due_date_picker_if_any():
             return
         if self._commit_inline_title_edit_if_any():
@@ -680,20 +684,57 @@ class KanbanApp:
         self._due_drag_moved = True
         self._on_drag(event, card, frame)
 
-    def _on_due_release(self, _event: tk.Event, card: Card, frame: tk.Frame) -> None:
+    def _on_due_release(
+        self,
+        event: tk.Event,
+        card: Card,
+        frame: tk.Frame,
+        due_panel: tk.Frame,
+    ) -> None:
         if self._due_drag_moved:
             self._end_drag(card)
+            self._reset_due_panel_click_tracking()
+        else:
+            self._handle_due_panel_release(event, card, due_panel)
         self._drag_state.pop(frame.winfo_id(), None)
         self._due_drag_moved = False
 
-    def _on_due_double_click(self, card: Card, frame: tk.Frame, due_panel: tk.Frame) -> None:
-        if self._cancel_due_date_picker_if_any():
+    def _handle_due_panel_release(
+        self,
+        event: tk.Event,
+        card: Card,
+        due_panel: tk.Frame,
+    ) -> None:
+        now = event.time
+        interval = self._double_click_interval_ms()
+        is_second_release = (
+            self._due_panel_last_release_card_id == card.id
+            and now - self._due_panel_last_release_time <= interval
+        )
+
+        if is_second_release:
+            self._reset_due_panel_click_tracking()
+            if (
+                self._due_date_picker_host is not None
+                and self._due_date_edit_card_id == card.id
+            ):
+                return
+            if self._due_date_picker_host is not None:
+                self._cancel_due_date_picker_if_any()
+            if self._commit_inline_title_edit_if_any():
+                return
+            self._open_due_date_picker(card, due_panel)
             return
-        if self._commit_inline_title_edit_if_any():
-            return
-        self._drag_state.pop(frame.winfo_id(), None)
-        self._due_drag_moved = False
-        self._open_due_date_picker(card, due_panel)
+
+        self._due_panel_last_release_time = now
+        self._due_panel_last_release_card_id = card.id
+
+        if (
+            self._due_date_picker_host is not None
+            and self._due_date_edit_card_id == card.id
+        ):
+            self._cancel_due_date_picker_if_any()
+            self._reset_due_panel_click_tracking()
 
     def _on_progress_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
         if self._cancel_due_date_picker_if_any():
