@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |------|------|
 | 文書種別 | Specification-Driven Development（SDD）索引 |
-| 文書バージョン | 2.3.0 |
+| 文書バージョン | 2.4.0 |
 | 最終更新日 | 2026-08-12 |
 | ステータス | Active |
 
@@ -90,7 +90,7 @@ flowchart LR
 | リポジトリ | https://github.com/suzuki-hidehito66/Petatto-Kanban |
 | ライセンス | MIT License |
 | 実装言語 | Python 3.11+ |
-| **初期スコープ** | **単一ユーザーの独立したデスクトップアプリ（Windows `.exe`）** |
+| **初期スコープ** | **単一ユーザーの独立したデスクトップアプリ（`.exe`）— M1 UI はデスクトップモード** |
 | プラットフォーム | **Windows 11 以降** |
 | 現在のマイルストーン | [M1 MVP](./spec/11-release-plan.md#m1-mvp) |
 
@@ -99,7 +99,8 @@ flowchart LR
 - **単一ユーザー** — 1 人・1 PC。アカウント・共同編集なし
 - **独立アプリ** — サーバー・ブラウザ・常時ネットワーク不要
 - **`.exe` 配布** — PyInstaller 単一実行ファイル
-- **ローカルデータ** — `%USERPROFILE%\.petatto-kanban\board.json`
+- **M1 UI** — デスクトップモード（透過・背面・ディスプレイ指定）
+- **ローカルデータ** — `%USERPROFILE%\.petatto-kanban\board.json`, `settings.json`
 
 詳細: [01-vision-and-scope.md](./spec/01-vision-and-scope.md#2-初期スコープm1-mvpの定義)
 
@@ -114,3 +115,4 @@ flowchart LR
 | 2.1.0 | 2026-08-12 | 初期スコープを「単一ユーザーの独立デスクトップアプリ（.exe）」と明確化 |
 | 2.2.0 | 2026-08-12 | UI 表示モード 3 種（ウィンドウ / デスクトップ / オーバーレイ）を追加 |
 | 2.3.0 | 2026-08-12 | ターゲット OS を Windows 11 以降に変更 |
+| 2.4.0 | 2026-08-12 | M1 要件をデスクトップモードに変更 |
