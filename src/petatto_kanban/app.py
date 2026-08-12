@@ -16,6 +16,7 @@ from petatto_kanban.storage import load_board, save_board
 APP_TITLE = "Petatto-Kanban"
 CARD_BG = "#fffef8"
 CARD_FG = "#222222"
+CARD_TITLE_FRAME_BD = 1
 CARD_MIN_WIDTH = 220
 CARD_MIN_HEIGHT = 88
 TOOLBAR_BG = "#f0f0f0"
@@ -112,8 +113,19 @@ class KanbanApp:
         frame.place(x=card.x, y=card.y)
         self._card_widgets[card.id] = frame
 
-        title_label = self._card_label(
+        title_frame = tk.Frame(
             frame,
+            bg=CARD_BG,
+            bd=CARD_TITLE_FRAME_BD,
+            relief=tk.GROOVE,
+            highlightthickness=0,
+            padx=6,
+            pady=4,
+        )
+        title_frame.pack(anchor=tk.NW, fill=tk.X)
+
+        title_label = self._card_label(
+            title_frame,
             text=card.title,
             font=("Segoe UI", 10, "bold"),
             fg=CARD_FG,
@@ -122,7 +134,7 @@ class KanbanApp:
         title_label.pack(anchor=tk.NW, fill=tk.X)
 
         self._finalize_card_frame(frame)
-        self._bind_card_interactions(frame, card, title_label)
+        self._bind_card_interactions(frame, card, title_frame, title_label)
 
     def _card_label(self, parent: tk.Misc, **kwargs) -> tk.Label:
         defaults = {
@@ -142,7 +154,13 @@ class KanbanApp:
         )
         frame.pack_propagate(False)
 
-    def _begin_inline_title_edit(self, card: Card, frame: tk.Frame, title_label: tk.Label) -> None:
+    def _begin_inline_title_edit(
+        self,
+        card: Card,
+        frame: tk.Frame,
+        title_frame: tk.Frame,
+        title_label: tk.Label,
+    ) -> None:
         if self._inline_edit_card_id is not None:
             return
 
@@ -150,14 +168,13 @@ class KanbanApp:
         title_label.pack_forget()
 
         entry = tk.Entry(
-            frame,
+            title_frame,
             bg=CARD_BG,
             fg=CARD_FG,
             font=("Segoe UI", 10, "bold"),
             relief=tk.FLAT,
-            bd=1,
-            highlightthickness=1,
-            highlightbackground="#cccccc",
+            bd=0,
+            highlightthickness=0,
         )
         entry.pack(anchor=tk.W, fill=tk.X)
         entry.insert(0, card.title)
@@ -193,6 +210,7 @@ class KanbanApp:
         self,
         frame: tk.Frame,
         card: Card,
+        title_frame: tk.Frame,
         title_label: tk.Label,
     ) -> None:
         def on_delete(_event: tk.Event) -> None:
@@ -203,28 +221,32 @@ class KanbanApp:
             widget.bind("<B1-Motion>", lambda e, c=card, f=frame: self._on_drag(e, c, f))
             widget.bind("<ButtonRelease-1>", lambda _e, c=card: self._end_drag(c))
 
+        def bind_title_interactions(widget: tk.Misc) -> None:
+            widget.bind("<ButtonRelease-3>", on_delete)
+            widget.bind(
+                "<Button-1>",
+                lambda e, f=frame: self._on_title_press(e, f),
+            )
+            widget.bind(
+                "<B1-Motion>",
+                lambda e, c=card, f=frame: self._on_title_drag(e, c, f),
+            )
+            widget.bind(
+                "<ButtonRelease-1>",
+                lambda e, c=card, f=frame: self._on_title_release(e, c, f),
+            )
+            widget.bind(
+                "<Double-Button-1>",
+                lambda _e, c=card, f=frame, tf=title_frame, label=title_label: (
+                    self._on_title_double_click(c, f, tf, label)
+                ),
+            )
+
         frame.bind("<ButtonRelease-3>", on_delete)
         bind_drag(frame)
 
-        title_label.bind("<ButtonRelease-3>", on_delete)
-        title_label.bind(
-            "<Button-1>",
-            lambda e, f=frame: self._on_title_press(e, f),
-        )
-        title_label.bind(
-            "<B1-Motion>",
-            lambda e, c=card, f=frame: self._on_title_drag(e, c, f),
-        )
-        title_label.bind(
-            "<ButtonRelease-1>",
-            lambda e, c=card, f=frame: self._on_title_release(e, c, f),
-        )
-        title_label.bind(
-            "<Double-Button-1>",
-            lambda _e, c=card, f=frame, label=title_label: self._on_title_double_click(
-                c, f, label
-            ),
-        )
+        bind_title_interactions(title_frame)
+        bind_title_interactions(title_label)
 
     def _on_title_press(self, event: tk.Event, frame: tk.Frame) -> None:
         self._title_drag_moved = False
@@ -240,10 +262,16 @@ class KanbanApp:
         self._drag_state.pop(frame.winfo_id(), None)
         self._title_drag_moved = False
 
-    def _on_title_double_click(self, card: Card, frame: tk.Frame, title_label: tk.Label) -> None:
+    def _on_title_double_click(
+        self,
+        card: Card,
+        frame: tk.Frame,
+        title_frame: tk.Frame,
+        title_label: tk.Label,
+    ) -> None:
         self._drag_state.pop(frame.winfo_id(), None)
         self._title_drag_moved = False
-        self._begin_inline_title_edit(card, frame, title_label)
+        self._begin_inline_title_edit(card, frame, title_frame, title_label)
 
     def _default_card_position(self) -> tuple[int, int]:
         index = len(self.board.cards)
