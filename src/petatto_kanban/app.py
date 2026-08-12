@@ -41,6 +41,7 @@ class KanbanApp:
         self.display_settings = load_display_settings()
         self._card_widgets: dict[str, tk.Frame] = {}
         self._drag_state: dict[int, tuple[int, int]] = {}
+        self._inline_edit_card_id: str | None = None
         self._monitors = list_monitors()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -85,6 +86,7 @@ class KanbanApp:
 
     def refresh(self) -> None:
         """カードを再描画する."""
+        self._inline_edit_card_id = None
         for widget in self._card_widgets.values():
             widget.destroy()
         self._card_widgets.clear()
@@ -107,18 +109,26 @@ class KanbanApp:
         frame.place(x=card.x, y=card.y)
         self._card_widgets[card.id] = frame
 
-        self._card_label(
+        title_label = self._card_label(
             frame,
             text=card.title,
             font=("Segoe UI", 10, "bold"),
             fg=CARD_FG,
-        ).pack(anchor=tk.W, fill=tk.X)
+            cursor="xterm",
+        )
+        title_label.pack(anchor=tk.W, fill=tk.X)
+        title_label.bind(
+            "<Double-Button-1>",
+            lambda _e, c=card, f=frame, label=title_label: self._begin_inline_title_edit(
+                c, f, label
+            ),
+        )
 
         edit_btn = self._card_button(frame, "編集", width=6, command=lambda: self._edit_card(card))
         edit_btn.pack(anchor=tk.W, pady=(8, 0))
 
         self._finalize_card_frame(frame)
-        self._bind_card_interactions(frame, card, skip_drag={edit_btn})
+        self._bind_card_interactions(frame, card, skip_drag={title_label})
 
     def _card_label(self, parent: tk.Misc, **kwargs) -> tk.Label:
         defaults = {
@@ -130,20 +140,6 @@ class KanbanApp:
         defaults.update(kwargs)
         return tk.Label(parent, **defaults)
 
-    def _card_button(self, parent: tk.Misc, text: str, command, **kwargs) -> tk.Button:
-        options = {
-            "text": text,
-            "bg": CARD_BG,
-            "fg": CARD_FG,
-            "activebackground": CARD_ACTIVE_BG,
-            "activeforeground": CARD_FG,
-            "relief": tk.RAISED,
-            "bd": 1,
-            "command": command,
-        }
-        options.update(kwargs)
-        return tk.Button(parent, **options)
-
     def _finalize_card_frame(self, frame: tk.Frame) -> None:
         frame.update_idletasks()
         frame.config(
@@ -151,6 +147,53 @@ class KanbanApp:
             height=frame.winfo_reqheight(),
         )
         frame.pack_propagate(False)
+
+    def _begin_inline_title_edit(self, card: Card, frame: tk.Frame, title_label: tk.Label) -> None:
+        if self._inline_edit_card_id is not None:
+            return
+
+        self._inline_edit_card_id = card.id
+        title_label.pack_forget()
+
+        entry = tk.Entry(
+            frame,
+            bg=CARD_BG,
+            fg=CARD_FG,
+            font=("Segoe UI", 10, "bold"),
+            relief=tk.FLAT,
+            bd=1,
+            highlightthickness=1,
+            highlightbackground="#cccccc",
+        )
+        entry.pack(anchor=tk.W, fill=tk.X)
+        entry.insert(0, card.title)
+        entry.select_range(0, tk.END)
+        entry.focus_set()
+
+        def finish(save: bool) -> None:
+            if self._inline_edit_card_id != card.id:
+                return
+
+            if save:
+                new_title = entry.get().strip()
+                if not new_title:
+                    messagebox.showwarning(
+                        APP_TITLE,
+                        "タイトルは空にできません。",
+                        parent=self.root,
+                    )
+                    entry.focus_set()
+                    return
+                card.title = new_title
+                card.touch()
+                save_board(self.board)
+
+            self._inline_edit_card_id = None
+            self.refresh()
+
+        entry.bind("<Return>", lambda _e: finish(save=True))
+        entry.bind("<Escape>", lambda _e: finish(save=False))
+        entry.bind("<FocusOut>", lambda _e: finish(save=True))
 
     def _bind_card_interactions(
         self,
