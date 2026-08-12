@@ -104,6 +104,7 @@ class MenuPanel:
         self._drag_moved = False
         self._hide_after_id: str | None = None
         self._hover_depth = 0
+        self._action_press_index: int | None = None
 
         self.widget = tk.Frame(parent, bg=bg, bd=0, highlightthickness=0)
         self._row = tk.Frame(self.widget, bg=bg, bd=0, highlightthickness=0)
@@ -119,7 +120,8 @@ class MenuPanel:
             cursor="hand2",
         )
         self._draw_action_buttons()
-        self._actions.bind("<Button-1>", self._on_action_click)
+        self._actions.bind("<Button-1>", self._on_action_press)
+        self._actions.bind("<ButtonRelease-1>", self._on_action_release)
 
         self._circle = _create_circle_canvas(self._row, text="<", bg=bg)
         self._circle.pack(side=tk.RIGHT)
@@ -164,17 +166,26 @@ class MenuPanel:
                 text=label,
             )
 
-    def _on_action_click(self, event: tk.Event) -> None:
+    def _action_index_at(self, x: int, y: int) -> int | None:
         center_y = MENU_CIRCLE_SIZE // 2
         hit_radius = MENU_CIRCLE_SIZE // 2
-        for index, handler in enumerate(self._action_handlers):
+        for index in range(len(MENU_ACTION_LABELS)):
             center_x = _action_center_x(index)
-            if (
-                abs(event.x - center_x) <= hit_radius
-                and abs(event.y - center_y) <= hit_radius
-            ):
-                handler()
-                return
+            if abs(x - center_x) <= hit_radius and abs(y - center_y) <= hit_radius:
+                return index
+        return None
+
+    def _on_action_press(self, event: tk.Event) -> None:
+        self._action_press_index = self._action_index_at(event.x, event.y)
+
+    def _on_action_release(self, event: tk.Event) -> None:
+        release_index = self._action_index_at(event.x, event.y)
+        if (
+            self._action_press_index is not None
+            and release_index == self._action_press_index
+        ):
+            self._action_handlers[release_index]()
+        self._action_press_index = None
 
     def place_at(self, x: int, y: int) -> None:
         """左上基準で配置する（`<` 円はウィジェット右端）."""
