@@ -62,7 +62,11 @@ petatto-kanban/
 │   ├── __init__.py
 │   ├── __main__.py               # エントリポイント
 │   ├── app.py                    # GUI（プレゼンテーション）
-│   ├── display/                  # 表示モード・モニター（M1: デスクトップ）
+│   ├── card_ui.py                # カードウィジェット参照・クリック判定
+│   ├── due_date.py               # 期限表示・状態
+│   ├── due_date_picker.py        # フロートカレンダー UI / ホスト
+│   ├── progress.py               # 進捗率ユーティリティ
+│   ├── display/                  # 表示モード・モニター（M1: オーバーレイ）
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -80,7 +84,9 @@ petatto-kanban/
 |------------|------|------|
 | `models.py` | ドメインエンティティ、不変条件 | 標準ライブラリのみ |
 | `storage.py` | JSON シリアライズ / デシリアライズ | `models` |
-| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage` |
+| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display` |
+| `card_ui.py` | カード UI 参照、二回離しクリック判定 | tkinter |
+| `due_date_picker.py` | フロート期限パネル配置・外側クリック | `due_date`, `card_ui` |
 
 ---
 
@@ -175,7 +181,7 @@ M3 着手時に ADR を追加する。
 |------|-----|
 | 関連 FR | FR-018〜022 |
 | 詳細仕様 | [12-display-modes.md](../spec/12-display-modes.md) |
-| マイルストーン | M1（デスクトップ）/ M2（ウィンドウ・オーバーレイ・切替） |
+| マイルストーン | M1（オーバーレイ）/ M2（ウィンドウ・デスクトップ・切替） |
 
 ### Windows API 要件
 

@@ -1,4 +1,4 @@
-"""カード上に表示するインライン期限編集（カレンダー）."""
+"""フロート期限編集パネル（カレンダー）."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from collections.abc import Callable
 from datetime import date
 from tkinter import ttk
 
+from petatto_kanban.card_ui import widget_is_descendant
 from petatto_kanban.due_date import DUE_DATE_NONE_LABEL, calendar_day_button_style
 
 _WEEKDAY_LABELS = ("日", "月", "火", "水", "木", "金", "土")
@@ -126,3 +127,142 @@ class DueDatePicker(tk.Frame):
                     relief=tk.SUNKEN if relief_name == "sunken" else tk.FLAT,
                     command=lambda picked=day: self._select_day(picked),
                 ).pack(side=tk.LEFT, expand=True, padx=1, pady=1)
+
+
+class DueDatePickerHost:
+    """カード外に place するフロート期限編集パネルのホスト."""
+
+    def __init__(
+        self,
+        root: tk.Misc,
+        *,
+        bg: str,
+        panel_width: int,
+        on_outside_click: Callable[[], None] | None = None,
+    ) -> None:
+        self._root = root
+        self._bg = bg
+        self._panel_width = panel_width
+        self._on_outside_click = on_outside_click
+        self._host: tk.Frame | None = None
+        self._picker: DueDatePicker | None = None
+        self._cancel: Callable[[], None] | None = None
+        self._outside_bound = False
+        self.edit_card_id: str | None = None
+
+    @property
+    def is_open(self) -> bool:
+        return self._host is not None
+
+    @property
+    def host_frame(self) -> tk.Frame | None:
+        return self._host
+
+    def cancel_if_any(self) -> bool:
+        if self._cancel is None:
+            return False
+        self._cancel()
+        return True
+
+    def close(self) -> None:
+        self._unbind_outside_click()
+        if self._host is not None:
+            self._host.destroy()
+            self._host = None
+        self._picker = None
+        self._cancel = None
+        self.edit_card_id = None
+
+    def open(
+        self,
+        *,
+        card_id: str,
+        due_panel: tk.Misc,
+        initial: date | None,
+        on_apply: Callable[[date | None], None],
+        lift_targets: list[tk.Misc],
+    ) -> None:
+        self.close()
+        self.edit_card_id = card_id
+
+        def cancel() -> None:
+            self.close()
+
+        def apply(value: date | None) -> None:
+            on_apply(value)
+            self.close()
+
+        host = tk.Frame(
+            self._root,
+            bg=self._bg,
+            bd=1,
+            relief=tk.RIDGE,
+            padx=2,
+            pady=2,
+            highlightthickness=0,
+        )
+        picker = DueDatePicker(
+            host,
+            initial=initial,
+            on_apply=apply,
+            on_cancel=cancel,
+            bg=self._bg,
+        )
+        picker.pack(fill=tk.BOTH, expand=True)
+        self._host = host
+        self._picker = picker
+        self._cancel = cancel
+        self._place_near(due_panel, host)
+        self._bind_outside_click()
+        for target in lift_targets:
+            target.lift()
+        picker.focus_set()
+
+    def _place_near(self, anchor: tk.Misc, host: tk.Frame) -> None:
+        self._root.update_idletasks()
+        host.update_idletasks()
+        root_width = self._root.winfo_width()
+        root_height = self._root.winfo_height()
+        anchor_x = anchor.winfo_rootx() - self._root.winfo_rootx()
+        anchor_y = anchor.winfo_rooty() - self._root.winfo_rooty()
+        anchor_height = anchor.winfo_height()
+        panel_width = max(self._panel_width, host.winfo_reqwidth())
+        panel_height = host.winfo_reqheight()
+        x = min(max(0, anchor_x), max(0, root_width - panel_width))
+        y = anchor_y + anchor_height + 4
+        if y + panel_height > root_height:
+            y = max(0, anchor_y - panel_height - 4)
+        host.place(x=x, y=y, width=panel_width)
+
+    def _bind_outside_click(self) -> None:
+        if self._outside_bound:
+            return
+        self._root.bind_all("<Button-1>", self._handle_outside_click, add="+")
+        self._root.bind_all("<ButtonRelease-1>", self._handle_outside_click, add="+")
+        self._outside_bound = True
+
+    def _unbind_outside_click(self) -> None:
+        if not self._outside_bound:
+            return
+        self._root.unbind_all("<Button-1>")
+        self._root.unbind_all("<ButtonRelease-1>")
+        self._outside_bound = False
+
+    def _handle_outside_click(self, event: tk.Event) -> None:
+        host = self._host
+        if host is None:
+            return
+        widget = event.widget
+        if isinstance(widget, tk.Misc) and widget_is_descendant(widget, host):
+            return
+        host.update_idletasks()
+        x, y = event.x_root, event.y_root
+        left = host.winfo_rootx()
+        top = host.winfo_rooty()
+        right = left + host.winfo_width()
+        bottom = top + host.winfo_height()
+        if left <= x <= right and top <= y <= bottom:
+            return
+        if self._on_outside_click is not None:
+            self._on_outside_click()
+
