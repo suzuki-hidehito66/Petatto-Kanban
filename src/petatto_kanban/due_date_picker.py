@@ -8,7 +8,7 @@ from collections.abc import Callable
 from datetime import date
 from tkinter import ttk
 
-from petatto_kanban.due_date import DUE_DATE_NONE_LABEL
+from petatto_kanban.due_date import DUE_DATE_NONE_LABEL, calendar_day_button_style
 
 _WEEKDAY_LABELS = ("日", "月", "火", "水", "木", "金", "土")
 
@@ -110,11 +110,19 @@ class DueDatePicker(tk.Frame):
                     )
                     continue
                 day = date(self._view_year, self._view_month, day_number)
-                is_selected = self._selected == day
+                bg, fg, relief_name = calendar_day_button_style(
+                    day,
+                    selected=self._selected,
+                    default_bg=self._bg,
+                )
                 tk.Button(
                     row,
                     text=str(day_number),
                     width=3,
-                    relief=tk.SUNKEN if is_selected else tk.FLAT,
+                    bg=bg,
+                    fg=fg,
+                    activebackground=bg,
+                    activeforeground=fg,
+                    relief=tk.SUNKEN if relief_name == "sunken" else tk.FLAT,
                     command=lambda picked=day: self._select_day(picked),
                 ).pack(side=tk.LEFT, expand=True, padx=1, pady=1)

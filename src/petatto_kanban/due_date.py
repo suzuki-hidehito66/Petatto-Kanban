@@ -13,6 +13,8 @@ DUE_PANEL_FUTURE_BG = "#f5f5f0"
 DUE_PANEL_FUTURE_FG = "#444444"
 DUE_PANEL_NONE_BG = "#f5f5f0"
 DUE_PANEL_NONE_FG = "#666666"
+CALENDAR_TODAY_BUTTON_BG = "#43a047"
+CALENDAR_TODAY_BUTTON_FG = "#ffffff"
 
 
 def format_due_date(value: date | None) -> str:
@@ -44,3 +46,23 @@ def due_date_panel_style(value: date | None, today: date | None = None) -> tuple
     if status == "future":
         return DUE_PANEL_FUTURE_BG, DUE_PANEL_FUTURE_FG
     return DUE_PANEL_NONE_BG, DUE_PANEL_NONE_FG
+
+
+def calendar_day_button_style(
+    day: date,
+    *,
+    selected: date | None,
+    default_bg: str,
+    today: date | None = None,
+) -> tuple[str, str, str]:
+    """カレンダー日付ボタンの背景色・文字色・ relief を返す."""
+    reference = today or date.today()
+    bg = default_bg
+    fg = "#222222"
+    relief = "flat"
+    if day == reference:
+        bg = CALENDAR_TODAY_BUTTON_BG
+        fg = CALENDAR_TODAY_BUTTON_FG
+    if selected == day:
+        relief = "sunken"
+    return bg, fg, relief
