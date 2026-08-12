@@ -19,6 +19,7 @@ from petatto_kanban.display.monitors import Monitor, get_monitor, monitor_index_
 from petatto_kanban.display.overlay import apply_overlay_mode
 from petatto_kanban.due_date import due_date_panel_style, format_due_date
 from petatto_kanban.due_date_picker import DueDatePickerHost
+from petatto_kanban.menu_panel import MenuPanel
 from petatto_kanban.models import Card
 from petatto_kanban.progress import PROGRESS_STEP, clamp_progress, progress_color
 from petatto_kanban.storage import load_board, save_board
@@ -31,11 +32,10 @@ CARD_MIN_WIDTH = 220
 CARD_MIN_HEIGHT = 120
 DUE_PANEL_BD = 1
 DUE_PICKER_PANEL_WIDTH = 240
-TOOLBAR_BG = "#f0f0f0"
 PROGRESS_TRACK_BG = "#e8e8e8"
 PROGRESS_BAR_HEIGHT = 18
-NEW_CARD_NEAR_TOOLBAR_OFFSET_X = 0
-NEW_CARD_NEAR_TOOLBAR_OFFSET_Y = 8
+NEW_CARD_NEAR_MENU_PANEL_OFFSET_X = 0
+NEW_CARD_NEAR_MENU_PANEL_OFFSET_Y = 8
 NEW_CARD_STACK_OFFSET = 32
 DEFAULT_NEW_CARD_TITLE = "新しいタスク"
 CARD_LABEL_WRAP = 200
@@ -75,44 +75,58 @@ class KanbanApp:
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         self.root.configure(bg=TRANSPARENT_COLOR)
 
-        self._build_toolbar()
+        self._build_menu_panel()
         self._apply_overlay_mode()
         self.refresh()
 
     def _apply_overlay_mode(self) -> None:
         monitor = get_monitor(self.display_settings.monitor_index)
         apply_overlay_mode(self.root, monitor)
-        self.toolbar.place(x=monitor.width - 16, y=16, anchor=tk.NE)
+        self._place_menu_panel(monitor)
+
+    def _place_menu_panel(self, monitor: Monitor | None = None) -> None:
+        monitor = monitor or get_monitor(self.display_settings.monitor_index)
+        if (
+            self.display_settings.menu_panel_x is not None
+            and self.display_settings.menu_panel_y is not None
+        ):
+            self.menu_panel.place_at(
+                self.display_settings.menu_panel_x,
+                self.display_settings.menu_panel_y,
+            )
+            self.menu_panel.clamp_to_monitor(monitor.width, monitor.height)
+            x, y = self.menu_panel.position
+            if (
+                x != self.display_settings.menu_panel_x
+                or y != self.display_settings.menu_panel_y
+            ):
+                self.display_settings.menu_panel_x = x
+                self.display_settings.menu_panel_y = y
+                save_display_settings(self.display_settings)
+        else:
+            self.menu_panel.place_default(monitor.width, monitor.height)
 
     def _lift_ui(self) -> None:
-        """カードの上にツールバーが来るよう Z 順を整える."""
+        """カードの上にメニューパネルが来るよう Z 順を整える."""
         for ui in self._card_ui.values():
             ui.frame.lift()
         if self._due_date_picker.host_frame is not None:
             self._due_date_picker.host_frame.lift()
-        self.toolbar.lift()
+        self.menu_panel.widget.lift()
 
-    def _build_toolbar(self) -> None:
-        self.toolbar = tk.Frame(
+    def _build_menu_panel(self) -> None:
+        self.menu_panel = MenuPanel(
             self.root,
-            bg=TOOLBAR_BG,
-            bd=1,
-            relief=tk.RIDGE,
-            padx=4,
-            pady=4,
+            on_close=self._on_close,
+            on_settings=self._open_settings,
+            on_add_card=self._add_card,
+            on_position_changed=self._on_menu_panel_position_changed,
         )
-        ttk.Button(self.toolbar, text="×", width=3, command=self._on_close).pack(
-            side=tk.RIGHT,
-            padx=2,
-        )
-        ttk.Button(self.toolbar, text="設定", command=self._open_settings).pack(
-            side=tk.RIGHT,
-            padx=2,
-        )
-        ttk.Button(self.toolbar, text="+ カード", command=self._add_card).pack(
-            side=tk.RIGHT,
-            padx=2,
-        )
+
+    def _on_menu_panel_position_changed(self, x: int, y: int) -> None:
+        self.display_settings.menu_panel_x = x
+        self.display_settings.menu_panel_y = y
+        save_display_settings(self.display_settings)
 
     def refresh(
         self,
@@ -311,7 +325,7 @@ class KanbanApp:
             due_panel=due_panel,
             initial=card.due_date,
             on_apply=on_apply,
-            lift_targets=[self.toolbar],
+            lift_targets=[self.menu_panel.widget],
         )
 
     def _open_due_date_picker_for_card(self, card_id: str) -> None:
@@ -618,15 +632,15 @@ class KanbanApp:
             self._cancel_due_date_picker()
             self._due_panel_clicks.reset()
 
-    def _card_position_near_add_button(self, stack_index: int) -> tuple[int, int]:
-        """ツールバー「+ カード」付近に新規カードを置く座標を返す."""
+    def _card_position_near_menu_panel(self, stack_index: int) -> tuple[int, int]:
+        """メニューパネル付近に新規カードを置く座標を返す."""
         self.root.update_idletasks()
-        self.toolbar.update_idletasks()
-        toolbar_x = self.toolbar.winfo_x()
-        toolbar_y = self.toolbar.winfo_y()
-        toolbar_height = self.toolbar.winfo_height()
-        base_x = toolbar_x + NEW_CARD_NEAR_TOOLBAR_OFFSET_X
-        base_y = toolbar_y + toolbar_height + NEW_CARD_NEAR_TOOLBAR_OFFSET_Y
+        self.menu_panel.widget.update_idletasks()
+        panel_x = self.menu_panel.widget.winfo_x()
+        panel_y = self.menu_panel.widget.winfo_y()
+        panel_height = self.menu_panel.widget.winfo_height()
+        base_x = panel_x + NEW_CARD_NEAR_MENU_PANEL_OFFSET_X
+        base_y = panel_y + panel_height + NEW_CARD_NEAR_MENU_PANEL_OFFSET_Y
         return (
             base_x + (stack_index % 4) * NEW_CARD_STACK_OFFSET,
             base_y + (stack_index // 4) * NEW_CARD_STACK_OFFSET,
@@ -636,7 +650,7 @@ class KanbanApp:
         self._due_date_picker.cancel_if_any()
         self._commit_inline_title_edit_if_any(refresh_after=False)
         stack_index = len(self.board.cards)
-        card_x, card_y = self._card_position_near_add_button(stack_index)
+        card_x, card_y = self._card_position_near_menu_panel(stack_index)
         card = Card(title=DEFAULT_NEW_CARD_TITLE, x=card_x, y=card_y)
         self.board.cards.append(card)
         save_board(self.board)

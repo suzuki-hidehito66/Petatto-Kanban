@@ -42,6 +42,19 @@ def test_display_settings_roundtrip_dict() -> None:
     assert restored.confirm_delete is False
 
 
+def test_display_settings_menu_panel_position_roundtrip() -> None:
+    settings = DisplaySettings(menu_panel_x=100, menu_panel_y=200)
+    restored = display_settings_from_dict(display_settings_to_dict(settings))
+    assert restored.menu_panel_x == 100
+    assert restored.menu_panel_y == 200
+
+
+def test_display_settings_omits_unset_menu_panel_position() -> None:
+    data = display_settings_to_dict(DisplaySettings())
+    assert "menu_panel_x" not in data
+    assert "menu_panel_y" not in data
+
+
 def test_monitor_index_for_name() -> None:
     monitors = [
         Monitor(index=0, name="ディスプレイ 1", x=0, y=0, width=1920, height=1080),
