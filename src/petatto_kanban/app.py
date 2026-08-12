@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import tkinter as tk
+from dataclasses import dataclass
 from tkinter import messagebox, simpledialog, ttk
 
 from petatto_kanban.display import list_monitors, load_display_settings, save_display_settings
 from petatto_kanban.display.desktop import TRANSPARENT_COLOR
-from petatto_kanban.display.monitors import get_monitor
+from petatto_kanban.display.monitors import Monitor, get_monitor
 from petatto_kanban.display.overlay import apply_overlay_mode
 from petatto_kanban.models import Card
 from petatto_kanban.storage import load_board, save_board
@@ -77,30 +78,6 @@ class KanbanApp:
             side=tk.RIGHT,
             padx=2,
         )
-
-        monitor_names = [monitor.name for monitor in self._monitors]
-        self.monitor_var = tk.StringVar(
-            value=monitor_names[min(self.display_settings.monitor_index, len(monitor_names) - 1)]
-        )
-        monitor_menu = ttk.Combobox(
-            self.toolbar,
-            textvariable=self.monitor_var,
-            values=monitor_names,
-            state="readonly",
-            width=12,
-        )
-        monitor_menu.pack(side=tk.RIGHT, padx=2)
-        monitor_menu.bind("<<ComboboxSelected>>", self._on_monitor_changed)
-
-    def _on_monitor_changed(self, _event: object = None) -> None:
-        selected = self.monitor_var.get()
-        for monitor in self._monitors:
-            if monitor.name == selected:
-                self.display_settings.monitor_index = monitor.index
-                save_display_settings(self.display_settings)
-                self._apply_overlay_mode()
-                self.refresh()
-                break
 
     def refresh(self) -> None:
         """カードを再描画する."""
@@ -177,15 +154,14 @@ class KanbanApp:
         card: Card,
         edit_btn: tk.Button,
     ) -> None:
-        drag_targets = [frame, *frame.winfo_children()]
-        for widget in drag_targets:
+        for widget in (frame, *frame.winfo_children()):
             if widget is edit_btn:
-                widget.bind("<Button-3>", lambda e, c=card: self._show_card_menu(e, c))
+                widget.bind("<Button-3>", lambda _e, c=card: self._delete_card(c))
                 continue
             widget.bind("<Button-1>", lambda e, c=card, f=frame: self._start_drag(e, c, f))
             widget.bind("<B1-Motion>", lambda e, c=card, f=frame: self._on_drag(e, c, f))
             widget.bind("<ButtonRelease-1>", lambda _e, c=card: self._end_drag(c))
-            widget.bind("<Button-3>", lambda e, c=card: self._show_card_menu(e, c))
+            widget.bind("<Button-3>", lambda _e, c=card: self._delete_card(c))
 
     def _default_card_position(self) -> tuple[int, int]:
         index = len(self.board.cards)
@@ -210,12 +186,6 @@ class KanbanApp:
     def _end_drag(self, card: Card) -> None:
         card.touch()
         save_board(self.board)
-
-    def _show_card_menu(self, event: tk.Event, card: Card) -> None:
-        menu = tk.Menu(self.root, tearoff=0)
-        menu.add_command(label="編集", command=lambda: self._edit_card(card))
-        menu.add_command(label="削除", command=lambda: self._delete_card(card))
-        menu.tk_popup(event.x_root, event.y_root)
 
     def _add_card(self) -> None:
         title = simpledialog.askstring(
@@ -260,11 +230,26 @@ class KanbanApp:
         self._persist_and_refresh()
 
     def _open_settings(self) -> None:
-        dialog = _SettingsDialog(self.root, self.display_settings.confirm_delete)
+        dialog = _SettingsDialog(
+            self.root,
+            confirm_delete=self.display_settings.confirm_delete,
+            monitor_index=self.display_settings.monitor_index,
+            monitors=self._monitors,
+        )
         if dialog.result is None:
             return
-        self.display_settings.confirm_delete = dialog.result
+
+        monitor_changed = (
+            dialog.result.monitor_index != self.display_settings.monitor_index
+        )
+        self.display_settings.confirm_delete = dialog.result.confirm_delete
+        self.display_settings.monitor_index = dialog.result.monitor_index
         save_display_settings(self.display_settings)
+
+        if monitor_changed:
+            self._apply_overlay_mode()
+            self.refresh()
+
         messagebox.showinfo(APP_TITLE, "設定を保存しました。", parent=self.root)
 
     def _persist_and_refresh(self) -> None:
@@ -305,25 +290,65 @@ class _CardEditDialog(simpledialog.Dialog):
         self.result = (title, description)
 
 
+@dataclass(frozen=True)
+class SettingsDialogResult:
+    """設定ダイアログの確定値."""
+
+    confirm_delete: bool
+    monitor_index: int
+
+
 class _SettingsDialog(simpledialog.Dialog):
     """アプリ設定ダイアログ."""
 
-    def __init__(self, parent: tk.Misc, confirm_delete: bool) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        *,
+        confirm_delete: bool,
+        monitor_index: int,
+        monitors: list[Monitor],
+    ) -> None:
         self._confirm_delete = confirm_delete
-        self.result: bool | None = None
+        self._monitor_index = monitor_index
+        self._monitors = monitors
+        self.result: SettingsDialogResult | None = None
         super().__init__(parent, title="設定")
 
     def body(self, master: tk.Misc) -> tk.Widget:
+        ttk.Label(master, text="表示ディスプレイ").grid(row=0, column=0, sticky=tk.W, pady=(0, 4))
+        monitor_names = [monitor.name for monitor in self._monitors]
+        default_name = monitor_names[min(self._monitor_index, len(monitor_names) - 1)]
+        self.monitor_var = tk.StringVar(value=default_name)
+        self.monitor_menu = ttk.Combobox(
+            master,
+            textvariable=self.monitor_var,
+            values=monitor_names,
+            state="readonly",
+            width=28,
+        )
+        self.monitor_menu.grid(row=1, column=0, sticky=tk.EW, pady=(0, 12))
+
         self.confirm_var = tk.BooleanVar(value=self._confirm_delete)
         ttk.Checkbutton(
             master,
             text="カード削除時に確認ダイアログを表示する",
             variable=self.confirm_var,
-        ).grid(row=0, column=0, sticky=tk.W)
-        return master
+        ).grid(row=2, column=0, sticky=tk.W)
+        master.columnconfigure(0, weight=1)
+        return self.monitor_menu
 
     def apply(self) -> None:
-        self.result = self.confirm_var.get()
+        selected_name = self.monitor_var.get()
+        monitor_index = self._monitor_index
+        for monitor in self._monitors:
+            if monitor.name == selected_name:
+                monitor_index = monitor.index
+                break
+        self.result = SettingsDialogResult(
+            confirm_delete=self.confirm_var.get(),
+            monitor_index=monitor_index,
+        )
 
 
 def run_app() -> None:

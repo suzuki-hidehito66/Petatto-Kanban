@@ -62,7 +62,8 @@
 | DC-002 | FR-002, FR-007 | `models.py` | `test_create_default_board_is_empty` | verified |
 | DC-003 | FR-021, FR-024 | `display/settings.py` | `test_display_settings.py` | implemented |
 | UC-001 | FR-001, FR-020 | `app.py`, `display/overlay.py` | 手動 | implemented |
-| UC-002 | FR-003, FR-021, FR-023, FR-024 | `app.py` | 手動 | implemented |
+| UC-002 | FR-003, FR-023 | `app.py` | 手動 | implemented |
+| UC-006 | FR-021, FR-024 | `app.py` | 手動 | implemented |
 | UC-003 | FR-002, FR-003〜005, FR-010 | `app.py` | 手動 | implemented |
 | UC-DM-003 | FR-020 | `display/overlay.py`, `app.py` | 手動 | implemented |
 | UC-DM-002 | FR-019 | `display/desktop.py` | 手動 | deferred |
