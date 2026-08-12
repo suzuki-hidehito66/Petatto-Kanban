@@ -21,11 +21,12 @@ class DisplayMode(StrEnum):
 
 @dataclass
 class DisplaySettings:
-    """表示モードとディスプレイ設定."""
+    """表示モードとアプリ設定."""
 
-    mode: DisplayMode = DisplayMode.DESKTOP
+    mode: DisplayMode = DisplayMode.OVERLAY
     monitor_index: int = 0
     window_geometry: str = "960x540+100+100"
+    confirm_delete: bool = True
 
 
 def get_settings_path() -> Path:
@@ -39,7 +40,7 @@ def _parse_mode(value: str) -> DisplayMode:
     try:
         return DisplayMode(value)
     except ValueError:
-        return DisplayMode.DESKTOP
+        return DisplayMode.OVERLAY
 
 
 def display_settings_to_dict(settings: DisplaySettings) -> dict[str, Any]:
@@ -47,19 +48,21 @@ def display_settings_to_dict(settings: DisplaySettings) -> dict[str, Any]:
         "mode": settings.mode.value,
         "monitor_index": settings.monitor_index,
         "window_geometry": settings.window_geometry,
+        "confirm_delete": settings.confirm_delete,
     }
 
 
 def display_settings_from_dict(data: dict[str, Any]) -> DisplaySettings:
     return DisplaySettings(
-        mode=_parse_mode(data.get("mode", DisplayMode.DESKTOP.value)),
+        mode=_parse_mode(data.get("mode", DisplayMode.OVERLAY.value)),
         monitor_index=int(data.get("monitor_index", 0)),
         window_geometry=str(data.get("window_geometry", "960x540+100+100")),
+        confirm_delete=bool(data.get("confirm_delete", True)),
     )
 
 
 def load_display_settings(path: Path | None = None) -> DisplaySettings:
-    """表示設定を読み込む。不存在時はデスクトップモード既定値。"""
+    """表示設定を読み込む。不存在時はオーバーレイモード既定値。"""
     target = path or get_settings_path()
     if not target.exists():
         return DisplaySettings()

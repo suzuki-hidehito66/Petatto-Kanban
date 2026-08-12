@@ -6,40 +6,69 @@ from petatto_kanban.models import Board, Card
 from petatto_kanban.storage import board_from_dict, board_to_dict, load_board, save_board
 
 
-def test_create_default_board_has_three_columns() -> None:
+def test_create_default_board_is_empty() -> None:
     board = Board.create_default()
     assert board.name == "My Board"
-    assert len(board.columns) == 3
-    assert [column.name for column in board.columns] == ["To Do", "In Progress", "Done"]
+    assert board.cards == []
 
 
 def test_save_and_load_board(tmp_path: Path) -> None:
     board = Board.create_default(name="Test Board")
-    column = board.columns[0]
-    column.cards.append(Card(title="Write docs", order=0))
+    board.cards.append(Card(title="Write docs", x=50, y=60))
 
     data_path = tmp_path / "board.json"
     save_board(board, data_path)
 
     loaded = load_board(data_path)
     assert loaded.name == "Test Board"
-    assert len(loaded.columns[0].cards) == 1
-    assert loaded.columns[0].cards[0].title == "Write docs"
+    assert len(loaded.cards) == 1
+    assert loaded.cards[0].title == "Write docs"
+    assert loaded.cards[0].x == 50
 
 
 def test_board_roundtrip_dict() -> None:
     board = Board.create_default()
-    board.columns[1].cards.append(Card(title="Implement feature", description="Details"))
+    board.cards.append(Card(title="Implement feature", description="Details", x=10, y=20))
 
     restored = board_from_dict(board_to_dict(board))
 
     assert restored.name == board.name
-    assert len(restored.columns) == len(board.columns)
-    assert restored.columns[1].cards[0].title == "Implement feature"
-    assert restored.columns[1].cards[0].description == "Details"
+    assert len(restored.cards) == 1
+    assert restored.cards[0].title == "Implement feature"
+    assert restored.cards[0].x == 10
 
 
 def test_load_missing_file_returns_default(tmp_path: Path) -> None:
     board = load_board(tmp_path / "missing.json")
     assert board.name == "My Board"
-    assert len(board.columns) == 3
+    assert board.cards == []
+
+
+def test_migrate_legacy_columns_format() -> None:
+    legacy = {
+        "id": "board-1",
+        "name": "Legacy",
+        "created_at": "2026-08-12T10:00:00+00:00",
+        "updated_at": "2026-08-12T10:00:00+00:00",
+        "columns": [
+            {
+                "id": "col-1",
+                "name": "To Do",
+                "order": 0,
+                "cards": [
+                    {
+                        "id": "card-1",
+                        "title": "Old task",
+                        "description": "",
+                        "order": 0,
+                        "created_at": "2026-08-12T10:00:00+00:00",
+                        "updated_at": "2026-08-12T10:00:00+00:00",
+                    }
+                ],
+            }
+        ],
+    }
+    board = board_from_dict(legacy)
+    assert len(board.cards) == 1
+    assert board.cards[0].title == "Old task"
+    assert board.cards[0].x == 80

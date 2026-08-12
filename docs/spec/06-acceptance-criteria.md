@@ -15,23 +15,23 @@
 
 ---
 
-## FR-001 / FR-002: ボード・列表示
+## FR-001 / FR-002: オーバーレイ・カード表示
 
 ### AC-001-01
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-001 |
-| 関連 US | US-001 |
-| ステータス | verified |
+| 関連 FR | FR-001, FR-020 |
+| 関連 US | US-001, US-010 |
+| ステータス | implemented |
 | 検証 | 手動 |
 
 ```gherkin
 Given アプリが起動していない
 When ユーザーがアプリを起動する
-Then タイトル "Petatto-Kanban" のウィンドウが表示される
-And ヘッダーにボード名が表示される
-And 3 列（To Do, In Progress, Done）が横並びで表示される
+Then 指定ディスプレイ全画面のオーバーレイが表示される
+And 背景は透過しカードとツールバーのみ不透明である
+And ツールバー右上に × ボタンが表示される
 ```
 
 ### AC-002-01
@@ -47,10 +47,10 @@ And 3 列（To Do, In Progress, Done）が横並びで表示される
 Given 永続化ファイルが存在しない
 When load_board() を呼び出す
 Then 名前 "My Board" のボードが返る
-And 3 列の名称が ["To Do", "In Progress", "Done"] である
+And cards は空配列である
 ```
 
-**テスト**: `test_create_default_board_has_three_columns`, `test_load_missing_file_returns_default`
+**テスト**: `test_create_default_board_is_empty`, `test_load_missing_file_returns_default`
 
 ---
 
@@ -65,9 +65,9 @@ And 3 列の名称が ["To Do", "In Progress", "Done"] である
 | 検証 | 手動 |
 
 ```gherkin
-Given To Do 列が表示されている
-When ユーザーが「+ カードを追加」をクリックし、タイトル "新タスク" を入力する
-Then To Do 列に "新タスク" カードが表示される
+Given ツールバーが表示されている
+When ユーザーが「+ カード」をクリックし、タイトル "新タスク" を入力する
+Then 画面上に "新タスク" カードが表示される
 And データが board.json に保存される
 ```
 
@@ -117,22 +117,37 @@ Then カードに "新タイトル" と "詳細" が表示される
 
 ```gherkin
 Given "削除対象" のカードが存在する
-When ユーザーが「削除」をクリックし、確認ダイアログで「はい」を選択する
-Then カードが列から消える
+And confirm_delete が true である
+When ユーザーがカードを右クリックし「削除」を選び、確認ダイアログで「はい」を選択する
+Then カードが画面から消える
 And board.json からも削除されている
+```
+
+### AC-005-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-005, FR-024 |
+| ステータス | implemented |
+| 検証 | 手動 |
+
+```gherkin
+Given confirm_delete が false に設定されている
+When ユーザーがカードを右クリックし「削除」を選ぶ
+Then 確認ダイアログなしでカードが削除される
 ```
 
 ---
 
-## FR-006: カード列間移動
+## FR-006: カード列間移動（M2）
 
 ### AC-006-01
 
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-006 |
-| ステータス | implemented |
-| 検証 | 手動 |
+| ステータス | deferred |
+| 検証 | — |
 
 ```gherkin
 Given "タスクA" が To Do 列にある
@@ -156,7 +171,7 @@ And To Do 列から "タスクA" が消える
 ```gherkin
 Given カードを 1 件含むボードがある
 When save_board() の後 load_board() を呼び出す
-Then ボード名・列数・カードタイトルが一致する
+Then ボード名・カード数・カードタイトルと x,y 座標が一致する
 ```
 
 **テスト**: `test_save_and_load_board`
@@ -193,15 +208,15 @@ Then board.json に最新データが保存されている
 
 ---
 
-## FR-008 / FR-009: 手動保存・再読み込み
+## FR-008 / FR-009: 手動保存・再読み込み（M2）
 
 ### AC-008-01
 
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-008 |
-| ステータス | implemented |
-| 検証 | 手動 |
+| ステータス | deferred |
+| 検証 | — |
 
 ```gherkin
 Given ボードに未保存の変更がある
@@ -214,8 +229,8 @@ Then "保存しました。" メッセージが表示される
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-009 |
-| ステータス | implemented |
-| 検証 | 手動 |
+| ステータス | deferred |
+| 検証 | — |
 
 ```gherkin
 Given board.json が外部で更新された
@@ -308,15 +323,35 @@ And ウィンドウサイズを変更できる
 
 ---
 
-## FR-019: デスクトップモード
+## FR-010: カード位置ドラッグ
+
+### AC-010-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-010 |
+| 関連 US | US-012 |
+| ステータス | implemented |
+| 検証 | 手動 |
+
+```gherkin
+Given "タスクA" カードが (100, 100) に表示されている
+When ユーザーがカードをドラッグして (200, 150) に移動する
+Then カードが新しい位置に表示される
+And board.json の x,y が更新されている
+```
+
+---
+
+## FR-019: デスクトップモード（M2）
 
 ### AC-019-01
 
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-019 |
-| ステータス | implemented |
-| 検証 | 手動 |
+| ステータス | deferred |
+| 検証 | 手動（M2） |
 
 ```gherkin
 Given アプリが起動した
@@ -330,8 +365,8 @@ And 背景透過でデスクトップが見える
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-019 |
-| ステータス | implemented |
-| 検証 | 手動（M1） |
+| ステータス | deferred |
+| 検証 | 手動（M2） |
 
 ```gherkin
 Given デスクトップモードでカンバンが表示されている
@@ -349,8 +384,8 @@ And カンバン UI 部分は引き続き操作可能である
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-020 |
-| ステータス | specified |
-| 検証 | 手動（M2） |
+| ステータス | implemented |
+| 検証 | 手動（M1） |
 
 ```gherkin
 Given 複数ディスプレイが接続されている
@@ -364,8 +399,8 @@ And カンバン UI 以外の領域は透過し下のウィンドウが見える
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-020 |
-| ステータス | specified |
-| 検証 | 手動（M2） |
+| ステータス | implemented |
+| 検証 | 手動（M1） |
 
 ```gherkin
 Given オーバーレイモードでカンバンが表示されている
@@ -384,8 +419,8 @@ And 透過領域をクリックすると下のアプリが操作できる
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-021 |
-| ステータス | specified |
-| 検証 | 手動（M2） |
+| ステータス | implemented |
+| 検証 | 手動（M1） |
 
 ```gherkin
 Given ユーザーがデスクトップまたはオーバーレイモードを選択した
@@ -399,8 +434,8 @@ And 次回起動時に同じ設定が復元される
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-022 |
-| ステータス | specified |
-| 検証 | 手動（M2） |
+| ステータス | implemented |
+| 検証 | 手動（M1） |
 
 ```gherkin
 Given ユーザーがオーバーレイモードで作業している
@@ -423,11 +458,33 @@ And ボード上のカードデータは保持されている
 | 検証 | 手動 |
 
 ```gherkin
-Given デスクトップモードでアプリが表示されている
-When ユーザーがヘッダー右上の「×」をクリックする
+Given オーバーレイモードでアプリが表示されている
+When ユーザーがツールバー右上の「×」をクリックする
 Then アプリが終了する
 And board.json と settings.json に最新データが保存されている
 ```
+
+---
+
+## FR-024: 削除確認設定
+
+### AC-024-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-024 |
+| 関連 US | US-013 |
+| ステータス | implemented |
+| 検証 | 自動 + 手動 |
+
+```gherkin
+Given 設定ダイアログが開いている
+When ユーザーが「カード削除時に確認ダイアログを表示する」のチェックを外して OK する
+Then settings.json の confirm_delete が false になる
+And 次回のカード削除で確認ダイアログが表示されない
+```
+
+**テスト**: `test_save_and_load_display_settings`, `test_display_settings_roundtrip_dict`
 
 ---
 
@@ -435,7 +492,6 @@ And board.json と settings.json に最新データが保存されている
 
 | ID | 関連 FR | ステータス |
 |----|---------|------------|
-| AC-010-01 | FR-010（DnD） | draft |
 | AC-011-01 | FR-011（複数ボード） | draft |
 
 M2 要件の詳細化時に AC を追加する。
