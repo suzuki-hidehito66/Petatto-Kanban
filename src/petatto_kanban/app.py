@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import tkinter as tk
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
 from tkinter import messagebox, simpledialog, ttk
@@ -55,6 +56,7 @@ class KanbanApp:
         self._drag_state: dict[int, tuple[int, int]] = {}
         self._title_drag_moved = False
         self._inline_edit_card_id: str | None = None
+        self._inline_edit_finish: Callable[[bool], None] | None = None
         self._due_date_edit_card_id: str | None = None
         self._due_date_picker_host: tk.Frame | None = None
         self._due_date_picker: DueDatePicker | None = None
@@ -113,6 +115,7 @@ class KanbanApp:
         """カードを再描画する."""
         self._close_due_date_picker()
         self._inline_edit_card_id = None
+        self._inline_edit_finish = None
         self._title_drag_moved = False
         self._due_drag_moved = False
         self._progress_drag_moved = False
@@ -410,8 +413,10 @@ class KanbanApp:
                 save_board(self.board)
 
             self._inline_edit_card_id = None
+            self._inline_edit_finish = None
             self.refresh()
 
+        self._inline_edit_finish = finish
         entry.bind("<Return>", lambda _e: finish(save=True))
         entry.bind("<Escape>", lambda _e: finish(save=False))
         entry.bind("<FocusOut>", lambda _e: finish(save=True))
@@ -434,6 +439,13 @@ class KanbanApp:
         title_label = label_children[0]
         self._begin_inline_title_edit(card, frame, title_frame, title_label)
 
+    def _commit_inline_title_edit_if_any(self, save: bool = True) -> bool:
+        """進行中のタイトル編集があれば確定またはキャンセルする."""
+        if self._inline_edit_finish is None:
+            return False
+        self._inline_edit_finish(save)
+        return True
+
     def _bind_card_interactions(
         self,
         frame: tk.Frame,
@@ -448,7 +460,10 @@ class KanbanApp:
             self._delete_card(card)
 
         def bind_drag(widget: tk.Misc) -> None:
-            widget.bind("<Button-1>", lambda e, f=frame: self._start_drag(e, f))
+            widget.bind(
+                "<Button-1>",
+                lambda e, c=card, f=frame: self._on_frame_press(e, c, f),
+            )
             widget.bind("<B1-Motion>", lambda e, c=card, f=frame: self._on_drag(e, c, f))
             widget.bind("<ButtonRelease-1>", lambda _e, c=card: self._end_drag(c))
 
@@ -472,7 +487,7 @@ class KanbanApp:
             widget.bind("<ButtonRelease-3>", on_delete)
             widget.bind(
                 "<Button-1>",
-                lambda e, f=frame: self._on_title_press(e, f),
+                lambda e, c=card, f=frame: self._on_title_press(e, c, f),
             )
             widget.bind(
                 "<B1-Motion>",
@@ -493,7 +508,7 @@ class KanbanApp:
             widget.bind("<ButtonRelease-3>", on_delete)
             widget.bind(
                 "<Button-1>",
-                lambda e, f=frame: self._on_due_press(e, f),
+                lambda e, c=card, f=frame: self._on_due_press(e, c, f),
             )
             widget.bind(
                 "<B1-Motion>",
@@ -514,7 +529,7 @@ class KanbanApp:
             widget.bind("<ButtonRelease-3>", on_delete)
             widget.bind(
                 "<Button-1>",
-                lambda e, f=frame: self._on_progress_press(e, f),
+                lambda e, c=card, f=frame: self._on_progress_press(e, c, f),
             )
             widget.bind(
                 "<B1-Motion>",
@@ -540,7 +555,19 @@ class KanbanApp:
         bind_scroll(progress_canvas)
         bind_progress_interactions(progress_canvas)
 
-    def _on_title_press(self, event: tk.Event, frame: tk.Frame) -> None:
+    def _on_frame_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._inline_edit_card_id == card.id:
+            self._commit_inline_title_edit_if_any()
+            return
+        if self._commit_inline_title_edit_if_any():
+            return
+        self._start_drag(event, frame)
+
+    def _on_title_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._inline_edit_card_id == card.id:
+            return
+        if self._commit_inline_title_edit_if_any():
+            return
         self._title_drag_moved = False
         self._start_drag(event, frame)
 
@@ -561,11 +588,15 @@ class KanbanApp:
         title_frame: tk.Frame,
         title_label: tk.Label,
     ) -> None:
+        if self._commit_inline_title_edit_if_any():
+            return
         self._drag_state.pop(frame.winfo_id(), None)
         self._title_drag_moved = False
         self._begin_inline_title_edit(card, frame, title_frame, title_label)
 
-    def _on_due_press(self, event: tk.Event, frame: tk.Frame) -> None:
+    def _on_due_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._commit_inline_title_edit_if_any():
+            return
         self._due_drag_moved = False
         self._start_drag(event, frame)
 
@@ -580,11 +611,15 @@ class KanbanApp:
         self._due_drag_moved = False
 
     def _on_due_double_click(self, card: Card, frame: tk.Frame, due_panel: tk.Frame) -> None:
+        if self._commit_inline_title_edit_if_any():
+            return
         self._drag_state.pop(frame.winfo_id(), None)
         self._due_drag_moved = False
         self._open_due_date_picker(card, due_panel)
 
-    def _on_progress_press(self, event: tk.Event, frame: tk.Frame) -> None:
+    def _on_progress_press(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
+        if self._commit_inline_title_edit_if_any():
+            return
         self._progress_drag_moved = False
         self._start_drag(event, frame)
 
