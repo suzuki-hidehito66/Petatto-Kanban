@@ -19,6 +19,10 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 python -m pip install -e ".[dev]"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+Write-Host 'INFO: Preparing dist folder (unlock existing .exe if needed)...'
+python scripts/prepare_exe_build.py
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 Write-Host 'INFO: Building .exe with PyInstaller...'
 python -m PyInstaller petatto-kanban.spec --noconfirm
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
