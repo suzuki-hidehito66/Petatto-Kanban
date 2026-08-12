@@ -13,12 +13,13 @@ def _utc_now() -> datetime:
 
 @dataclass
 class Card:
-    """カンバン上の1枚のタスクカード."""
+    """画面上の1枚のタスクカード（自由配置）."""
 
     title: str
     id: str = field(default_factory=lambda: str(uuid4()))
     description: str = ""
-    order: int = 0
+    x: int = 120
+    y: int = 120
     created_at: datetime = field(default_factory=_utc_now)
     updated_at: datetime = field(default_factory=_utc_now)
 
@@ -28,22 +29,12 @@ class Card:
 
 
 @dataclass
-class Column:
-    """カンバン列（レーン）."""
-
-    name: str
-    id: str = field(default_factory=lambda: str(uuid4()))
-    order: int = 0
-    cards: list[Card] = field(default_factory=list)
-
-
-@dataclass
 class Board:
-    """カンバンボード."""
+    """カンバンボード（オーバーレイ上のカード集合）."""
 
     name: str
     id: str = field(default_factory=lambda: str(uuid4()))
-    columns: list[Column] = field(default_factory=list)
+    cards: list[Card] = field(default_factory=list)
     created_at: datetime = field(default_factory=_utc_now)
     updated_at: datetime = field(default_factory=_utc_now)
 
@@ -53,12 +44,11 @@ class Board:
 
     @classmethod
     def create_default(cls, name: str = "My Board") -> Board:
-        """デフォルト3列のボードを生成する."""
-        return cls(
-            name=name,
-            columns=[
-                Column(name="To Do", order=0),
-                Column(name="In Progress", order=1),
-                Column(name="Done", order=2),
-            ],
-        )
+        """空のボードを生成する."""
+        return cls(name=name, cards=[])
+
+    def remove_card(self, card_id: str) -> None:
+        self.cards = [card for card in self.cards if card.id != card_id]
+
+    def find_card(self, card_id: str) -> Card | None:
+        return next((card for card in self.cards if card.id == card_id), None)

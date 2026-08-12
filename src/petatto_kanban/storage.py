@@ -7,9 +7,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from petatto_kanban.models import Board, Card, Column
+from petatto_kanban.models import Board, Card
 
 DATA_FILE_NAME = "board.json"
+SCHEMA_VERSION = 2
 
 
 def get_data_path() -> Path:
@@ -32,30 +33,50 @@ def _card_to_dict(card: Card) -> dict[str, Any]:
         "id": card.id,
         "title": card.title,
         "description": card.description,
-        "order": card.order,
+        "x": card.x,
+        "y": card.y,
         "created_at": _serialize_datetime(card.created_at),
         "updated_at": _serialize_datetime(card.updated_at),
     }
 
 
-def _column_to_dict(column: Column) -> dict[str, Any]:
-    return {
-        "id": column.id,
-        "name": column.name,
-        "order": column.order,
-        "cards": [_card_to_dict(card) for card in sorted(column.cards, key=lambda c: c.order)],
-    }
+def _card_from_dict(data: dict[str, Any]) -> Card:
+    return Card(
+        id=data["id"],
+        title=data["title"],
+        description=data.get("description", ""),
+        x=int(data.get("x", 120)),
+        y=int(data.get("y", 120)),
+        created_at=_parse_datetime(data["created_at"]),
+        updated_at=_parse_datetime(data["updated_at"]),
+    )
+
+
+def _migrate_columns_to_cards(data: dict[str, Any]) -> list[Card]:
+    """旧スキーマ（columns）を自由配置 cards に変換する."""
+    cards: list[Card] = []
+    x_offset = 80
+    for column_index, column_data in enumerate(data.get("columns", [])):
+        y_offset = 80
+        for card_index, card_data in enumerate(column_data.get("cards", [])):
+            card = _card_from_dict(
+                {
+                    **card_data,
+                    "x": x_offset + column_index * 260,
+                    "y": y_offset + card_index * 130,
+                }
+            )
+            cards.append(card)
+    return cards
 
 
 def board_to_dict(board: Board) -> dict[str, Any]:
     """Board を JSON シリアライズ可能な dict に変換する."""
     return {
+        "schema_version": SCHEMA_VERSION,
         "id": board.id,
         "name": board.name,
-        "columns": [
-            _column_to_dict(column)
-            for column in sorted(board.columns, key=lambda col: col.order)
-        ],
+        "cards": [_card_to_dict(card) for card in board.cards],
         "created_at": _serialize_datetime(board.created_at),
         "updated_at": _serialize_datetime(board.updated_at),
     }
@@ -63,33 +84,15 @@ def board_to_dict(board: Board) -> dict[str, Any]:
 
 def board_from_dict(data: dict[str, Any]) -> Board:
     """dict から Board を復元する."""
-    columns: list[Column] = []
-    for column_data in data.get("columns", []):
-        cards = [
-            Card(
-                id=card["id"],
-                title=card["title"],
-                description=card.get("description", ""),
-                order=card.get("order", 0),
-                created_at=_parse_datetime(card["created_at"]),
-                updated_at=_parse_datetime(card["updated_at"]),
-            )
-            for card in column_data.get("cards", [])
-        ]
-        cards.sort(key=lambda card: card.order)
-        columns.append(
-            Column(
-                id=column_data["id"],
-                name=column_data["name"],
-                order=column_data.get("order", 0),
-                cards=cards,
-            )
-        )
-    columns.sort(key=lambda column: column.order)
+    if "cards" in data:
+        cards = [_card_from_dict(card_data) for card_data in data.get("cards", [])]
+    else:
+        cards = _migrate_columns_to_cards(data)
+
     return Board(
         id=data["id"],
         name=data["name"],
-        columns=columns,
+        cards=cards,
         created_at=_parse_datetime(data["created_at"]),
         updated_at=_parse_datetime(data["updated_at"]),
     )

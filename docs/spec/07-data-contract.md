@@ -13,26 +13,19 @@
 | 関連 FR | FR-007 |
 | ファイルパス | `%USERPROFILE%\.petatto-kanban\board.json` |
 | エンコーディング | UTF-8 |
+| スキーマバージョン | `2` |
 | 実装 | `src/petatto_kanban/storage.py` |
 
 ### ルートオブジェクト: Board
 
 | フィールド | JSON 型 | 必須 | Python 型 | 説明 |
 |------------|---------|------|-----------|------|
+| `schema_version` | number | ○ | `int` | スキーマバージョン（現在 `2`） |
 | `id` | string | ○ | `str` (UUID) | ボード一意識別子 |
 | `name` | string | ○ | `str` | ボード名 |
-| `columns` | array | ○ | `list[Column]` | 列の配列 |
+| `cards` | array | ○ | `list[Card]` | 画面上のカード配列 |
 | `created_at` | string | ○ | `datetime` | ISO 8601 形式 |
 | `updated_at` | string | ○ | `datetime` | ISO 8601 形式 |
-
-### ネスト: Column
-
-| フィールド | JSON 型 | 必須 | Python 型 | 説明 |
-|------------|---------|------|-----------|------|
-| `id` | string | ○ | `str` (UUID) | 列一意識別子 |
-| `name` | string | ○ | `str` | 列名 |
-| `order` | number | ○ | `int` | 表示順（0 始まり） |
-| `cards` | array | ○ | `list[Card]` | カードの配列 |
 
 ### ネスト: Card
 
@@ -41,7 +34,8 @@
 | `id` | string | ○ | `str` (UUID) | カード一意識別子 |
 | `title` | string | ○ | `str` | タイトル（空不可） |
 | `description` | string | ○ | `str` | 説明（空文字可） |
-| `order` | number | ○ | `int` | 列内表示順（0 始まり） |
+| `x` | number | ○ | `int` | 画面上の X 座標（px） |
+| `y` | number | ○ | `int` | 画面上の Y 座標（px） |
 | `created_at` | string | ○ | `datetime` | ISO 8601 形式 |
 | `updated_at` | string | ○ | `datetime` | ISO 8601 形式 |
 
@@ -49,50 +43,41 @@
 
 | # | 条件 |
 |---|------|
-| INV-1 | `columns` は `order` 昇順でシリアライズされる |
-| INV-2 | 各 `Column.cards` は `order` 昇順でシリアライズされる |
-| INV-3 | ファイル不存在時、`Board.create_default()` の内容が使用される |
-| INV-4 | 保存時に `board.updated_at` が現在時刻に更新される |
+| INV-1 | ファイル不存在時、`Board.create_default()` の内容が使用される（空の `cards`） |
+| INV-2 | 保存時に `board.updated_at` が現在時刻に更新される |
+| INV-3 | 旧スキーマ（`columns` のみ）読み込み時は `_migrate_columns_to_cards()` で `cards` に変換 |
 
 ### サンプル
 
 ```json
 {
+  "schema_version": 2,
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "My Board",
-  "columns": [
+  "cards": [
     {
-      "id": "col-001",
-      "name": "To Do",
-      "order": 0,
-      "cards": [
-        {
-          "id": "card-001",
-          "title": "仕様書を SDD 形式に更新",
-          "description": "docs/spec/ を整備",
-          "order": 0,
-          "created_at": "2026-08-12T11:00:00+00:00",
-          "updated_at": "2026-08-12T11:30:00+00:00"
-        }
-      ]
-    },
-    {
-      "id": "col-002",
-      "name": "In Progress",
-      "order": 1,
-      "cards": []
-    },
-    {
-      "id": "col-003",
-      "name": "Done",
-      "order": 2,
-      "cards": []
+      "id": "card-001",
+      "title": "仕様書を SDD 形式に更新",
+      "description": "docs/spec/ を整備",
+      "x": 120,
+      "y": 80,
+      "created_at": "2026-08-12T11:00:00+00:00",
+      "updated_at": "2026-08-12T11:30:00+00:00"
     }
   ],
   "created_at": "2026-08-12T10:00:00+00:00",
   "updated_at": "2026-08-12T11:30:00+00:00"
 }
 ```
+
+### レガシーマイグレーション（schema_version なし / columns 形式）
+
+旧 `board.json` に `columns` 配列のみが存在する場合、読み込み時に各列・カードを格子状座標へ変換する。
+
+| 変換ルール | 値 |
+|------------|-----|
+| 列 index | `x = 80 + column_index * 260` |
+| カード index | `y = 80 + card_index * 130` |
 
 ---
 
@@ -108,26 +93,15 @@
 |------|-----|
 | 戻り値 | `Board` |
 | `name` | `"My Board"` |
-| `columns` | 3 列（To Do, In Progress, Done）、order = 0, 1, 2 |
+| `cards` | 空配列 `[]` |
 
 ### Card 制約
 
 | 属性 | 制約 |
 |------|------|
 | `title` | UI 層で空文字・空白のみを拒否 |
+| `x`, `y` | 未指定時 `120, 120` |
 | `id` | 未指定時 UUID v4 自動生成 |
-
----
-
-## M2 以降の拡張（草案）
-
-| フィールド | 追加先 | マイルストーン |
-|------------|--------|----------------|
-| `wip_limit` | Column | M3 |
-| `labels` | Card | M2 |
-| `due_date` | Card | M2 |
-
-スキーマ変更時は DC バージョンをインクリメントし、マイグレーション方針を追記する。
 
 ---
 
@@ -135,24 +109,26 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-021, FR-022 |
+| 関連 FR | FR-021, FR-024 |
 | 保存先 | `%USERPROFILE%\.petatto-kanban\settings.json` |
-| マイルストーン | M2 |
+| マイルストーン | M1 |
 
 ### DisplaySettings
 
 | フィールド | JSON 型 | 必須 | 説明 |
 |------------|---------|------|------|
 | `mode` | string | ○ | `"window"` \| `"desktop"` \| `"overlay"` |
-| `monitor_index` | number | - | 表示先ディスプレイ（0 始まり）。`window` 時は未使用 |
-| `window_geometry` | string | - | ウィンドウモード復帰用 `"WxH+X+Y"`（例: `960x540+100+100`） |
+| `monitor_index` | number | - | 表示先ディスプレイ（0 始まり） |
+| `window_geometry` | string | - | ウィンドウモード復帰用 `"WxH+X+Y"` |
+| `confirm_delete` | boolean | ○ | カード削除時に確認ダイアログを表示するか |
 
 ### 既定値
 
 | フィールド | 既定値 |
 |------------|--------|
-| `mode` | `"desktop"` |
+| `mode` | `"overlay"` |
 | `monitor_index` | `0`（プライマリ） |
+| `confirm_delete` | `true` |
 
 ### サンプル
 
@@ -160,6 +136,20 @@
 {
   "mode": "overlay",
   "monitor_index": 1,
-  "window_geometry": "960x540+120+80"
+  "window_geometry": "960x540+120+80",
+  "confirm_delete": true
 }
 ```
+
+---
+
+## M2 以降の拡張（草案）
+
+| フィールド | 追加先 | マイルストーン |
+|------------|--------|----------------|
+| `columns` | Board | M2（3 列カンバン再導入時） |
+| `labels` | Card | M2 |
+| `due_date` | Card | M2 |
+| `wip_limit` | Column | M3 |
+
+スキーマ変更時は `schema_version` をインクリメントし、マイグレーション方針を追記する。
