@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from petatto_kanban.display.monitors import Monitor, monitor_index_for_name
 from petatto_kanban.display.settings import (
     DisplayMode,
     DisplaySettings,
@@ -39,3 +40,12 @@ def test_display_settings_roundtrip_dict() -> None:
     assert restored.mode == DisplayMode.OVERLAY
     assert restored.monitor_index == 2
     assert restored.confirm_delete is False
+
+
+def test_monitor_index_for_name() -> None:
+    monitors = [
+        Monitor(index=0, name="ディスプレイ 1", x=0, y=0, width=1920, height=1080),
+        Monitor(index=1, name="ディスプレイ 2", x=1920, y=0, width=1920, height=1080),
+    ]
+    assert monitor_index_for_name(monitors, "ディスプレイ 2", default=0) == 1
+    assert monitor_index_for_name(monitors, "不明", default=0) == 0

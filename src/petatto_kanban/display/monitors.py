@@ -75,3 +75,11 @@ def get_monitor(index: int) -> Monitor:
     if 0 <= index < len(monitors):
         return monitors[index]
     return monitors[0]
+
+
+def monitor_index_for_name(monitors: list[Monitor], name: str, default: int = 0) -> int:
+    """モニター名からインデックスを返す。見つからない場合は default。"""
+    for monitor in monitors:
+        if monitor.name == name:
+            return monitor.index
+    return default

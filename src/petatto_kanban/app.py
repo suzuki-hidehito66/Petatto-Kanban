@@ -8,7 +8,7 @@ from tkinter import messagebox, simpledialog, ttk
 
 from petatto_kanban.display import list_monitors, load_display_settings, save_display_settings
 from petatto_kanban.display.desktop import TRANSPARENT_COLOR
-from petatto_kanban.display.monitors import Monitor, get_monitor
+from petatto_kanban.display.monitors import Monitor, get_monitor, monitor_index_for_name
 from petatto_kanban.display.overlay import apply_overlay_mode
 from petatto_kanban.models import Card
 from petatto_kanban.storage import load_board, save_board
@@ -17,10 +17,20 @@ APP_TITLE = "Petatto-Kanban"
 CARD_BG = "#fffef8"
 CARD_FG = "#222222"
 CARD_DESC_FG = "#555555"
+CARD_ACTIVE_BG = "#e8e8e0"
 CARD_WIDTH = 220
 TOOLBAR_BG = "#f0f0f0"
 DEFAULT_CARD_X = 120
 DEFAULT_CARD_Y = 120
+CARD_LABEL_WRAP = 200
+
+
+@dataclass(frozen=True)
+class SettingsDialogResult:
+    """設定ダイアログの確定値."""
+
+    confirm_delete: bool
+    monitor_index: int
 
 
 class KanbanApp:
@@ -31,7 +41,7 @@ class KanbanApp:
         self.board = load_board()
         self.display_settings = load_display_settings()
         self._card_widgets: dict[str, tk.Frame] = {}
-        self._drag_state: dict[str, tuple[int, int]] = {}
+        self._drag_state: dict[int, tuple[int, int]] = {}
         self._monitors = list_monitors()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -44,17 +54,13 @@ class KanbanApp:
     def _apply_overlay_mode(self) -> None:
         monitor = get_monitor(self.display_settings.monitor_index)
         apply_overlay_mode(self.root, monitor)
-        self._position_toolbar(monitor.width)
-        self._lift_ui()
+        self.toolbar.place(x=monitor.width - 16, y=16, anchor=tk.NE)
 
     def _lift_ui(self) -> None:
         """カードの上にツールバーが来るよう Z 順を整える."""
         for frame in self._card_widgets.values():
             frame.lift()
         self.toolbar.lift()
-
-    def _position_toolbar(self, screen_width: int) -> None:
-        self.toolbar.place(x=screen_width - 16, y=16, anchor=tk.NE)
 
     def _build_toolbar(self) -> None:
         self.toolbar = tk.Frame(
@@ -65,7 +71,6 @@ class KanbanApp:
             padx=4,
             pady=4,
         )
-
         ttk.Button(self.toolbar, text="×", width=3, command=self._on_close).pack(
             side=tk.RIGHT,
             padx=2,
@@ -103,42 +108,51 @@ class KanbanApp:
         frame.place(x=card.x, y=card.y)
         self._card_widgets[card.id] = frame
 
-        title = tk.Label(
+        self._card_label(
             frame,
             text=card.title,
             font=("Segoe UI", 10, "bold"),
-            bg=CARD_BG,
             fg=CARD_FG,
-            wraplength=200,
-            justify=tk.LEFT,
-            anchor=tk.W,
-        )
-        title.pack(anchor=tk.W, fill=tk.X)
+        ).pack(anchor=tk.W, fill=tk.X)
+
         if card.description:
-            tk.Label(
+            self._card_label(
                 frame,
                 text=card.description,
-                bg=CARD_BG,
                 fg=CARD_DESC_FG,
-                wraplength=200,
-                justify=tk.LEFT,
-                anchor=tk.W,
             ).pack(anchor=tk.W, pady=(4, 0), fill=tk.X)
 
-        edit_btn = tk.Button(
-            frame,
-            text="編集",
-            width=6,
-            bg=CARD_BG,
-            fg=CARD_FG,
-            activebackground="#e8e8e0",
-            activeforeground=CARD_FG,
-            relief=tk.RAISED,
-            bd=1,
-            command=lambda c=card: self._edit_card(c),
-        )
+        edit_btn = self._card_button(frame, "編集", width=6, command=lambda: self._edit_card(card))
         edit_btn.pack(anchor=tk.W, pady=(8, 0))
 
+        self._finalize_card_frame(frame)
+        self._bind_card_interactions(frame, card, skip_drag={edit_btn})
+
+    def _card_label(self, parent: tk.Misc, **kwargs) -> tk.Label:
+        defaults = {
+            "bg": CARD_BG,
+            "wraplength": CARD_LABEL_WRAP,
+            "justify": tk.LEFT,
+            "anchor": tk.W,
+        }
+        defaults.update(kwargs)
+        return tk.Label(parent, **defaults)
+
+    def _card_button(self, parent: tk.Misc, text: str, command, **kwargs) -> tk.Button:
+        options = {
+            "text": text,
+            "bg": CARD_BG,
+            "fg": CARD_FG,
+            "activebackground": CARD_ACTIVE_BG,
+            "activeforeground": CARD_FG,
+            "relief": tk.RAISED,
+            "bd": 1,
+            "command": command,
+        }
+        options.update(kwargs)
+        return tk.Button(parent, **options)
+
+    def _finalize_card_frame(self, frame: tk.Frame) -> None:
         frame.update_idletasks()
         frame.config(
             width=max(CARD_WIDTH, frame.winfo_reqwidth()),
@@ -146,22 +160,23 @@ class KanbanApp:
         )
         frame.pack_propagate(False)
 
-        self._bind_card_interactions(frame, card, edit_btn)
-
     def _bind_card_interactions(
         self,
         frame: tk.Frame,
         card: Card,
-        edit_btn: tk.Button,
+        *,
+        skip_drag: set[tk.Misc],
     ) -> None:
+        def on_delete(_event: tk.Event) -> None:
+            self._delete_card(card)
+
         for widget in (frame, *frame.winfo_children()):
-            if widget is edit_btn:
-                widget.bind("<Button-3>", lambda _e, c=card: self._delete_card(c))
+            widget.bind("<ButtonRelease-3>", on_delete)
+            if widget in skip_drag:
                 continue
-            widget.bind("<Button-1>", lambda e, c=card, f=frame: self._start_drag(e, c, f))
+            widget.bind("<Button-1>", lambda e, f=frame: self._start_drag(e, f))
             widget.bind("<B1-Motion>", lambda e, c=card, f=frame: self._on_drag(e, c, f))
             widget.bind("<ButtonRelease-1>", lambda _e, c=card: self._end_drag(c))
-            widget.bind("<Button-3>", lambda _e, c=card: self._delete_card(c))
 
     def _default_card_position(self) -> tuple[int, int]:
         index = len(self.board.cards)
@@ -170,7 +185,7 @@ class KanbanApp:
             DEFAULT_CARD_Y + (index // 4) * 32,
         )
 
-    def _start_drag(self, event: tk.Event, _card: Card, frame: tk.Frame) -> None:
+    def _start_drag(self, event: tk.Event, frame: tk.Frame) -> None:
         self._drag_state[frame.winfo_id()] = (event.x, event.y)
 
     def _on_drag(self, event: tk.Event, card: Card, frame: tk.Frame) -> None:
@@ -197,8 +212,7 @@ class KanbanApp:
             return
 
         card_x, card_y = self._default_card_position()
-        card = Card(title=title.strip(), x=card_x, y=card_y)
-        self.board.cards.append(card)
+        self.board.cards.append(Card(title=title.strip(), x=card_x, y=card_y))
         self._persist_and_refresh()
 
     def _edit_card(self, card: Card) -> None:
@@ -217,14 +231,12 @@ class KanbanApp:
         self._persist_and_refresh()
 
     def _delete_card(self, card: Card) -> None:
-        if self.display_settings.confirm_delete:
-            confirmed = messagebox.askyesno(
-                APP_TITLE,
-                f"「{card.title}」を削除しますか？",
-                parent=self.root,
-            )
-            if not confirmed:
-                return
+        if self.display_settings.confirm_delete and not messagebox.askyesno(
+            APP_TITLE,
+            f"「{card.title}」を削除しますか？",
+            parent=self.root,
+        ):
+            return
 
         self.board.remove_card(card.id)
         self._persist_and_refresh()
@@ -239,18 +251,18 @@ class KanbanApp:
         if dialog.result is None:
             return
 
-        monitor_changed = (
-            dialog.result.monitor_index != self.display_settings.monitor_index
-        )
-        self.display_settings.confirm_delete = dialog.result.confirm_delete
-        self.display_settings.monitor_index = dialog.result.monitor_index
+        self._apply_settings(dialog.result)
+        messagebox.showinfo(APP_TITLE, "設定を保存しました。", parent=self.root)
+
+    def _apply_settings(self, settings: SettingsDialogResult) -> None:
+        monitor_changed = settings.monitor_index != self.display_settings.monitor_index
+        self.display_settings.confirm_delete = settings.confirm_delete
+        self.display_settings.monitor_index = settings.monitor_index
         save_display_settings(self.display_settings)
 
         if monitor_changed:
             self._apply_overlay_mode()
             self.refresh()
-
-        messagebox.showinfo(APP_TITLE, "設定を保存しました。", parent=self.root)
 
     def _persist_and_refresh(self) -> None:
         save_board(self.board)
@@ -288,14 +300,6 @@ class _CardEditDialog(simpledialog.Dialog):
         title = self.title_entry.get()
         description = self.description_text.get("1.0", tk.END)
         self.result = (title, description)
-
-
-@dataclass(frozen=True)
-class SettingsDialogResult:
-    """設定ダイアログの確定値."""
-
-    confirm_delete: bool
-    monitor_index: int
 
 
 class _SettingsDialog(simpledialog.Dialog):
@@ -339,15 +343,13 @@ class _SettingsDialog(simpledialog.Dialog):
         return self.monitor_menu
 
     def apply(self) -> None:
-        selected_name = self.monitor_var.get()
-        monitor_index = self._monitor_index
-        for monitor in self._monitors:
-            if monitor.name == selected_name:
-                monitor_index = monitor.index
-                break
         self.result = SettingsDialogResult(
             confirm_delete=self.confirm_var.get(),
-            monitor_index=monitor_index,
+            monitor_index=monitor_index_for_name(
+                self._monitors,
+                self.monitor_var.get(),
+                self._monitor_index,
+            ),
         )
 
 
