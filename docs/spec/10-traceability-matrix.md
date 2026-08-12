@@ -47,6 +47,7 @@
 | NFR-006 | — | `ruff check` | verified |
 | NFR-007 | — | `pytest` | verified |
 | NFR-008 | AC-NFR-008-01, AC-NFR-008-02 | `pyproject.toml`（依存空）, アーキテクチャ | verified / specified |
+| NFR-011 | AC-NFR-011-01 | CI `windows-latest`, ドキュメント | specified |
 
 ---
 
