@@ -9,9 +9,12 @@
 
 ## 1. システム概要
 
+**アーキテクチャ方針（M1）:** 単一ユーザーの独立したデスクトップアプリケーション。  
+クライアント（`.exe`）とローカル JSON ファイルのみで構成し、サーバー層は存在しない。
+
 ```mermaid
 flowchart TB
-    subgraph Desktop["Windows Desktop"]
+    subgraph Desktop["Windows PC（単一ユーザー）"]
         EXE["Petatto-Kanban.exe"]
         subgraph App["petatto_kanban"]
             UI["app.py (tkinter GUI)"]
@@ -114,6 +117,18 @@ petatto-kanban/
 | 決定 | `docs/spec/` にモジュール分割し SDD を採用 |
 | 理由 | 要件 ID・受け入れ基準・トレーサビリティの明示 |
 | トレードオフ | ドキュメント更新コスト増 |
+
+### ADR-004: 単一ユーザー独立デスクトップアプリ（初期スコープ）
+
+| 項目 | 内容 |
+|------|------|
+| ステータス | Accepted |
+| 日付 | 2026-08-12 |
+| コンテキスト | プロダクトの初期スコープを明確化 |
+| 決定 | M1 MVP は **単一ユーザーの独立した `.exe` デスクトップアプリ** とする |
+| 理由 | 開発範囲の限定、オフライン利用、配布の簡素化 |
+| トレードオフ | チーム利用・同期は M3 まで提供しない |
+| 関連 | NFR-008, [01-vision-and-scope.md §2](./01-vision-and-scope.md#2-初期スコープm1-mvpの定義) |
 
 ---
 

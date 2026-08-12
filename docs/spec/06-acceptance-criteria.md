@@ -241,6 +241,36 @@ When ユーザーがカードを 1 件追加する
 Then 操作が 1 秒以内に完了する
 ```
 
+### AC-NFR-008-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 NFR | NFR-008 |
+| ステータス | verified |
+| 検証 | 自動（依存関係）+ コードレビュー |
+
+```gherkin
+Given M1 MVP のソースコードと pyproject.toml
+When ランタイム依存とネットワーク呼び出しを確認する
+Then [project] dependencies が空である
+And 認証・HTTP クライアント等のネットワークコードが存在しない
+```
+
+### AC-NFR-008-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 NFR | NFR-008 |
+| ステータス | specified |
+| 検証 | 手動（M1） |
+
+```gherkin
+Given ネットワークが切断された Windows PC
+When ユーザーが Petatto-Kanban.exe を起動する
+Then カードの作成・編集・移動・保存がすべて正常に動作する
+And 外部サービスへの接続を要求されない
+```
+
 ---
 
 ## M2 以降（プレースホルダー）
