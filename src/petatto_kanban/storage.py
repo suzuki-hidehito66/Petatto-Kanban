@@ -10,7 +10,7 @@ from typing import Any
 from petatto_kanban.models import Board, Card
 
 DATA_FILE_NAME = "board.json"
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def get_data_path() -> Path:
@@ -32,7 +32,6 @@ def _card_to_dict(card: Card) -> dict[str, Any]:
     return {
         "id": card.id,
         "title": card.title,
-        "description": card.description,
         "x": card.x,
         "y": card.y,
         "created_at": _serialize_datetime(card.created_at),
@@ -44,7 +43,6 @@ def _card_from_dict(data: dict[str, Any]) -> Card:
     return Card(
         id=data["id"],
         title=data["title"],
-        description=data.get("description", ""),
         x=int(data.get("x", 120)),
         y=int(data.get("y", 120)),
         created_at=_parse_datetime(data["created_at"]),

@@ -17,7 +17,6 @@ class Card:
 
     title: str
     id: str = field(default_factory=lambda: str(uuid4()))
-    description: str = ""
     x: int = 120
     y: int = 120
     created_at: datetime = field(default_factory=_utc_now)

@@ -16,7 +16,7 @@ from petatto_kanban.storage import load_board, save_board
 APP_TITLE = "Petatto-Kanban"
 CARD_BG = "#fffef8"
 CARD_FG = "#222222"
-CARD_DESC_FG = "#555555"
+CARD_ACTIVE_BG = "#e8e8e0"
 CARD_WIDTH = 220
 TOOLBAR_BG = "#f0f0f0"
 DEFAULT_CARD_X = 120
@@ -124,12 +124,8 @@ class KanbanApp:
             ),
         )
 
-        if card.description:
-            self._card_label(
-                frame,
-                text=card.description,
-                fg=CARD_DESC_FG,
-            ).pack(anchor=tk.W, pady=(4, 0), fill=tk.X)
+        edit_btn = self._card_button(frame, "編集", width=6, command=lambda: self._edit_card(card))
+        edit_btn.pack(anchor=tk.W, pady=(8, 0))
 
         self._finalize_card_frame(frame)
         self._bind_card_interactions(frame, card, skip_drag={title_label})
@@ -254,6 +250,20 @@ class KanbanApp:
         self.board.cards.append(Card(title=title.strip(), x=card_x, y=card_y))
         self._persist_and_refresh()
 
+    def _edit_card(self, card: Card) -> None:
+        dialog = _CardEditDialog(self.root, card.title)
+        if dialog.result is None:
+            return
+
+        title = dialog.result
+        if not title.strip():
+            messagebox.showwarning(APP_TITLE, "タイトルは空にできません。", parent=self.root)
+            return
+
+        card.title = title.strip()
+        card.touch()
+        self._persist_and_refresh()
+
     def _delete_card(self, card: Card) -> None:
         if self.display_settings.confirm_delete and not messagebox.askyesno(
             APP_TITLE,
@@ -296,6 +306,26 @@ class KanbanApp:
         save_board(self.board)
         save_display_settings(self.display_settings)
         self.root.destroy()
+
+
+class _CardEditDialog(simpledialog.Dialog):
+    """カード編集ダイアログ（タイトルのみ）."""
+
+    def __init__(self, parent: tk.Misc, title: str) -> None:
+        self._initial_title = title
+        self.result: str | None = None
+        super().__init__(parent, title="カード編集")
+
+    def body(self, master: tk.Misc) -> tk.Widget:
+        ttk.Label(master, text="タイトル").grid(row=0, column=0, sticky=tk.W, pady=(0, 4))
+        self.title_entry = ttk.Entry(master, width=40)
+        self.title_entry.grid(row=1, column=0, sticky=tk.EW)
+        self.title_entry.insert(0, self._initial_title)
+        master.columnconfigure(0, weight=1)
+        return self.title_entry
+
+    def apply(self) -> None:
+        self.result = self.title_entry.get()
 
 
 class _SettingsDialog(simpledialog.Dialog):
