@@ -14,8 +14,12 @@ from petatto_kanban.storage import load_board, save_board
 
 APP_TITLE = "Petatto-Kanban"
 CARD_BG = "#fffef8"
+CARD_FG = "#222222"
+CARD_DESC_FG = "#555555"
 CARD_WIDTH = 220
 TOOLBAR_BG = "#f0f0f0"
+DEFAULT_CARD_X = 120
+DEFAULT_CARD_Y = 120
 
 
 class KanbanApp:
@@ -33,13 +37,20 @@ class KanbanApp:
         self.root.configure(bg=TRANSPARENT_COLOR)
 
         self._build_toolbar()
-        self.refresh()
         self._apply_overlay_mode()
+        self.refresh()
 
     def _apply_overlay_mode(self) -> None:
         monitor = get_monitor(self.display_settings.monitor_index)
         apply_overlay_mode(self.root, monitor)
         self._position_toolbar(monitor.width)
+        self._lift_ui()
+
+    def _lift_ui(self) -> None:
+        """カードの上にツールバーが来るよう Z 順を整える."""
+        for frame in self._card_widgets.values():
+            frame.lift()
+        self.toolbar.lift()
 
     def _position_toolbar(self, screen_width: int) -> None:
         self.toolbar.place(x=screen_width - 16, y=16, anchor=tk.NE)
@@ -88,6 +99,7 @@ class KanbanApp:
                 self.display_settings.monitor_index = monitor.index
                 save_display_settings(self.display_settings)
                 self._apply_overlay_mode()
+                self.refresh()
                 break
 
     def refresh(self) -> None:
@@ -99,6 +111,7 @@ class KanbanApp:
 
         for card in self.board.cards:
             self._render_card(card)
+        self._lift_ui()
 
     def _render_card(self, card: Card) -> None:
         frame = tk.Frame(
@@ -108,38 +121,78 @@ class KanbanApp:
             relief=tk.RIDGE,
             padx=8,
             pady=8,
-            width=CARD_WIDTH,
+            highlightthickness=0,
         )
         frame.place(x=card.x, y=card.y)
-        frame.pack_propagate(False)
         self._card_widgets[card.id] = frame
 
-        title = ttk.Label(frame, text=card.title, font=("Segoe UI", 10, "bold"), wraplength=200)
-        title.pack(anchor=tk.W)
+        title = tk.Label(
+            frame,
+            text=card.title,
+            font=("Segoe UI", 10, "bold"),
+            bg=CARD_BG,
+            fg=CARD_FG,
+            wraplength=200,
+            justify=tk.LEFT,
+            anchor=tk.W,
+        )
+        title.pack(anchor=tk.W, fill=tk.X)
         if card.description:
-            ttk.Label(
+            tk.Label(
                 frame,
                 text=card.description,
+                bg=CARD_BG,
+                fg=CARD_DESC_FG,
                 wraplength=200,
-                foreground="#555555",
-            ).pack(anchor=tk.W, pady=(4, 0))
+                justify=tk.LEFT,
+                anchor=tk.W,
+            ).pack(anchor=tk.W, pady=(4, 0), fill=tk.X)
 
-        ttk.Button(frame, text="編集", width=6, command=lambda c=card: self._edit_card(c)).pack(
-            anchor=tk.W,
-            pady=(8, 0),
+        edit_btn = tk.Button(
+            frame,
+            text="編集",
+            width=6,
+            bg=CARD_BG,
+            fg=CARD_FG,
+            activebackground="#e8e8e0",
+            activeforeground=CARD_FG,
+            relief=tk.RAISED,
+            bd=1,
+            command=lambda c=card: self._edit_card(c),
         )
+        edit_btn.pack(anchor=tk.W, pady=(8, 0))
 
-        frame.bind("<Button-1>", lambda e, c=card, f=frame: self._start_drag(e, c, f))
-        frame.bind("<B1-Motion>", lambda e, c=card, f=frame: self._on_drag(e, c, f))
-        frame.bind("<ButtonRelease-1>", lambda _e, c=card: self._end_drag(c))
-        frame.bind("<Button-3>", lambda e, c=card: self._show_card_menu(e, c))
+        frame.update_idletasks()
+        frame.config(
+            width=max(CARD_WIDTH, frame.winfo_reqwidth()),
+            height=frame.winfo_reqheight(),
+        )
+        frame.pack_propagate(False)
 
-        for child in frame.winfo_children():
-            child.bind("<Button-3>", lambda e, c=card: self._show_card_menu(e, c))
-            if not isinstance(child, ttk.Button):
-                child.bind("<Button-1>", lambda e, c=card, f=frame: self._start_drag(e, c, f))
-                child.bind("<B1-Motion>", lambda e, c=card, f=frame: self._on_drag(e, c, f))
-                child.bind("<ButtonRelease-1>", lambda _e, c=card: self._end_drag(c))
+        self._bind_card_interactions(frame, card, edit_btn)
+
+    def _bind_card_interactions(
+        self,
+        frame: tk.Frame,
+        card: Card,
+        edit_btn: tk.Button,
+    ) -> None:
+        drag_targets = [frame, *frame.winfo_children()]
+        for widget in drag_targets:
+            if widget is edit_btn:
+                widget.bind("<Button-3>", lambda e, c=card: self._show_card_menu(e, c))
+                continue
+            widget.bind("<Button-1>", lambda e, c=card, f=frame: self._start_drag(e, c, f))
+            widget.bind("<B1-Motion>", lambda e, c=card, f=frame: self._on_drag(e, c, f))
+            widget.bind("<ButtonRelease-1>", lambda _e, c=card: self._end_drag(c))
+            widget.bind("<Button-3>", lambda e, c=card: self._show_card_menu(e, c))
+
+    def _default_card_position(self) -> tuple[int, int]:
+        index = len(self.board.cards)
+        return (
+            DEFAULT_CARD_X + (index % 4) * 32,
+            DEFAULT_CARD_Y + (index // 4) * 32,
+        )
 
     def _start_drag(self, event: tk.Event, _card: Card, frame: tk.Frame) -> None:
         self._drag_state[frame.winfo_id()] = (event.x, event.y)
@@ -173,7 +226,8 @@ class KanbanApp:
         if not title or not title.strip():
             return
 
-        card = Card(title=title.strip(), x=120, y=120)
+        card_x, card_y = self._default_card_position()
+        card = Card(title=title.strip(), x=card_x, y=card_y)
         self.board.cards.append(card)
         self._persist_and_refresh()
 
