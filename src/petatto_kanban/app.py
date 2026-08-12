@@ -17,7 +17,6 @@ APP_TITLE = "Petatto-Kanban"
 CARD_BG = "#fffef8"
 CARD_FG = "#222222"
 CARD_DESC_FG = "#555555"
-CARD_ACTIVE_BG = "#e8e8e0"
 CARD_WIDTH = 220
 TOOLBAR_BG = "#f0f0f0"
 DEFAULT_CARD_X = 120
@@ -42,6 +41,7 @@ class KanbanApp:
         self.display_settings = load_display_settings()
         self._card_widgets: dict[str, tk.Frame] = {}
         self._drag_state: dict[int, tuple[int, int]] = {}
+        self._inline_edit_card_id: str | None = None
         self._monitors = list_monitors()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -86,6 +86,7 @@ class KanbanApp:
 
     def refresh(self) -> None:
         """カードを再描画する."""
+        self._inline_edit_card_id = None
         for widget in self._card_widgets.values():
             widget.destroy()
         self._card_widgets.clear()
@@ -108,12 +109,20 @@ class KanbanApp:
         frame.place(x=card.x, y=card.y)
         self._card_widgets[card.id] = frame
 
-        self._card_label(
+        title_label = self._card_label(
             frame,
             text=card.title,
             font=("Segoe UI", 10, "bold"),
             fg=CARD_FG,
-        ).pack(anchor=tk.W, fill=tk.X)
+            cursor="xterm",
+        )
+        title_label.pack(anchor=tk.W, fill=tk.X)
+        title_label.bind(
+            "<Double-Button-1>",
+            lambda _e, c=card, f=frame, label=title_label: self._begin_inline_title_edit(
+                c, f, label
+            ),
+        )
 
         if card.description:
             self._card_label(
@@ -122,11 +131,8 @@ class KanbanApp:
                 fg=CARD_DESC_FG,
             ).pack(anchor=tk.W, pady=(4, 0), fill=tk.X)
 
-        edit_btn = self._card_button(frame, "編集", width=6, command=lambda: self._edit_card(card))
-        edit_btn.pack(anchor=tk.W, pady=(8, 0))
-
         self._finalize_card_frame(frame)
-        self._bind_card_interactions(frame, card, skip_drag={edit_btn})
+        self._bind_card_interactions(frame, card, skip_drag={title_label})
 
     def _card_label(self, parent: tk.Misc, **kwargs) -> tk.Label:
         defaults = {
@@ -138,20 +144,6 @@ class KanbanApp:
         defaults.update(kwargs)
         return tk.Label(parent, **defaults)
 
-    def _card_button(self, parent: tk.Misc, text: str, command, **kwargs) -> tk.Button:
-        options = {
-            "text": text,
-            "bg": CARD_BG,
-            "fg": CARD_FG,
-            "activebackground": CARD_ACTIVE_BG,
-            "activeforeground": CARD_FG,
-            "relief": tk.RAISED,
-            "bd": 1,
-            "command": command,
-        }
-        options.update(kwargs)
-        return tk.Button(parent, **options)
-
     def _finalize_card_frame(self, frame: tk.Frame) -> None:
         frame.update_idletasks()
         frame.config(
@@ -159,6 +151,53 @@ class KanbanApp:
             height=frame.winfo_reqheight(),
         )
         frame.pack_propagate(False)
+
+    def _begin_inline_title_edit(self, card: Card, frame: tk.Frame, title_label: tk.Label) -> None:
+        if self._inline_edit_card_id is not None:
+            return
+
+        self._inline_edit_card_id = card.id
+        title_label.pack_forget()
+
+        entry = tk.Entry(
+            frame,
+            bg=CARD_BG,
+            fg=CARD_FG,
+            font=("Segoe UI", 10, "bold"),
+            relief=tk.FLAT,
+            bd=1,
+            highlightthickness=1,
+            highlightbackground="#cccccc",
+        )
+        entry.pack(anchor=tk.W, fill=tk.X)
+        entry.insert(0, card.title)
+        entry.select_range(0, tk.END)
+        entry.focus_set()
+
+        def finish(save: bool) -> None:
+            if self._inline_edit_card_id != card.id:
+                return
+
+            if save:
+                new_title = entry.get().strip()
+                if not new_title:
+                    messagebox.showwarning(
+                        APP_TITLE,
+                        "タイトルは空にできません。",
+                        parent=self.root,
+                    )
+                    entry.focus_set()
+                    return
+                card.title = new_title
+                card.touch()
+                save_board(self.board)
+
+            self._inline_edit_card_id = None
+            self.refresh()
+
+        entry.bind("<Return>", lambda _e: finish(save=True))
+        entry.bind("<Escape>", lambda _e: finish(save=False))
+        entry.bind("<FocusOut>", lambda _e: finish(save=True))
 
     def _bind_card_interactions(
         self,
@@ -215,21 +254,6 @@ class KanbanApp:
         self.board.cards.append(Card(title=title.strip(), x=card_x, y=card_y))
         self._persist_and_refresh()
 
-    def _edit_card(self, card: Card) -> None:
-        dialog = _CardEditDialog(self.root, card.title, card.description)
-        if dialog.result is None:
-            return
-
-        title, description = dialog.result
-        if not title.strip():
-            messagebox.showwarning(APP_TITLE, "タイトルは空にできません。", parent=self.root)
-            return
-
-        card.title = title.strip()
-        card.description = description.strip()
-        card.touch()
-        self._persist_and_refresh()
-
     def _delete_card(self, card: Card) -> None:
         if self.display_settings.confirm_delete and not messagebox.askyesno(
             APP_TITLE,
@@ -272,34 +296,6 @@ class KanbanApp:
         save_board(self.board)
         save_display_settings(self.display_settings)
         self.root.destroy()
-
-
-class _CardEditDialog(simpledialog.Dialog):
-    """カード編集ダイアログ."""
-
-    def __init__(self, parent: tk.Misc, title: str, description: str) -> None:
-        self._initial_title = title
-        self._initial_description = description
-        self.result: tuple[str, str] | None = None
-        super().__init__(parent, title="カード編集")
-
-    def body(self, master: tk.Misc) -> tk.Widget:
-        ttk.Label(master, text="タイトル").grid(row=0, column=0, sticky=tk.W, pady=(0, 4))
-        self.title_entry = ttk.Entry(master, width=40)
-        self.title_entry.grid(row=1, column=0, sticky=tk.EW, pady=(0, 8))
-        self.title_entry.insert(0, self._initial_title)
-
-        ttk.Label(master, text="説明").grid(row=2, column=0, sticky=tk.W, pady=(0, 4))
-        self.description_text = tk.Text(master, width=40, height=5, wrap=tk.WORD)
-        self.description_text.grid(row=3, column=0, sticky=tk.EW)
-        self.description_text.insert("1.0", self._initial_description)
-        master.columnconfigure(0, weight=1)
-        return self.title_entry
-
-    def apply(self) -> None:
-        title = self.title_entry.get()
-        description = self.description_text.get("1.0", tk.END)
-        self.result = (title, description)
 
 
 class _SettingsDialog(simpledialog.Dialog):
