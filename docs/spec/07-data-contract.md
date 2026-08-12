@@ -128,3 +128,38 @@
 | `due_date` | Card | M2 |
 
 スキーマ変更時は DC バージョンをインクリメントし、マイグレーション方針を追記する。
+
+---
+
+## DC-003: 表示設定スキーマ
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-021, FR-022 |
+| 保存先 | `board.json` 内 `display_settings` または `%USERPROFILE%\.petatto-kanban\settings.json`（実装時決定） |
+| マイルストーン | M2 |
+
+### DisplaySettings
+
+| フィールド | JSON 型 | 必須 | 説明 |
+|------------|---------|------|------|
+| `mode` | string | ○ | `"window"` \| `"desktop"` \| `"overlay"` |
+| `monitor_index` | number | - | 表示先ディスプレイ（0 始まり）。`window` 時は未使用 |
+| `window_geometry` | string | - | ウィンドウモード復帰用 `"WxH+X+Y"`（例: `960x540+100+100`） |
+
+### 既定値
+
+| フィールド | 既定値 |
+|------------|--------|
+| `mode` | `"window"` |
+| `monitor_index` | `0`（プライマリ） |
+
+### サンプル
+
+```json
+{
+  "mode": "overlay",
+  "monitor_index": 1,
+  "window_geometry": "960x540+120+80"
+}
+```

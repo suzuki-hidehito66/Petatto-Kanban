@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |------|------|
 | 文書種別 | Specification-Driven Development（SDD）索引 |
-| 文書バージョン | 2.1.0 |
+| 文書バージョン | 2.2.0 |
 | 最終更新日 | 2026-08-12 |
 | ステータス | Active |
 
@@ -74,6 +74,7 @@ flowchart LR
 | 9 | [09-architecture.md](./spec/09-architecture.md) | アーキテクチャ・技術選定 |
 | 10 | [10-traceability-matrix.md](./spec/10-traceability-matrix.md) | 要件トレーサビリティ |
 | 11 | [11-release-plan.md](./spec/11-release-plan.md) | リリース計画・未決定事項 |
+| 12 | [12-display-modes.md](./spec/12-display-modes.md) | **表示モード**（ウィンドウ / デスクトップ / オーバーレイ） |
 
 ### 関連ドキュメント
 
@@ -111,3 +112,4 @@ flowchart LR
 | 1.0.0 | 2026-08-12 | 初版（モノリシック仕様書） |
 | 2.0.0 | 2026-08-12 | SDD 形式へリファクタリング（`docs/spec/` 分割） |
 | 2.1.0 | 2026-08-12 | 初期スコープを「単一ユーザーの独立デスクトップアプリ（.exe）」と明確化 |
+| 2.2.0 | 2026-08-12 | UI 表示モード 3 種（ウィンドウ / デスクトップ / オーバーレイ）を追加 |
