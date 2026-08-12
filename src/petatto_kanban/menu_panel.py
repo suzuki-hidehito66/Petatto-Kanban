@@ -29,7 +29,6 @@ class MenuPanel:
         on_position_changed: Callable[[int, int], None] | None = None,
         bg: str = MENU_PANEL_BG,
     ) -> None:
-        self._on_add_card = on_add_card
         self._on_position_changed = on_position_changed
         self._bg = bg
         self._place_x = 0
@@ -43,6 +42,10 @@ class MenuPanel:
         row.pack()
 
         self._actions = tk.Frame(row, bg=bg, bd=0, highlightthickness=0)
+        ttk.Button(self._actions, text="＋", width=3, command=on_add_card).pack(
+            side=tk.LEFT,
+            padx=(0, MENU_HOVER_PADX),
+        )
         ttk.Button(self._actions, text="⚙", width=3, command=on_settings).pack(
             side=tk.LEFT,
             padx=(0, MENU_HOVER_PADX),
@@ -154,10 +157,7 @@ class MenuPanel:
         self.place_at(new_x, new_y)
 
     def _on_drag_release(self, _event: tk.Event) -> None:
-        if self._drag_moved:
-            if self._on_position_changed is not None:
-                self._on_position_changed(self._place_x, self._place_y)
-        else:
-            self._on_add_card()
+        if self._drag_moved and self._on_position_changed is not None:
+            self._on_position_changed(self._place_x, self._place_y)
         self._drag_origin = None
         self._drag_moved = False
