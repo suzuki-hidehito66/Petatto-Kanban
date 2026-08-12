@@ -74,7 +74,8 @@ python -m PyInstaller petatto-kanban.spec --noconfirm
 
 | ファイル | 内容 |
 |----------|------|
-| [docs/SPECIFICATION.md](docs/SPECIFICATION.md) | プロジェクト仕様書 |
+| [docs/SPECIFICATION.md](docs/SPECIFICATION.md) | **SDD 仕様書索引**（仕様駆動開発のエントリポイント） |
+| [docs/spec/](docs/spec/) | 要件・受け入れ基準・トレーサビリティ等の詳細仕様 |
 | [docs/PYTHON_CODING_RULES.md](docs/PYTHON_CODING_RULES.md) | Python コーディングルール |
 
 ## ライセンス
