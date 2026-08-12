@@ -31,8 +31,9 @@ def test_board_roundtrip_dict() -> None:
     board.cards.append(Card(title="Implement feature", x=10, y=20))
 
     payload = board_to_dict(board)
-    assert payload["schema_version"] == 3
+    assert payload["schema_version"] == 4
     assert "description" not in payload["cards"][0]
+    assert payload["cards"][0]["progress"] == 0
 
     restored = board_from_dict(payload)
 
@@ -40,6 +41,38 @@ def test_board_roundtrip_dict() -> None:
     assert len(restored.cards) == 1
     assert restored.cards[0].title == "Implement feature"
     assert restored.cards[0].x == 10
+
+
+def test_board_roundtrip_dict_with_progress() -> None:
+    board = Board.create_default()
+    board.cards.append(Card(title="Half done", x=10, y=20, progress=50))
+
+    restored = board_from_dict(board_to_dict(board))
+
+    assert restored.cards[0].progress == 50
+
+
+def test_load_legacy_card_without_progress_defaults_to_zero() -> None:
+    legacy = {
+        "schema_version": 3,
+        "id": "board-1",
+        "name": "Legacy",
+        "created_at": "2026-08-12T10:00:00+00:00",
+        "updated_at": "2026-08-12T10:00:00+00:00",
+        "cards": [
+            {
+                "id": "card-1",
+                "title": "Old task",
+                "x": 10,
+                "y": 20,
+                "created_at": "2026-08-12T10:00:00+00:00",
+                "updated_at": "2026-08-12T10:00:00+00:00",
+            }
+        ],
+    }
+    board = board_from_dict(legacy)
+    assert board.cards[0].progress == 0
+    assert board_to_dict(board)["schema_version"] == 4
 
 
 def test_load_legacy_card_with_description_ignored() -> None:
