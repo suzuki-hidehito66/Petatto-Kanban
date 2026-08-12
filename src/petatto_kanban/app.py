@@ -21,6 +21,7 @@ CARD_MIN_HEIGHT = 88
 TOOLBAR_BG = "#f0f0f0"
 DEFAULT_CARD_X = 120
 DEFAULT_CARD_Y = 120
+DEFAULT_NEW_CARD_TITLE = "新しいタスク"
 CARD_LABEL_WRAP = 200
 
 
@@ -269,16 +270,10 @@ class KanbanApp:
         save_board(self.board)
 
     def _add_card(self) -> None:
-        title = simpledialog.askstring(
-            "カード追加",
-            "タイトルを入力してください:",
-            parent=self.root,
-        )
-        if not title or not title.strip():
-            return
-
         card_x, card_y = self._default_card_position()
-        self.board.cards.append(Card(title=title.strip(), x=card_x, y=card_y))
+        self.board.cards.append(
+            Card(title=DEFAULT_NEW_CARD_TITLE, x=card_x, y=card_y)
+        )
         self._persist_and_refresh()
 
     def _delete_card(self, card: Card) -> None:
