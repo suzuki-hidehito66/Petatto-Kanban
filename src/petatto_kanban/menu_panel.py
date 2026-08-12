@@ -4,17 +4,55 @@ from __future__ import annotations
 
 import tkinter as tk
 from collections.abc import Callable
-from tkinter import ttk
 
 from petatto_kanban.display.desktop import TRANSPARENT_COLOR
 
 MENU_CIRCLE_SIZE = 36
 MENU_CIRCLE_OUTLINE = "#888888"
 MENU_CIRCLE_FILL = "#ffffff"
-MENU_CHEVRON_FG = "#333333"
+MENU_CIRCLE_FG = "#333333"
+MENU_CIRCLE_PAD = 2
+MENU_CIRCLE_FONT = ("Segoe UI", 14, "bold")
 MENU_DEFAULT_MARGIN_X = 16
 MENU_DEFAULT_MARGIN_Y = 16
 MENU_HOVER_PADX = 4
+
+
+def _create_circle_canvas(
+    parent: tk.Misc,
+    *,
+    text: str,
+    bg: str,
+    font: tuple[str, int, str] = MENU_CIRCLE_FONT,
+) -> tk.Canvas:
+    """`<` パネルと同型の円形 Canvas を作る."""
+    canvas = tk.Canvas(
+        parent,
+        width=MENU_CIRCLE_SIZE,
+        height=MENU_CIRCLE_SIZE,
+        bg=bg,
+        highlightthickness=0,
+        bd=0,
+        cursor="hand2",
+    )
+    pad = MENU_CIRCLE_PAD
+    canvas.create_oval(
+        pad,
+        pad,
+        MENU_CIRCLE_SIZE - pad,
+        MENU_CIRCLE_SIZE - pad,
+        outline=MENU_CIRCLE_OUTLINE,
+        width=1,
+        fill=MENU_CIRCLE_FILL,
+    )
+    canvas.create_text(
+        MENU_CIRCLE_SIZE // 2,
+        MENU_CIRCLE_SIZE // 2,
+        text=text,
+        font=font,
+        fill=MENU_CIRCLE_FG,
+    )
+    return canvas
 
 
 class MenuPanel:
@@ -43,45 +81,18 @@ class MenuPanel:
         self._row.pack()
 
         self._actions = tk.Frame(self._row, bg=bg, bd=0, highlightthickness=0)
-        ttk.Button(self._actions, text="＋", width=3, command=on_add_card).pack(
-            side=tk.LEFT,
-            padx=(0, MENU_HOVER_PADX),
-        )
-        ttk.Button(self._actions, text="⚙", width=3, command=on_settings).pack(
-            side=tk.LEFT,
-            padx=(0, MENU_HOVER_PADX),
-        )
-        ttk.Button(self._actions, text="×", width=3, command=on_close).pack(
-            side=tk.LEFT,
-            padx=(0, MENU_HOVER_PADX),
-        )
+        for label, handler in (
+            ("＋", on_add_card),
+            ("⚙", on_settings),
+            ("×", on_close),
+        ):
+            button = _create_circle_canvas(self._actions, text=label, bg=bg)
+            button.pack(side=tk.LEFT, padx=(0, MENU_HOVER_PADX))
+            button.bind("<Button-1>", lambda _e, cmd=handler: cmd())
 
-        self._circle = tk.Canvas(
-            self._row,
-            width=MENU_CIRCLE_SIZE,
-            height=MENU_CIRCLE_SIZE,
-            bg=bg,
-            highlightthickness=0,
-            bd=0,
-        )
+        self._circle = _create_circle_canvas(self._row, text="<", bg=bg)
         self._circle.pack(side=tk.RIGHT)
-        pad = 2
-        self._circle.create_oval(
-            pad,
-            pad,
-            MENU_CIRCLE_SIZE - pad,
-            MENU_CIRCLE_SIZE - pad,
-            outline=MENU_CIRCLE_OUTLINE,
-            width=1,
-            fill=MENU_CIRCLE_FILL,
-        )
-        self._circle.create_text(
-            MENU_CIRCLE_SIZE // 2,
-            MENU_CIRCLE_SIZE // 2,
-            text="<",
-            font=("Segoe UI", 14, "bold"),
-            fill=MENU_CHEVRON_FG,
-        )
+        self._circle.configure(cursor="fleur")
 
         self._row.bind("<Enter>", self._on_enter)
         self._row.bind("<Leave>", self._on_leave)
