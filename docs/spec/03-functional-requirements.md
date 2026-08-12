@@ -35,6 +35,7 @@
 | [FR-009](#fr-009-再読み込み) | 再読み込み | Should | implemented | M1 |
 | [FR-019](#fr-019-デスクトップモード) | デスクトップモード | Must | implemented | M1 |
 | [FR-021](#fr-021-ディスプレイ指定) | ディスプレイ指定 | Must | implemented | M1 |
+| [FR-023](#fr-023-アプリ終了) | アプリ終了（×ボタン） | Must | implemented | M1 |
 | [FR-018](#fr-018-ウィンドウモード) | ウィンドウモード | Should | deferred | M2 |
 | [FR-020](#fr-020-オーバーレイモード) | オーバーレイモード | Should | specified | M2 |
 | [FR-022](#fr-022-表示モード切替) | 表示モード切替 | Should | specified | M2 |
@@ -254,6 +255,26 @@
 
 **説明**  
 デスクトップモードで表示先モニターを選択し、`settings.json` に保存する。
+
+---
+
+### FR-023: アプリ終了
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Must |
+| ステータス | implemented |
+| 関連 US | US-011 |
+| 関連 AC | AC-023-01 |
+| 実装 | `src/petatto_kanban/app.py` |
+| UI 契約 | [UC-002](./08-ui-behavior-contract.md#uc-002-ヘッダー) |
+
+**説明**  
+ヘッダー右上の **×ボタン** でアプリを終了する。終了前にボード・表示設定を自動保存する。
+
+**制約**
+- デスクトップモード（タイトルバーなし）でも終了できること
+- `WM_DELETE_WINDOW` と同じ `_on_close` 処理を呼ぶ
 
 ---
 

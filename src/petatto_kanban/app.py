@@ -63,6 +63,10 @@ class KanbanApp:
 
         ttk.Label(header, text=self.board.name, font=("Segoe UI", 14, "bold")).pack(side=tk.LEFT)
 
+        # 右端から順に pack（先に pack したものが右側）
+        close_btn = ttk.Button(header, text="×", width=3, command=self._on_close)
+        close_btn.pack(side=tk.RIGHT)
+
         monitor_names = [monitor.name for monitor in self._monitors]
         self.monitor_var = tk.StringVar(
             value=monitor_names[min(self.display_settings.monitor_index, len(monitor_names) - 1)]
