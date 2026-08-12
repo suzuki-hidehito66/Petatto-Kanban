@@ -21,7 +21,7 @@
 | FR-001 | US-001, US-010 | AC-001-01, AC-020-01 | `app.py`, `display/overlay.py` | 手動 | implemented |
 | FR-002 | US-001 | AC-002-01 | `models.py`, `app.py` | `test_create_default_board_is_empty` | verified |
 | FR-003 | US-002 | AC-003-01, AC-003-02 | `app.py` | 手動 | implemented |
-| FR-004 | US-003 | AC-004-01 | `app.py` | 手動 | implemented |
+| FR-004 | US-003 | AC-004-01, AC-004-02 | `app.py` | 手動 | implemented |
 | FR-005 | US-004 | AC-005-01, AC-005-02 | `app.py` | 手動 | implemented |
 | FR-007 | US-006 | AC-007-01〜03 | `storage.py`, `app.py` | `test_save_and_load_board`, `test_board_roundtrip_dict`, `test_migrate_legacy_columns_format` | verified |
 | FR-010 | US-012 | AC-010-01 | `app.py` | 手動 | implemented |
