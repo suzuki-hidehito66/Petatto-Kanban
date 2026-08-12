@@ -296,18 +296,45 @@ class KanbanApp:
         if self._due_date_outside_click_bound:
             return
         self.root.bind_all("<Button-1>", self._on_due_date_picker_outside_click, add="+")
+        self.root.bind_all("<ButtonRelease-1>", self._on_due_date_picker_outside_click, add="+")
         self._due_date_outside_click_bound = True
 
     def _unbind_due_date_picker_outside_click(self) -> None:
         if not self._due_date_outside_click_bound:
             return
         self.root.unbind_all("<Button-1>")
+        self.root.unbind_all("<ButtonRelease-1>")
         self._due_date_outside_click_bound = False
 
     def _on_due_date_picker_outside_click(self, event: tk.Event) -> None:
         if self._due_date_picker_host is None:
             return
-        if self._widget_is_descendant(event.widget, self._due_date_picker_host):
+        x_root = event.x_root
+        y_root = event.y_root
+        widget = event.widget
+        self.root.after_idle(
+            lambda w=widget, x=x_root, y=y_root: self._maybe_cancel_due_date_picker_for_click(
+                w, x, y
+            ),
+        )
+
+    def _maybe_cancel_due_date_picker_for_click(
+        self,
+        widget: tk.Misc | str,
+        x_root: int,
+        y_root: int,
+    ) -> None:
+        host = self._due_date_picker_host
+        if host is None:
+            return
+        if isinstance(widget, tk.Misc) and self._widget_is_descendant(widget, host):
+            return
+        host.update_idletasks()
+        left = host.winfo_rootx()
+        top = host.winfo_rooty()
+        right = left + host.winfo_width()
+        bottom = top + host.winfo_height()
+        if left <= x_root <= right and top <= y_root <= bottom:
             return
         self._cancel_due_date_picker_if_any()
 
@@ -718,6 +745,7 @@ class KanbanApp:
         save_board(self.board)
 
     def _add_card(self) -> None:
+        self._cancel_due_date_picker_if_any()
         stack_index = len(self.board.cards)
         card_x, card_y = self._card_position_near_add_button(stack_index)
         card = Card(title=DEFAULT_NEW_CARD_TITLE, x=card_x, y=card_y)
@@ -737,6 +765,7 @@ class KanbanApp:
         self._persist_and_refresh()
 
     def _open_settings(self) -> None:
+        self._cancel_due_date_picker_if_any()
         dialog = _SettingsDialog(
             self.root,
             confirm_delete=self.display_settings.confirm_delete,
