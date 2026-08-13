@@ -115,7 +115,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-021, FR-024, FR-023, FR-026, FR-027 |
+| 関連 FR | FR-021, FR-024, FR-023, FR-026, FR-027, FR-028 |
 | 保存先 | `%USERPROFILE%\.petatto-kanban\settings.json` |
 | マイルストーン | M1 |
 
@@ -132,6 +132,7 @@
 | `menu_panel_y` | number | - | メニューパネル左上 Y |
 | `ui_size` | string | ○ | UI サイズプリセット: `"small"` \| `"medium"` \| `"large"`（FR-026） |
 | `ui_font` | string | ○ | UI フォントプリセット: `"segoe_ui"` \| `"meiryo"` \| `"yu_gothic_ui"` \| `"ms_gothic"`（FR-027） |
+| `ui_theme` | string | ○ | UI カラーテーマ: `"default"` \| `"dark"` \| `"sandy"` \| `"forest"` \| `"fancy"` \| `"ocean"` \| `"sunset"` \| `"slate"` \| `"rose"` \| `"midnight"`（FR-028） |
 
 ### 既定値
 
@@ -143,6 +144,7 @@
 | `confirm_exit` | `false` |
 | `ui_size` | `"medium"` |
 | `ui_font` | `"segoe_ui"` |
+| `ui_theme` | `"default"` |
 
 ### ui_font と tkinter フォント名
 
@@ -165,6 +167,23 @@
 
 不正値・欠損時は `medium` / `1.0` にフォールバックする。
 
+### ui_theme と設定 UI ラベル
+
+| ui_theme（JSON） | 設定 UI ラベル |
+|------------------|----------------|
+| `default` | Default |
+| `dark` | ダーク |
+| `sandy` | サンディ |
+| `forest` | フォレスト |
+| `fancy` | ファンシー |
+| `ocean` | オーシャン |
+| `sunset` | サンセット |
+| `slate` | スレート |
+| `rose` | ローズ |
+| `midnight` | ミッドナイト |
+
+不正値・欠損時は `default` にフォールバックする。
+
 ### サンプル
 
 ```json
@@ -175,7 +194,8 @@
   "confirm_delete": true,
   "confirm_exit": false,
   "ui_size": "medium",
-  "ui_font": "segoe_ui"
+  "ui_font": "segoe_ui",
+  "ui_theme": "default"
 }
 ```
 

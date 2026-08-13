@@ -88,6 +88,8 @@ petatto-kanban/
 │   │   ├── ui_metrics.py         # UiMetrics 合成（FR-026 + FR-027）
 │   │   ├── ui_font.py              # UI フォントプリセット（FR-027）
 │   │   ├── ui_font_labels.py       # UI フォント UI ラベル
+│   │   ├── ui_theme.py             # UI カラーテーマパレット（FR-028、実装予定）
+│   │   ├── ui_theme_labels.py      # UI カラーテーマ UI ラベル（実装予定）
 │   │   ├── ui_chrome.py          # メニュー・期限パネルホスト再構築
 │   ├── card_renderer.py          # カード UI 描画（UiMetrics）
 │   │   ├── settings.py           # settings.json

@@ -122,11 +122,11 @@
 | 進捗バー | ホバー中スクロールダウン | 進捗率 −10%（最小 0%）（FR-025） |
 | 進捗バー | 左クリックドラッグ | 画面上の位置を変更（FR-010） |
 | 進捗バー | 右クリック離し | **削除処理**（FR-005） |
-| 進捗バー | — | 左から塗りつぶし。0%≈赤 / 50%≈黄 / 100%≈緑。中央に `NN%` 表示 |
+| 進捗バー | — | 左から塗りつぶし。0%≈赤 / 50%≈黄 / 100%≈緑（**塗り色はテーマ非適用**）。中央に `NN%` 表示。トラック背景はテーマ適用 |
 | 期限パネル | 左クリックドラッグ | 画面上の位置を変更（FR-010） |
 | 期限パネル | 右クリック離し | **削除処理**（FR-005） |
 | 期限パネル | クリック→離す→クリック→離す | 期限編集パネル（UC-008）。2回目の離しで表示 |
-| 期限パネル | — | `期限なし` または `YYYY/MM/DD`。当日=黄 / 超過=赤 |
+| 期限パネル | — | `期限なし` または `YYYY/MM/DD`。当日=黄 / 超過=赤（**テーマ非適用** — [UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ)） |
 
 **削除**
 - 右ボタンを **離した** とき（`<ButtonRelease-3>`）→ `_delete_card()` を呼び出し
@@ -220,7 +220,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027 |
+| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027, FR-028 |
 | 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `app.py` |
 | 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01 |
 
@@ -229,11 +229,13 @@
 | タブ | ID（実装定数） | 関連 FR | 項目 |
 |------|----------------|---------|------|
 | **表示** | `SETTINGS_TAB_DISPLAY` | FR-019, FR-020, FR-021, FR-022, FR-026, FR-027 | 表示モード、表示ディスプレイ、UI サイズ、**フォント** |
+| **テーマ** | `SETTINGS_TAB_THEME` | FR-028 | **カラーテーマ** |
 | **システム** | `SETTINGS_TAB_SYSTEM` | FR-024, FR-023, FR-005 | 確認オプション、**全カード削除** |
 
 - UI は `ttk.Notebook` でタブ切り替え
 - `settings_dialog_tabs.DISPLAY_TAB_FIELDS` に `ui_size`, `ui_font` を含む
-- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit`, `ui_size`, `ui_font` を保存（タブに関係なく一括）
+- `settings_dialog_tabs.THEME_TAB_FIELDS` に `ui_theme` を含む
+- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit`, `ui_size`, `ui_font`, `ui_theme` を保存（タブに関係なく一括）
 - キャンセル時は変更を破棄
 
 ### 表示タブ
@@ -244,6 +246,12 @@
 | **表示ディスプレイ** | コンボボックス（OS 認識モニター一覧、`readonly`） |
 | **UI サイズ** | コンボボックス（`readonly`）: `小` / `標準` / `大`（FR-026）。既定 **標準** |
 | **フォント** | コンボボックス（`readonly`）: Segoe UI / メイリオ / 游ゴシック / MS ゴシック（FR-027）。既定 **Segoe UI** |
+
+### テーマタブ
+
+| 要素 | 仕様 |
+|------|------|
+| **カラーテーマ** | コンボボックス（`readonly`）: Default / ダーク / サンディ / フォレスト / ファンシー / オーシャン / サンセット / スレート / ローズ / ミッドナイト（FR-028）。既定 **Default** |
 
 ### システムタブ
 
@@ -261,6 +269,7 @@
 | ディスプレイ変更時 | 現在の表示モードのまま全画面を再配置し、カードを再描画 |
 | UI サイズ変更時 | 表示モード・ディスプレイを変えずにカード・メニューパネルを再描画。カード座標は保持 |
 | フォント変更時 | UI サイズ変更時と同様に即時再描画。カード座標は保持 |
+| テーマ変更時 | フォント変更時と同様に即時再描画。カード座標は保持。[UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ) の適用・除外範囲に従う |
 
 ---
 
@@ -333,6 +342,182 @@
 
 ---
 
+## UC-011: UI カラーテーマ
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-028 |
+| 関連 AC | AC-028-01, AC-028-02, AC-028-03 |
+| 実装（予定） | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
+
+`ui_theme`（`settings.json`）に応じて、UI 要素の **背景色・文字色** を切り替える。フォント（UC-010）・サイズ（UC-009）とは独立。
+
+### 配色トークン
+
+| トークン | 適用箇所 |
+|----------|----------|
+| `card_bg` / `card_fg` | カード枠背景、タイトル文字、インライン編集 `Entry` |
+| `menu_fill` / `menu_fg` / `menu_outline` | メニューパネル円ボタンの塗り・文字・枠線 |
+| `progress_track_bg` | 進捗バーの未達部分（トラック） |
+| `due_future_bg` / `due_future_fg` | カード期限パネル（**未来**の期限） |
+| `due_none_bg` / `due_none_fg` | カード期限パネル（**期限なし**） |
+| `due_picker_bg` / `due_picker_fg` | 期限編集パネルの枠・見出し・通常日ボタン（非ハイライト） |
+
+### テーマ非適用（固定色）
+
+状態識別のため、以下は **全テーマ共通** で現行実装の色を維持する。
+
+| 定数 / 関数 | 色の意味 | 参照 |
+|-------------|----------|------|
+| `DUE_PANEL_TODAY_BG` / `DUE_PANEL_TODAY_FG` | カード期限パネル **当日**（黄系） | `due_date.py` |
+| `DUE_PANEL_OVERDUE_BG` / `DUE_PANEL_OVERDUE_FG` | カード期限パネル **超過**（赤系） | `due_date.py` |
+| `progress_color(percent)` | 進捗バー **塗り**（赤→黄→緑） | `progress.py` |
+| `CALENDAR_TODAY_BUTTON_BG` / `CALENDAR_TODAY_BUTTON_FG` | カレンダー **当日**ボタン（緑） | `due_date.py` |
+
+**その他非適用**
+- オーバーレイ透過色 `TRANSPARENT_COLOR`（`transparent.py`）
+- OS 標準の `messagebox` / 確認ダイアログ
+
+### 可読性
+
+- 各テーマの `*_bg` と `*_fg` の組は、通常テキストで **コントラスト比 4.5:1 以上** を満たすこと（目視 + 実装時に WCAG 2.1 相当で確認）
+- 進捗バー中央 `%` 文字色は、塗り幅に応じた既存のコントラスト判定（`progress >= 55` で白文字）を維持
+
+### プリセット一覧（10 種）
+
+| ui_theme | UI ラベル | 概要 |
+|----------|-----------|------|
+| `default` | Default | 現行既定（クリーム地・ダークグレー文字） |
+| `dark` | ダーク | 黒に近い背景・白文字 |
+| `sandy` | サンディ | 砂浜・ベージュ系の暖色 |
+| `forest` | フォレスト | 深緑・アースグリーン系 |
+| `fancy` | ファンシー | ラベンダー・パープル系 |
+| `ocean` | オーシャン | 水色・ネイビー系 |
+| `sunset` | サンセット | コーラル・夕焼け系 |
+| `slate` | スレート | クールグレー・スレートブルー系 |
+| `rose` | ローズ | ローズピンク系 |
+| `midnight` | ミッドナイト | 深夜のネイビー・ダークブルー系 |
+
+### パレット定義（`display/ui_theme.py` 予定）
+
+色は `#RRGGBB` 形式。実装時は本表を `UiThemePalette` 等としてコード化する。
+
+#### default（現行）
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#fffef8` / `#222222` |
+| menu_fill / menu_fg / menu_outline | `#ffffff` / `#333333` / `#888888` |
+| progress_track_bg | `#e8e8e8` |
+| due_future_bg / due_future_fg | `#f5f5f0` / `#444444` |
+| due_none_bg / due_none_fg | `#f5f5f0` / `#666666` |
+| due_picker_bg / due_picker_fg | `#f5f5f0` / `#222222` |
+
+#### dark
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#1a1a1a` / `#f2f2f2` |
+| menu_fill / menu_fg / menu_outline | `#2b2b2b` / `#eeeeee` / `#555555` |
+| progress_track_bg | `#333333` |
+| due_future_bg / due_future_fg | `#242424` / `#cccccc` |
+| due_none_bg / due_none_fg | `#242424` / `#aaaaaa` |
+| due_picker_bg / due_picker_fg | `#222222` / `#e8e8e8` |
+
+#### sandy
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#faf6ef` / `#3d3429` |
+| menu_fill / menu_fg / menu_outline | `#fff8ee` / `#4a4035` / `#c4b8a8` |
+| progress_track_bg | `#e8dfd0` |
+| due_future_bg / due_future_fg | `#f0e8da` / `#5c5044` |
+| due_none_bg / due_none_fg | `#f0e8da` / `#7a6f62` |
+| due_picker_bg / due_picker_fg | `#f5ede3` / `#3d3429` |
+
+#### forest
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#f4f9f4` / `#1b3d2a` |
+| menu_fill / menu_fg / menu_outline | `#e8f5e9` / `#1b4332` / `#6b9080` |
+| progress_track_bg | `#d4e8d4` |
+| due_future_bg / due_future_fg | `#e0efe0` / `#2d5a3d` |
+| due_none_bg / due_none_fg | `#e0efe0` / `#4a6b55` |
+| due_picker_bg / due_picker_fg | `#edf5ed` / `#1b3d2a` |
+
+#### fancy
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#faf5ff` / `#3d2a4a` |
+| menu_fill / menu_fg / menu_outline | `#f3e8ff` / `#5b3a6e` / `#b794c9` |
+| progress_track_bg | `#eadcf5` |
+| due_future_bg / due_future_fg | `#efe4f8` / `#4a3560` |
+| due_none_bg / due_none_fg | `#efe4f8` / `#6b5580` |
+| due_picker_bg / due_picker_fg | `#f5effa` / `#3d2a4a` |
+
+#### ocean
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#f0f8ff` / `#0d3b5c` |
+| menu_fill / menu_fg / menu_outline | `#e3f2fd` / `#1565c0` / `#64b5f6` |
+| progress_track_bg | `#cce4f5` |
+| due_future_bg / due_future_fg | `#ddeef8` / `#1a5276` |
+| due_none_bg / due_none_fg | `#ddeef8` / `#4a7a9a` |
+| due_picker_bg / due_picker_fg | `#e8f4fc` / `#0d3b5c` |
+
+#### sunset
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#fff8f3` / `#4a2c2a` |
+| menu_fill / menu_fg / menu_outline | `#ffe8e0` / `#8b4513` / `#e8a598` |
+| progress_track_bg | `#f5ddd4` |
+| due_future_bg / due_future_fg | `#fceee8` / `#6b3a35` |
+| due_none_bg / due_none_fg | `#fceee8` / `#8a5a55` |
+| due_picker_bg / due_picker_fg | `#fff0ea` / `#4a2c2a` |
+
+#### slate
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#f5f7fa` / `#1e293b` |
+| menu_fill / menu_fg / menu_outline | `#eef2f7` / `#334155` / `#94a3b8` |
+| progress_track_bg | `#dde3ea` |
+| due_future_bg / due_future_fg | `#e8edf2` / `#334155` |
+| due_none_bg / due_none_fg | `#e8edf2` / `#64748b` |
+| due_picker_bg / due_picker_fg | `#edf1f5` / `#1e293b` |
+
+#### rose
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#fff5f7` / `#4a1942` |
+| menu_fill / menu_fg / menu_outline | `#fce4ec` / `#880e4f` / `#f48fb1` |
+| progress_track_bg | `#f8d7e0` |
+| due_future_bg / due_future_fg | `#fdeef2` / `#6b2149` |
+| due_none_bg / due_none_fg | `#fdeef2` / `#8a4560` |
+| due_picker_bg / due_picker_fg | `#fef0f3` / `#4a1942` |
+
+#### midnight
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#1e2433` / `#e8eaf0` |
+| menu_fill / menu_fg / menu_outline | `#2a3142` / `#d0d4de` / `#5c6a82` |
+| progress_track_bg | `#323848` |
+| due_future_bg / due_future_fg | `#252b3a` / `#c0c8d4` |
+| due_none_bg / due_none_fg | `#252b3a` / `#9098a8` |
+| due_picker_bg / due_picker_fg | `#222838` / `#e0e4ec` |
+
+**フォールバック**
+- 設定値が不正・欠損 → `default`
+- 実装時、パレット取得 API は `palette_for_theme(UiTheme)` を公開し、描画モジュールは定数直参照をやめてパレット経由にリファクタする
+
+---
+
 ## UC-007: 列レイアウト（M2）
 
 M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に本 UC を復活する。
@@ -387,3 +572,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.4.0 | 2026-08-13 | UC-006 表示タブ: UI サイズ設定（FR-026）。UC-009 UI スケール契約を追加 |
 | 2.5.0 | 2026-08-13 | UC-006 表示タブ: フォント設定（FR-027）。UC-010 UI フォント契約を追加 |
 | 2.6.0 | 2026-08-13 | FR-027 実装。UC-009/UC-010 を `ui_metrics.py` で合成 |
+| 2.7.0 | 2026-08-13 | UC-006 テーマタブ・UC-011 UI カラーテーマ契約（FR-028） |
