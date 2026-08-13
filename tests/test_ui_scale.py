@@ -24,6 +24,7 @@ def test_parse_ui_size_defaults_to_medium() -> None:
 def test_parse_ui_size_accepts_presets() -> None:
     assert parse_ui_size("small") == UiSize.SMALL
     assert parse_ui_size("large") == UiSize.LARGE
+    assert parse_ui_size("xlarge") == UiSize.XLARGE
 
 
 def test_medium_metrics_matches_baseline() -> None:
@@ -56,6 +57,16 @@ def test_large_metrics_scales_up() -> None:
     assert large.card_min_width > medium.card_min_width
     assert large.menu_circle_size > medium.menu_circle_size
     assert large.title_font[1] >= medium.title_font[1]
+
+
+def test_xlarge_metrics_scales_above_large() -> None:
+    from petatto_kanban.display.ui_scale import UI_SIZE_SCALE
+
+    large = metrics_for_ui_size(UiSize.LARGE)
+    xlarge = metrics_for_ui_size(UiSize.XLARGE)
+    assert UI_SIZE_SCALE[UiSize.XLARGE] == 1.25
+    assert xlarge.card_min_width > large.card_min_width
+    assert xlarge.title_font[1] >= large.title_font[1]
 
 
 def test_small_metrics_scales_down_but_font_has_minimum() -> None:

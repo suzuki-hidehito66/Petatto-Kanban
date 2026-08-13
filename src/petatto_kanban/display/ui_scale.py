@@ -49,12 +49,14 @@ class UiSize(StrEnum):
     SMALL = "small"
     MEDIUM = "medium"
     LARGE = "large"
+    XLARGE = "xlarge"
 
 
 UI_SIZE_SCALE: dict[UiSize, float] = {
     UiSize.SMALL: 0.85,
     UiSize.MEDIUM: 1.0,
     UiSize.LARGE: 1.15,
+    UiSize.XLARGE: 1.25,
 }
 
 

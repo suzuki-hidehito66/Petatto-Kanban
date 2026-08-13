@@ -85,6 +85,27 @@ def test_result_from_form_values_ui_size() -> None:
     assert result.ui_font == UiFont.MEIRYO
 
 
+def test_result_from_form_values_ui_size_xlarge() -> None:
+    result = result_from_form_values(
+        SettingsFormValues(
+            mode_label=display_mode_label(DisplayMode.OVERLAY),
+            monitor_name="ディスプレイ 1",
+            ui_size_label="極大",
+            ui_font_label=ui_font_label(UiFont.SEGOE_UI),
+            ui_theme_label=ui_theme_label(UiTheme.DEFAULT),
+            confirm_delete=True,
+            confirm_exit=False,
+        ),
+        monitors=_MONITORS,
+        default_mode=DisplayMode.OVERLAY,
+        default_monitor_index=0,
+        default_ui_size=UiSize.MEDIUM,
+        default_ui_font=UiFont.SEGOE_UI,
+        default_ui_theme=UiTheme.DEFAULT,
+    )
+    assert result.ui_size == UiSize.XLARGE
+
+
 def test_result_from_form_values_ui_theme() -> None:
     result = result_from_form_values(
         SettingsFormValues(
