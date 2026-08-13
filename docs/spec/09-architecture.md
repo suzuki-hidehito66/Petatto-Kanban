@@ -121,7 +121,9 @@ petatto-kanban/
 | `display/settings_actions.py` | 設定適用・終了確認・全カード削除（`app.py` から利用） | `settings_dialog`, `settings_dialog_labels`, `storage` |
 | `display/ui_scale.py` | UI サイズプリセット・スケール係数・寸法計算（FR-026） | 標準ライブラリのみ |
 | `display/ui_scale_labels.py` | UI サイズコンボボックス用ラベル | 標準ライブラリのみ |
-| `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_scale`, `menu_panel`, `due_date_picker`, `card_renderer` |
+| `display/ui_font.py` | UI フォントプリセット・tkinter ファミリー解決（FR-027） | 標準ライブラリのみ（**specified**） |
+| `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ（**specified**） |
+| `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_scale`, `ui_font`, `menu_panel`, `due_date_picker`, `card_renderer` |
 | `card_renderer.py` | カード UI 描画（UiMetrics 適用） | tkinter, `ui_scale`, `due_date`, `progress` |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
 | `menu_panel.py` | メニューパネル UI（円形・NE アンカー・ホバー展開） | tkinter, `menu_panel_layout` |
