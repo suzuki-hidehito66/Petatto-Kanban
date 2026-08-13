@@ -62,8 +62,8 @@ def test_due_date_panel_style_keeps_semantic_colors_with_palette() -> None:
 
 
 def test_default_palette_matches_legacy_card_colors() -> None:
-    from petatto_kanban.card_renderer import CARD_BG, CARD_FG
+    from petatto_kanban.display.ui_theme import UiTheme, palette_for_theme
 
     palette = palette_for_theme(UiTheme.DEFAULT)
-    assert palette.card_bg == CARD_BG
-    assert palette.card_fg == CARD_FG
+    assert palette.card_bg == "#fffef8"
+    assert palette.card_fg == "#222222"

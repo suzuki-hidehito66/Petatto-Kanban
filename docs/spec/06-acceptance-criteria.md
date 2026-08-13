@@ -776,6 +776,23 @@ And スケール係数 1.0 が適用される
 
 **テスト**: `test_display_settings_from_dict_invalid_ui_size`, `test_ui_scale.py`
 
+### AC-026-04
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-026 |
+| 関連 US | US-016 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json に ui_size が "xlarge" で保存されている
+When アプリを再起動する
+Then 起動直後から UI が「極大」サイズ（scale 1.25）で描画される
+```
+
+**テスト**: `test_save_and_load_ui_size`, `test_ui_scale.py`, `test_ui_scale_labels.py`
+
 ---
 
 ## FR-027: UI フォント設定

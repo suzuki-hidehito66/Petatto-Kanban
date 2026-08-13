@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 from petatto_kanban.card_ui import CardUiRefs
 from petatto_kanban.display.ui_metrics import UiMetrics
-from petatto_kanban.display.ui_theme import UiTheme, palette_for_theme
 from petatto_kanban.due_date import due_date_panel_style, format_due_date
 from petatto_kanban.models import Card
 from petatto_kanban.progress import progress_color
@@ -16,12 +15,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from petatto_kanban.display.ui_theme import UiThemePalette
-
-_DEFAULT_PALETTE = palette_for_theme(UiTheme.DEFAULT)
-CARD_BG = _DEFAULT_PALETTE.card_bg
-CARD_FG = _DEFAULT_PALETTE.card_fg
-CARD_TITLE_FRAME_BD = 1
-DUE_PANEL_BD = 1
 
 
 class CardRenderer:
@@ -67,7 +60,7 @@ class CardRenderer:
         title_frame = tk.Frame(
             frame,
             bg=palette.card_bg,
-            bd=CARD_TITLE_FRAME_BD,
+            bd=metrics.card_title_frame_border,
             relief=tk.GROOVE,
             highlightthickness=0,
             padx=metrics.card_title_frame_padx,
@@ -178,7 +171,7 @@ class CardRenderer:
         due_panel = tk.Frame(
             frame,
             bg=panel_bg,
-            bd=DUE_PANEL_BD,
+            bd=metrics.card_due_panel_border,
             relief=tk.GROOVE,
             highlightthickness=0,
             padx=metrics.card_due_panel_padx,

@@ -90,12 +90,12 @@ def test_display_settings_from_dict_invalid_ui_size() -> None:
 def test_save_and_load_ui_size(tmp_path: Path) -> None:
     from petatto_kanban.display.ui_scale import UiSize
 
-    settings = DisplaySettings(ui_size=UiSize.LARGE)
+    settings = DisplaySettings(ui_size=UiSize.XLARGE)
     path = tmp_path / "settings.json"
     save_display_settings(settings, path)
 
     loaded = load_display_settings(path)
-    assert loaded.ui_size == UiSize.LARGE
+    assert loaded.ui_size == UiSize.XLARGE
 
 
 def test_display_settings_from_dict_invalid_ui_font() -> None:
