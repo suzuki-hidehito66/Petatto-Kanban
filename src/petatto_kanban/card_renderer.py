@@ -146,8 +146,10 @@ class CardRenderer:
     def _finalize_frame(self, frame: tk.Frame) -> None:
         metrics = self._metrics
         frame.update_idletasks()
+        # 幅は card_min_width に固定。fill=X 子要素があると winfo_reqwidth が
+        # 親キャンバス幅まで膨らみ、カードが不必要に横長になるため。
         frame.config(
-            width=max(metrics.card_min_width, frame.winfo_reqwidth()),
+            width=metrics.card_min_width,
             height=max(metrics.card_min_height, frame.winfo_reqheight()),
         )
         frame.pack_propagate(False)
@@ -189,6 +191,8 @@ class CardRenderer:
             fg=panel_fg,
             font=self._metrics.due_font,
             anchor=tk.W,
+            wraplength=metrics.card_label_wrap,
+            justify=tk.LEFT,
             cursor="hand2",
         )
         due_label.pack(anchor=tk.W, fill=tk.X)

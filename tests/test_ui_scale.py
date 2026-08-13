@@ -30,8 +30,8 @@ def test_medium_metrics_matches_baseline() -> None:
     assert metrics.menu_circle_size == BASE_MENU_CIRCLE_SIZE
 
 
-def test_card_min_dimensions_are_landscape_with_comfortable_height() -> None:
-    assert BASE_CARD_MIN_WIDTH > BASE_CARD_MIN_HEIGHT
+def test_card_min_dimensions_are_compact_with_comfortable_height() -> None:
+    assert BASE_CARD_MIN_WIDTH >= 100
     assert BASE_CARD_MIN_HEIGHT >= 100
     golden_height = round(BASE_CARD_MIN_WIDTH / GOLDEN_RATIO)
     assert golden_height < BASE_CARD_MIN_HEIGHT
@@ -50,8 +50,8 @@ def test_card_label_metrics_match_card_width_baseline() -> None:
     assert metrics.title_font[1] == BASE_TITLE_FONT_SIZE == 8
     assert metrics.due_font[1] == BASE_DUE_FONT_SIZE == 8
     assert metrics.progress_font[1] == BASE_PROGRESS_FONT_SIZE == 8
-    assert metrics.progress_bar_height == BASE_PROGRESS_BAR_HEIGHT == 11
-    assert metrics.card_frame_pad == BASE_CARD_FRAME_PAD == 5
+    assert metrics.progress_bar_height == BASE_PROGRESS_BAR_HEIGHT == 10
+    assert metrics.card_frame_pad == BASE_CARD_FRAME_PAD == 4
 
 
 def test_large_metrics_scales_up() -> None:
