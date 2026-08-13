@@ -58,8 +58,8 @@ class CardRenderer:
             bg=palette.card_bg,
             bd=metrics.card_frame_border,
             relief=tk.RIDGE,
-            padx=8,
-            pady=8,
+            padx=metrics.card_frame_pad,
+            pady=metrics.card_frame_pad,
             highlightthickness=0,
         )
         frame.place(x=card.x, y=card.y)
@@ -70,8 +70,8 @@ class CardRenderer:
             bd=CARD_TITLE_FRAME_BD,
             relief=tk.GROOVE,
             highlightthickness=0,
-            padx=6,
-            pady=4,
+            padx=metrics.card_title_frame_padx,
+            pady=metrics.card_title_frame_pady,
         )
         title_frame.pack(anchor=tk.NW, fill=tk.X)
 
@@ -85,10 +85,14 @@ class CardRenderer:
         title_label.pack(anchor=tk.NW, fill=tk.X)
 
         due_panel, due_label = self._create_due_date_panel(frame, card)
-        due_panel.pack(anchor=tk.NW, fill=tk.X, pady=(4, 0))
+        due_panel.pack(anchor=tk.NW, fill=tk.X, pady=(metrics.card_due_section_gap, 0))
 
         progress_canvas = self._create_progress_canvas(frame, card)
-        progress_canvas.pack(side=tk.BOTTOM, fill=tk.X, pady=(6, 0))
+        progress_canvas.pack(
+            side=tk.BOTTOM,
+            fill=tk.X,
+            pady=(metrics.card_progress_section_gap, 0),
+        )
 
         self._finalize_frame(frame)
         frame.bind("<Enter>", self._on_card_enter, add="+")
@@ -167,6 +171,7 @@ class CardRenderer:
         return canvas
 
     def _create_due_date_panel(self, frame: tk.Frame, card: Card) -> tuple[tk.Frame, tk.Label]:
+        metrics = self._metrics
         panel_bg, panel_fg = due_date_panel_style(card.due_date, palette=self._palette)
         due_panel = tk.Frame(
             frame,
@@ -174,8 +179,8 @@ class CardRenderer:
             bd=DUE_PANEL_BD,
             relief=tk.GROOVE,
             highlightthickness=0,
-            padx=6,
-            pady=3,
+            padx=metrics.card_due_panel_padx,
+            pady=metrics.card_due_panel_pady,
         )
         due_label = tk.Label(
             due_panel,

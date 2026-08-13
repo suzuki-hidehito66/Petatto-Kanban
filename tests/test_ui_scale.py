@@ -36,6 +36,22 @@ def test_card_min_dimensions_use_golden_ratio_landscape() -> None:
     assert abs(ratio - GOLDEN_RATIO) < 0.01
 
 
+def test_card_label_metrics_match_160px_baseline() -> None:
+    from petatto_kanban.display.ui_scale import (
+        BASE_DUE_FONT_SIZE,
+        BASE_PROGRESS_BAR_HEIGHT,
+        BASE_PROGRESS_FONT_SIZE,
+        BASE_TITLE_FONT_SIZE,
+    )
+
+    metrics = medium_metrics()
+    assert metrics.title_font[1] == BASE_TITLE_FONT_SIZE == 8
+    assert metrics.due_font[1] == BASE_DUE_FONT_SIZE == 8
+    assert metrics.progress_font[1] == BASE_PROGRESS_FONT_SIZE == 8
+    assert metrics.progress_bar_height == BASE_PROGRESS_BAR_HEIGHT == 13
+    assert metrics.card_frame_pad == 6
+
+
 def test_large_metrics_scales_up() -> None:
     medium = medium_metrics()
     large = metrics_for_ui_size(UiSize.LARGE)

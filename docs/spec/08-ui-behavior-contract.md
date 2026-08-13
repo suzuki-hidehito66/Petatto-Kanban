@@ -290,10 +290,13 @@
 | `CARD_MIN_WIDTH` | 160 px | カード枠（UC-003）。幅 / 高さ = φ（黄金比・横長） |
 | `CARD_MIN_HEIGHT` | 99 px | `round(CARD_MIN_WIDTH / φ)`（UC-003） |
 | `CARD_LABEL_WRAP` | 140 px | タイトル `wraplength`（`CARD_MIN_WIDTH - 20`） |
-| タイトルフォント pt | **10** bold | カードタイトル |
-| 期限ラベルフォント pt | **9** | カード期限表示 |
-| 進捗ラベルフォント pt | **9** bold | 進捗バー中央 `%` |
-| `PROGRESS_BAR_HEIGHT` | 18 px | 進捗バー |
+| タイトルフォント pt | **8** bold | カードタイトル（160px 幅向けに縮小） |
+| 期限ラベルフォント pt | **8** | カード期限表示 |
+| 進捗ラベルフォント pt | **8** bold | 進捗バー中央 `%` |
+| `PROGRESS_BAR_HEIGHT` | 13 px | 進捗バー |
+| `CARD_FRAME_PAD` | 6 px | カード外枠内余白 |
+| `CARD_TITLE_FRAME_PAD` | 4 × 3 px | タイトル枠内余白 |
+| `CARD_DUE_PANEL_PAD` | 4 × 2 px | 期限パネル内余白 |
 | `MENU_CIRCLE_SIZE` | 36 px | メニューパネル円ボタン（UC-002） |
 | メニュー円フォント pt | **14** bold | ＋ / ⚙ / × / `<` |
 | 期限パネル月ラベル pt | **9** bold | `due_date_picker` |
