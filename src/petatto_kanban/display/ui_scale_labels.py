@@ -8,12 +8,14 @@ UI_SIZE_LABELS: dict[UiSize, str] = {
     UiSize.SMALL: "小",
     UiSize.MEDIUM: "標準",
     UiSize.LARGE: "大",
+    UiSize.XLARGE: "極大",
 }
 
 SELECTABLE_UI_SIZES: tuple[UiSize, ...] = (
     UiSize.SMALL,
     UiSize.MEDIUM,
     UiSize.LARGE,
+    UiSize.XLARGE,
 )
 
 
