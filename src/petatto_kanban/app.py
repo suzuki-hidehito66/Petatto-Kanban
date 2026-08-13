@@ -21,7 +21,11 @@ from petatto_kanban.due_date import due_date_panel_style, format_due_date
 from petatto_kanban.due_date_picker import DueDatePickerHost
 from petatto_kanban.menu_panel import MenuPanel
 from petatto_kanban.models import Card
-from petatto_kanban.new_card_placement import DEFAULT_NEW_CARD_TITLE, compute_new_card_position
+from petatto_kanban.new_card_placement import (
+    DEFAULT_NEW_CARD_TITLE,
+    clamp_card_position_to_monitor,
+    compute_new_card_position,
+)
 from petatto_kanban.progress import PROGRESS_STEP, clamp_progress, progress_color
 from petatto_kanban.storage import load_board, save_board
 
@@ -634,10 +638,21 @@ class KanbanApp:
         self._due_date_picker.cancel_if_any()
         self._commit_inline_title_edit_if_any(refresh_after=False)
         self.root.update_idletasks()
+        monitor = get_monitor(self.display_settings.monitor_index)
+        card_width = CARD_MIN_WIDTH + 2 * CARD_FRAME_BORDER
+        card_height = CARD_MIN_HEIGHT + 2 * CARD_FRAME_BORDER
         card_x, card_y = compute_new_card_position(
             panel=self.menu_panel.bounds(),
-            card_width=CARD_MIN_WIDTH + 2 * CARD_FRAME_BORDER,
+            card_width=card_width,
             stack_index=len(self.board.cards),
+        )
+        card_x, card_y = clamp_card_position_to_monitor(
+            card_x,
+            card_y,
+            card_width=card_width,
+            card_height=card_height,
+            monitor_width=monitor.width,
+            monitor_height=monitor.height,
         )
         card = Card(title=DEFAULT_NEW_CARD_TITLE, x=card_x, y=card_y)
         self.board.cards.append(card)

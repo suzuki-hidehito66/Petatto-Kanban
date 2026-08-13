@@ -5,7 +5,7 @@ from __future__ import annotations
 from petatto_kanban.menu_panel_layout import MenuPanelRect
 
 DEFAULT_NEW_CARD_GAP_Y = 2
-DEFAULT_NEW_CARD_INSET_X = 28
+DEFAULT_NEW_CARD_INSET_X = 128
 DEFAULT_NEW_CARD_STACK_OFFSET_X = 12
 DEFAULT_NEW_CARD_STACK_OFFSET_Y = 12
 DEFAULT_NEW_CARD_TITLE = "新しいタスク"
@@ -28,3 +28,18 @@ def compute_new_card_position(
         base_x - stack_index * stack_offset_x,
         base_y + stack_index * stack_offset_y,
     )
+
+
+def clamp_card_position_to_monitor(
+    x: int,
+    y: int,
+    *,
+    card_width: int,
+    card_height: int,
+    monitor_width: int,
+    monitor_height: int,
+) -> tuple[int, int]:
+    """カード全体がモニター内に収まるよう左上座標を調整する."""
+    max_x = max(0, monitor_width - card_width)
+    max_y = max(0, monitor_height - card_height)
+    return min(max(0, x), max_x), min(max(0, y), max_y)

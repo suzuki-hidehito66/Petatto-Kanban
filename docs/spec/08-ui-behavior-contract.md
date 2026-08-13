@@ -155,15 +155,17 @@
 | 定数 | 値 | 説明 |
 |------|-----|------|
 | `DEFAULT_NEW_CARD_GAP_Y` | 2 | パネル下端からカード上端までの余白（px） |
-| `DEFAULT_NEW_CARD_INSET_X` | 28 | 右端揃え位置からさらに左へ寄せる量（px） |
+| `DEFAULT_NEW_CARD_INSET_X` | 128 | 右端揃え位置からさらに左へ寄せる量（px） |
 | `DEFAULT_NEW_CARD_STACK_OFFSET_X/Y` | 12 | 連続追加ごとに左・下へずらす量（px） |
 | カード幅 | `CARD_MIN_WIDTH + 2 * CARD_FRAME_BORDER`（222） | 枠線込みの配置基準幅 |
+| 画面内クランプ | `clamp_card_position_to_monitor()` | 算出後にモニター範囲内へ収める |
 
 | 項目 | 式 |
 |------|-----|
 | 1 枚目の X | `panel.right - card_width - inset_x`（`panel.right` は NE アンカー） |
 | 1 枚目の Y | `panel.bottom + gap_y`（パネル直下） |
 | N 枚目（0 始まり） | 左へ `N * 12px`、下へ `N * 12px` |
+| クランプ | `0 <= x <= monitor_width - card_width`、`0 <= y <= monitor_height - card_height` |
 
 **注意:** `panel.right` は展開/収納に関わらず `<` 円の右端（NE アンカー）を使う。幅の取得が未確定のときも `_content_width()` で展開状態を反映する。
 
@@ -262,3 +264,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.1.2 | 2026-08-13 | UC-004 配置契約を詳細化。`MenuPanelRect` / `new_card_placement` へリファクタ |
 | 2.1.3 | 2026-08-13 | UC-004 右端揃えを NE アンカー基準に修正。連続追加は左下 12px ずつ |
 | 2.1.4 | 2026-08-13 | UC-004 縦余白 2px・右端から 28px 左インデントに調整 |
+| 2.1.5 | 2026-08-13 | UC-004 左インデント 128px・モニター内クランプ追加 |

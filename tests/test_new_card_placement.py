@@ -6,6 +6,7 @@ from petatto_kanban.new_card_placement import (
     DEFAULT_NEW_CARD_INSET_X,
     DEFAULT_NEW_CARD_STACK_OFFSET_X,
     DEFAULT_NEW_CARD_STACK_OFFSET_Y,
+    clamp_card_position_to_monitor,
     compute_new_card_position,
 )
 
@@ -49,3 +50,28 @@ def test_stack_index_offsets_bottom_left() -> None:
     x2, y2 = compute_new_card_position(panel=panel, card_width=222, stack_index=2)
     assert x2 == x0 - 2 * DEFAULT_NEW_CARD_STACK_OFFSET_X
     assert y2 == y0 + 2 * DEFAULT_NEW_CARD_STACK_OFFSET_Y
+
+
+def test_clamp_keeps_card_inside_monitor() -> None:
+    x, y = clamp_card_position_to_monitor(
+        -50,
+        1000,
+        card_width=222,
+        card_height=122,
+        monitor_width=1920,
+        monitor_height=1080,
+    )
+    assert x == 0
+    assert y == 1080 - 122
+
+
+def test_clamp_does_not_move_in_bounds_position() -> None:
+    x, y = clamp_card_position_to_monitor(
+        100,
+        200,
+        card_width=222,
+        card_height=122,
+        monitor_width=1920,
+        monitor_height=1080,
+    )
+    assert (x, y) == (100, 200)
