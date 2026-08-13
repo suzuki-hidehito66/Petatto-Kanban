@@ -1,5 +1,6 @@
 """新規カード配置座標のテスト."""
 
+from petatto_kanban.display.ui_metrics import medium_metrics
 from petatto_kanban.menu_panel_layout import MenuPanelRect
 from petatto_kanban.new_card_placement import (
     DEFAULT_NEW_CARD_GAP_Y,
@@ -10,8 +11,8 @@ from petatto_kanban.new_card_placement import (
     compute_new_card_position,
 )
 
-_CARD_PLACEMENT_WIDTH = 154
-_CARD_PLACEMENT_HEIGHT = 96
+_CARD_PLACEMENT_WIDTH = medium_metrics().card_placement_width
+_CARD_PLACEMENT_HEIGHT = medium_metrics().card_placement_height
 
 
 def _panel(

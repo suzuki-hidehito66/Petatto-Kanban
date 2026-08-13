@@ -2,8 +2,8 @@
 
 from petatto_kanban.display.ui_metrics import medium_metrics, metrics_for_ui_size
 from petatto_kanban.display.ui_scale import (
-    BASE_CARD_FRAME_PAD,
     BASE_CARD_DUE_FONT_SIZE,
+    BASE_CARD_FRAME_PAD,
     BASE_CARD_MIN_HEIGHT,
     BASE_CARD_MIN_WIDTH,
     BASE_CARD_PROGRESS_FONT_SIZE,
