@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |------|------|
 | 文書種別 | Specification-Driven Development（SDD）索引 |
-| 文書バージョン | 2.40.0 |
+| 文書バージョン | 2.41.0 |
 | 最終更新日 | 2026-08-13 |
 | ステータス | Active |
 
@@ -158,3 +158,4 @@ flowchart LR
 | 2.38.0 | 2026-08-13 | システムタブ: 「全てのカードを削除」ボタン（FR-005 / UC-006） |
 | 2.39.0 | 2026-08-13 | 設定ダイアログ実装リファクタ（`settings_dialog_labels` / `settings_dialog_panels` / `settings_actions`） |
 | 2.40.0 | 2026-08-13 | UI サイズ設定（FR-026 / UC-006 表示タブ / `ui_size`）仕様追加 |
+| 2.41.0 | 2026-08-13 | FR-026 実装（`ui_scale` / `card_renderer` / `ui_chrome`） |

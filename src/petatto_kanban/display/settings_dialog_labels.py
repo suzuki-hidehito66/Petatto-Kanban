@@ -6,6 +6,7 @@ SETTINGS_DIALOG_TITLE = "設定"
 
 LABEL_DISPLAY_MODE = "表示モード"
 LABEL_DISPLAY_MONITOR = "表示ディスプレイ"
+LABEL_UI_SIZE = "UI サイズ"
 
 CHECK_CONFIRM_DELETE = "カード削除時に確認ダイアログを表示する"
 CHECK_CONFIRM_EXIT = "アプリ終了時に確認ダイアログを表示する"

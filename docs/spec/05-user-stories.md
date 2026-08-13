@@ -24,7 +24,7 @@
 | [US-014](#us-014-カードの進捗率を更新する) | Must | implemented | M1 |
 | [US-013](#us-013-削除確認を設定する) | Must | implemented | M1 |
 | [US-015](#us-015-カードの期限を設定する) | Must | implemented | M1 |
-| [US-016](#us-016-uiサイズを設定する) | Must | specified | M1 拡張 |
+| [US-016](#us-016-uiサイズを設定する) | Must | implemented | M1 拡張 |
 | [US-005](#us-005-カードを別列へ移動する) | Should | deferred | M2 |
 | [US-008](#us-008-ウィンドウモードで使う) | Should | deferred | M2 |
 | [US-009](#us-009-デスクトップモードで使う) | Should | implemented | M1 拡張 |
@@ -255,6 +255,6 @@
 |------|-----|
 | 関連 FR | FR-026 |
 | 関連 AC | AC-026-01, AC-026-02, AC-026-03 |
-| ステータス | specified |
+| ステータス | implemented |
 
 **操作:** 設定ダイアログ「表示」タブの **UI サイズ** コンボボックス → OK で保存・即時反映。

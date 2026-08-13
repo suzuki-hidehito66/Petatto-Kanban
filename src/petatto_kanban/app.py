@@ -7,6 +7,7 @@ from collections.abc import Callable
 from datetime import date
 from tkinter import messagebox, ttk
 
+from petatto_kanban.card_renderer import CARD_BG, CARD_FG, CardRenderer
 from petatto_kanban.card_ui import (
     CardUiRefs,
     ClickReleaseTracker,
@@ -34,30 +35,18 @@ from petatto_kanban.display.settings_dialog import (
 )
 from petatto_kanban.display.settings_dialog_labels import MSG_SETTINGS_SAVED
 from petatto_kanban.display.transparent import TRANSPARENT_COLOR
-from petatto_kanban.due_date import due_date_panel_style, format_due_date
-from petatto_kanban.due_date_picker import DueDatePickerHost
-from petatto_kanban.menu_panel import MenuPanel
+from petatto_kanban.display.ui_chrome import UiChrome
+from petatto_kanban.display.ui_scale import metrics_for_ui_size
 from petatto_kanban.models import Card
 from petatto_kanban.new_card_placement import (
     DEFAULT_NEW_CARD_TITLE,
     clamp_card_position_to_monitor,
     compute_new_card_position,
 )
-from petatto_kanban.progress import PROGRESS_STEP, clamp_progress, progress_color
+from petatto_kanban.progress import PROGRESS_STEP, clamp_progress
 from petatto_kanban.storage import load_board, save_board
 
 APP_TITLE = "Petatto-Kanban"
-CARD_BG = "#fffef8"
-CARD_FG = "#222222"
-CARD_TITLE_FRAME_BD = 1
-CARD_MIN_WIDTH = 220
-CARD_MIN_HEIGHT = 120
-CARD_FRAME_BORDER = 1
-DUE_PANEL_BD = 1
-DUE_PICKER_PANEL_WIDTH = 240
-PROGRESS_TRACK_BG = "#e8e8e8"
-PROGRESS_BAR_HEIGHT = 18
-CARD_LABEL_WRAP = 200
 
 
 class KanbanApp:
@@ -67,29 +56,43 @@ class KanbanApp:
         self.root = root
         self.board = load_board()
         self.display_settings = load_display_settings()
+        self._ui_metrics = metrics_for_ui_size(self.display_settings.ui_size)
         self._card_ui: dict[str, CardUiRefs] = {}
         self._card_progress_widgets: dict[str, tk.Canvas] = {}
         self._drag_state: dict[int, tuple[int, int]] = {}
         self._card_drag_moved: dict[str, bool] = {}
         self._inline_edit_card_id: str | None = None
         self._inline_edit_entry: tk.Entry | None = None
-        self._due_date_picker = DueDatePickerHost(
-            root,
-            bg=CARD_BG,
-            panel_width=DUE_PICKER_PANEL_WIDTH,
-            on_outside_click=self._cancel_due_date_picker,
-        )
         self._due_panel_clicks = ClickReleaseTracker()
         self._title_clicks = ClickReleaseTracker()
         self._monitors = list_monitors()
         self._desktop_board: DesktopBoardController | None = None
+        self._chrome: UiChrome
+        self._card_renderer: CardRenderer
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         self.root.configure(bg=TRANSPARENT_COLOR)
 
         self._build_menu_panel()
+        self._sync_card_renderer()
         self._apply_display_mode()
         self.refresh()
+
+    @property
+    def menu_panel(self):
+        return self._chrome.menu_panel
+
+    @property
+    def _due_date_picker(self):
+        return self._chrome.due_date_picker
+
+    def _sync_card_renderer(self) -> None:
+        self._card_renderer = CardRenderer(
+            self.root,
+            metrics=self._ui_metrics,
+            on_card_enter=self._on_kanban_card_enter,
+            progress_widgets=self._card_progress_widgets,
+        )
 
     def _apply_display_mode(self) -> None:
         monitor = get_monitor(self.display_settings.monitor_index)
@@ -100,6 +103,14 @@ class KanbanApp:
             self._desktop_board.on_display_mode_applied(
                 desktop=self.display_settings.mode == DisplayMode.DESKTOP,
             )
+
+    def _apply_ui_size(self) -> None:
+        """UI サイズ変更時にメトリクス・クローム・カード描画を更新する."""
+        self._ui_metrics = metrics_for_ui_size(self.display_settings.ui_size)
+        monitor = get_monitor(self.display_settings.monitor_index)
+        self._chrome.apply_metrics(self._ui_metrics)
+        self._chrome.clamp_menu_to_monitor(monitor)
+        self._sync_card_renderer()
 
     def _can_lower_desktop_board(self) -> bool:
         if self._inline_edit_card_id is not None:
@@ -158,14 +169,17 @@ class KanbanApp:
             is_desktop_mode=self._is_desktop_display_mode,
             can_lower=self._can_lower_desktop_board,
         )
-        self.menu_panel = MenuPanel(
+        self._chrome = UiChrome(
+            self.root,
             self._menu_panel_host.window,
+            metrics=self._ui_metrics,
             on_close=self._on_close,
             on_settings=self._open_settings,
             on_add_card=self._add_card,
-            on_position_changed=self._on_menu_panel_position_changed,
-            on_activate=self._desktop_board.activate_from_menu,
-            on_deactivate=self._desktop_board.on_menu_deactivate,
+            on_menu_position_changed=self._on_menu_panel_position_changed,
+            on_menu_activate=self._desktop_board.activate_from_menu,
+            on_menu_deactivate=self._desktop_board.on_menu_deactivate,
+            on_due_picker_outside_click=self._cancel_due_date_picker,
         )
         self._menu_panel_host.window.bind(
             "<FocusIn>",
@@ -214,114 +228,9 @@ class KanbanApp:
             )
 
     def _render_card(self, card: Card) -> None:
-        frame = tk.Frame(
-            self.root,
-            bg=CARD_BG,
-            bd=CARD_FRAME_BORDER,
-            relief=tk.RIDGE,
-            padx=8,
-            pady=8,
-            highlightthickness=0,
-        )
-        frame.place(x=card.x, y=card.y)
-
-        title_frame = tk.Frame(
-            frame,
-            bg=CARD_BG,
-            bd=CARD_TITLE_FRAME_BD,
-            relief=tk.GROOVE,
-            highlightthickness=0,
-            padx=6,
-            pady=4,
-        )
-        title_frame.pack(anchor=tk.NW, fill=tk.X)
-
-        title_label = self._card_label(
-            title_frame,
-            text=card.title,
-            font=("Segoe UI", 10, "bold"),
-            fg=CARD_FG,
-            cursor="xterm",
-        )
-        title_label.pack(anchor=tk.NW, fill=tk.X)
-
-        due_panel, due_label = self._create_due_date_panel(frame, card)
-        due_panel.pack(anchor=tk.NW, fill=tk.X, pady=(4, 0))
-
-        progress_canvas = self._create_progress_canvas(frame, card)
-        progress_canvas.pack(side=tk.BOTTOM, fill=tk.X, pady=(6, 0))
-
-        self._finalize_card_frame(frame)
-        frame.bind("<Enter>", self._on_kanban_card_enter, add="+")
-        ui = CardUiRefs(
-            frame=frame,
-            title_frame=title_frame,
-            title_label=title_label,
-            due_panel=due_panel,
-            due_label=due_label,
-            progress_canvas=progress_canvas,
-        )
+        ui = self._card_renderer.render(card)
         self._card_ui[card.id] = ui
         self._bind_card_interactions(card, ui)
-
-    def _card_label(self, parent: tk.Misc, **kwargs) -> tk.Label:
-        defaults = {
-            "bg": CARD_BG,
-            "wraplength": CARD_LABEL_WRAP,
-            "justify": tk.LEFT,
-            "anchor": tk.W,
-        }
-        defaults.update(kwargs)
-        return tk.Label(parent, **defaults)
-
-    def _finalize_card_frame(self, frame: tk.Frame) -> None:
-        frame.update_idletasks()
-        frame.config(
-            width=max(CARD_MIN_WIDTH, frame.winfo_reqwidth()),
-            height=max(CARD_MIN_HEIGHT, frame.winfo_reqheight()),
-        )
-        frame.pack_propagate(False)
-
-    def _create_progress_canvas(self, parent: tk.Frame, card: Card) -> tk.Canvas:
-        canvas = tk.Canvas(
-            parent,
-            height=PROGRESS_BAR_HEIGHT,
-            bg=PROGRESS_TRACK_BG,
-            highlightthickness=0,
-            bd=0,
-        )
-        self._card_progress_widgets[card.id] = canvas
-
-        def redraw(_event: tk.Event | None = None) -> None:
-            self._draw_progress_canvas(canvas, card.progress)
-
-        canvas.bind("<Configure>", redraw)
-        parent.after_idle(redraw)
-        return canvas
-
-    def _draw_progress_canvas(self, canvas: tk.Canvas, progress: int) -> None:
-        canvas.delete("all")
-        width = max(canvas.winfo_width(), 1)
-        height = max(canvas.winfo_height(), PROGRESS_BAR_HEIGHT)
-        canvas.create_rectangle(0, 0, width, height, fill=PROGRESS_TRACK_BG, outline="")
-        fill_width = width * progress / 100
-        if fill_width > 0:
-            canvas.create_rectangle(
-                0,
-                0,
-                fill_width,
-                height,
-                fill=progress_color(progress),
-                outline="",
-            )
-        text_color = "#ffffff" if progress >= 55 else CARD_FG
-        canvas.create_text(
-            width / 2,
-            height / 2,
-            text=f"{progress}%",
-            fill=text_color,
-            font=("Segoe UI", 9, "bold"),
-        )
 
     def _adjust_card_progress(self, card: Card, delta: int) -> None:
         new_progress = clamp_progress(card.progress + delta)
@@ -332,30 +241,7 @@ class KanbanApp:
         save_board(self.board)
         canvas = self._card_progress_widgets.get(card.id)
         if canvas is not None:
-            self._draw_progress_canvas(canvas, card.progress)
-
-    def _create_due_date_panel(self, frame: tk.Frame, card: Card) -> tuple[tk.Frame, tk.Label]:
-        panel_bg, panel_fg = due_date_panel_style(card.due_date)
-        due_panel = tk.Frame(
-            frame,
-            bg=panel_bg,
-            bd=DUE_PANEL_BD,
-            relief=tk.GROOVE,
-            highlightthickness=0,
-            padx=6,
-            pady=3,
-        )
-        due_label = tk.Label(
-            due_panel,
-            text=format_due_date(card.due_date),
-            bg=panel_bg,
-            fg=panel_fg,
-            font=("Segoe UI", 9),
-            anchor=tk.W,
-            cursor="hand2",
-        )
-        due_label.pack(anchor=tk.W, fill=tk.X)
-        return due_panel, due_label
+            self._card_renderer.draw_progress(canvas, card.progress)
 
     def _cancel_due_date_picker(self) -> None:
         if (
@@ -405,7 +291,7 @@ class KanbanApp:
             ui.title_frame,
             bg=CARD_BG,
             fg=CARD_FG,
-            font=("Segoe UI", 10, "bold"),
+            font=self._ui_metrics.title_font,
             relief=tk.FLAT,
             bd=0,
             highlightthickness=0,
@@ -698,8 +584,9 @@ class KanbanApp:
         self._commit_inline_title_edit_if_any(refresh_after=False)
         self.root.update_idletasks()
         monitor = get_monitor(self.display_settings.monitor_index)
-        card_width = CARD_MIN_WIDTH + 2 * CARD_FRAME_BORDER
-        card_height = CARD_MIN_HEIGHT + 2 * CARD_FRAME_BORDER
+        metrics = self._ui_metrics
+        card_width = metrics.card_placement_width
+        card_height = metrics.card_placement_height
         card_x, card_y = compute_new_card_position(
             panel=self.menu_panel.bounds(),
             card_width=card_width,
@@ -752,6 +639,7 @@ class KanbanApp:
                 confirm_delete=self.display_settings.confirm_delete,
                 confirm_exit=self.display_settings.confirm_exit,
                 monitor_index=self.display_settings.monitor_index,
+                ui_size=self.display_settings.ui_size,
                 monitors=self._monitors,
             ),
             on_delete_all_cards=self._delete_all_cards,
@@ -766,8 +654,11 @@ class KanbanApp:
         changes = apply_dialog_result(self.display_settings, settings)
         save_display_settings(self.display_settings)
 
+        if changes.ui_size_changed:
+            self._apply_ui_size()
         if changes.needs_display_refresh:
             self._apply_display_mode()
+        if changes.ui_size_changed or changes.needs_display_refresh:
             self.refresh()
 
     def _persist_and_refresh(self) -> None:
