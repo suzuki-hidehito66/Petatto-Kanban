@@ -117,7 +117,7 @@
 | タイトル | 左クリックドラッグ | 画面上の位置を変更（FR-010） |
 | タイトル | 右クリック離し | **削除処理**（FR-005）。メニューは表示しない |
 | タイトル | クリック→離す→クリック→離す | インライン編集（UC-005）。2回目の離しで開始 |
-| タイトル | — | 太字、`wraplength=84`（標準時）。`GROOVE` 枠の内側フレームで表示 |
+| タイトル | — | 太字、`wraplength=132`（標準時）。`GROOVE` 枠の内側フレームで表示 |
 | 進捗バー | ホバー中スクロールアップ | 進捗率 +10%（最大 100%）（FR-025） |
 | 進捗バー | ホバー中スクロールダウン | 進捗率 −10%（最小 0%）（FR-025） |
 | 進捗バー | 左クリックドラッグ | 画面上の位置を変更（FR-010） |
@@ -136,8 +136,8 @@
 
 **配置・サイズ**
 - `place(x, y)` — 座標は `board.json` に永続化
-- 最小サイズ・フォント・進捗バー高さ等は [UC-009](./08-ui-behavior-contract.md#uc-009-ui-スケール) のスケール後寸法を用いる（標準時: `CARD_MIN_WIDTH = 100`、`CARD_MIN_HEIGHT = 100`、横長）
-- 実際の枠サイズ: 幅は `CARD_MIN_WIDTH` に固定、高さは `max(CARD_MIN_HEIGHT, winfo_reqheight)` で決定
+- 最小サイズ・フォント・進捗バー高さ等は [UC-009](./08-ui-behavior-contract.md#uc-009-ui-スケール) のスケール後寸法を用いる（標準時: `CARD_MIN_WIDTH = 152`、`CARD_MIN_HEIGHT = 94`、横長黄金比 φ、フォント 10pt）
+- 実際の枠サイズ: 幅・高さとも `CARD_MIN_WIDTH` / `CARD_MIN_HEIGHT` に固定（`winfo_req*` では拡張しない）
 
 ---
 
@@ -165,7 +165,7 @@
 | `DEFAULT_NEW_CARD_GAP_Y` | 2 | パネル下端からカード上端までの余白（px） |
 | `DEFAULT_NEW_CARD_INSET_X` | 128 | 右端揃え位置からさらに左へ寄せる量（px） |
 | `DEFAULT_NEW_CARD_STACK_OFFSET_X/Y` | 12 | 連続追加ごとに左・下へずらす量（px） |
-| カード幅 | `CARD_MIN_WIDTH + 2 * CARD_FRAME_BORDER`（102） | 枠線込みの配置基準幅 |
+| カード幅 | `CARD_MIN_WIDTH + 2 * CARD_FRAME_BORDER`（154） | 枠線込みの配置基準幅 |
 | 画面内クランプ | `clamp_card_position_to_monitor()` | 算出後にモニター範囲内へ収める |
 
 | 項目 | 式 |
@@ -287,16 +287,16 @@
 
 | 定数 / 要素 | 基準値（medium） | 適用箇所 |
 |-------------|------------------|----------|
-| `CARD_MIN_WIDTH` | 100 px | カード枠（UC-003）。`winfo_reqwidth` では拡張しない |
-| `CARD_MIN_HEIGHT` | 100 px | タイトル・期限・進捗の縦余白確保 |
-| `CARD_LABEL_WRAP` | 84 px | タイトル・期限 `wraplength`（`CARD_MIN_WIDTH - 16`） |
-| タイトルフォント pt | **8** bold | カードタイトル |
-| 期限ラベルフォント pt | **8** | カード期限表示 |
-| 進捗ラベルフォント pt | **8** bold | 進捗バー中央 `%` |
-| `PROGRESS_BAR_HEIGHT` | 10 px | 進捗バー |
-| `CARD_FRAME_PAD` | 4 px | カード外枠内余白 |
-| `CARD_TITLE_FRAME_PAD` | 4 × 2 px | タイトル枠内余白 |
-| `CARD_DUE_PANEL_PAD` | 4 × 2 px | 期限パネル内余白 |
+| `CARD_MIN_WIDTH` | 152 px | `round(CARD_MIN_HEIGHT × φ)`（UC-003） |
+| `CARD_MIN_HEIGHT` | 94 px | 10pt 3 行が収まる高さ（UC-003） |
+| `CARD_LABEL_WRAP` | 132 px | タイトル・期限 `wraplength`（`CARD_MIN_WIDTH - 20`） |
+| タイトルフォント pt | **10** bold | カードタイトル（medium 基準） |
+| 期限ラベルフォント pt | **10** | カード期限表示 |
+| 進捗ラベルフォント pt | **10** bold | 進捗バー中央 `%` |
+| `PROGRESS_BAR_HEIGHT` | 16 px | 進捗バー |
+| `CARD_FRAME_PAD` | 6 px | カード外枠内余白 |
+| `CARD_TITLE_FRAME_PAD` | 5 × 3 px | タイトル枠内余白 |
+| `CARD_DUE_PANEL_PAD` | 5 × 2 px | 期限パネル内余白 |
 | `MENU_CIRCLE_SIZE` | 36 px | メニューパネル円ボタン（UC-002） |
 | メニュー円フォント pt | **14** bold | ＋ / ⚙ / × / `<` |
 | 期限パネル月ラベル pt | **9** bold | `due_date_picker` |

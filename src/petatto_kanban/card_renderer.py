@@ -150,7 +150,7 @@ class CardRenderer:
         # 親キャンバス幅まで膨らみ、カードが不必要に横長になるため。
         frame.config(
             width=metrics.card_min_width,
-            height=max(metrics.card_min_height, frame.winfo_reqheight()),
+            height=metrics.card_min_height,
         )
         frame.pack_propagate(False)
 
