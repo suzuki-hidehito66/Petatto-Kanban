@@ -89,9 +89,13 @@ class MenuPanel:
         on_settings: Callable[[], None],
         on_add_card: Callable[[], None],
         on_position_changed: Callable[[int, int], None] | None = None,
+        on_activate: Callable[[], None] | None = None,
+        on_deactivate: Callable[[], None] | None = None,
         bg: str = TRANSPARENT_COLOR,
     ) -> None:
         self._on_position_changed = on_position_changed
+        self._on_activate = on_activate
+        self._on_deactivate = on_deactivate
         self._action_handlers = (on_add_card, on_settings, on_close)
         self._place_x = 0
         self._place_y = 0
@@ -229,6 +233,7 @@ class MenuPanel:
             self._hide_after_id = None
 
     def _on_action_press(self, event: tk.Event) -> None:
+        self._notify_activate()
         self._action_press_index = action_index_at(event.x, event.y)
 
     def _on_action_release(self, event: tk.Event) -> None:
@@ -240,11 +245,24 @@ class MenuPanel:
             self._action_handlers[release_index]()
         self._action_press_index = None
 
+    def _notify_activate(self) -> None:
+        if self._on_activate is not None:
+            self._on_activate()
+
+    def _notify_deactivate_if_idle(self) -> None:
+        if self._hover_depth == 0 and self._on_deactivate is not None:
+            self._on_deactivate()
+
+    def _collapse_after_hover(self) -> None:
+        self._set_actions_expanded(False)
+        self._notify_deactivate_if_idle()
+
     def _on_enter(self, _event: tk.Event) -> None:
         self._hover_depth += 1
         self._cancel_hide_timer()
         if self._hover_depth == 1:
             self._set_actions_expanded(True)
+            self._notify_activate()
 
     def _on_leave(self, _event: tk.Event) -> None:
         self._hover_depth = max(0, self._hover_depth - 1)
@@ -253,10 +271,11 @@ class MenuPanel:
         self._cancel_hide_timer()
         self._hide_after_id = self.widget.after(
             MENU_HOVER_HIDE_DELAY_MS,
-            lambda: self._set_actions_expanded(False),
+            self._collapse_after_hover,
         )
 
     def _on_drag_press(self, event: tk.Event) -> None:
+        self._notify_activate()
         self._drag_moved = False
         self._drag_origin = (event.x, event.y)
 

@@ -20,7 +20,9 @@ if TYPE_CHECKING:
 __all__ = [
     "TRANSPARENT_COLOR",
     "apply_desktop_mode",
+    "bring_board_to_front",
     "is_desktop_mode_supported",
+    "restore_desktop_board_z_order",
     "send_window_to_back",
 ]
 
@@ -48,6 +50,26 @@ def send_window_to_back(root: tk.Tk) -> None:
         0,
         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
     )
+
+
+def bring_board_to_front(root: tk.Tk) -> None:
+    """デスクトップモード中、カード等を含む本体を一時的に最前面へ."""
+    if not is_windows():
+        root.lift()
+        return
+
+    root.attributes("-topmost", True)
+    root.lift()
+    root.update_idletasks()
+
+
+def restore_desktop_board_z_order(root: tk.Tk) -> None:
+    """デスクトップモードの本体 Z オーダー（通常ウィンドウより背面）を復元する."""
+    if not is_windows():
+        return
+
+    root.attributes("-topmost", False)
+    send_window_to_back(root)
 
 
 def apply_desktop_mode(root: tk.Tk, monitor: Monitor) -> None:
