@@ -105,3 +105,36 @@ def test_restore_desktop_board_z_order_clears_topmost_on_windows() -> None:
         restore_desktop_board_z_order(root)
     root.attributes.assert_called_with("-topmost", False)
     send_back.assert_called_once_with(root)
+
+
+def test_is_foreign_app_foreground_false_on_non_windows() -> None:
+    with patch("petatto_kanban.display.foreground.is_windows", return_value=False):
+        from petatto_kanban.display.foreground import is_foreign_app_foreground
+
+        assert is_foreign_app_foreground() is False
+
+
+def test_is_foreign_app_foreground_compares_process_id() -> None:
+    with (
+        patch("petatto_kanban.display.foreground.is_windows", return_value=True),
+        patch("petatto_kanban.display.foreground.os.getpid", return_value=1000),
+        patch(
+            "petatto_kanban.display.foreground._foreground_process_id",
+            return_value=2000,
+        ),
+    ):
+        from petatto_kanban.display.foreground import is_foreign_app_foreground
+
+        assert is_foreign_app_foreground() is True
+
+    with (
+        patch("petatto_kanban.display.foreground.is_windows", return_value=True),
+        patch("petatto_kanban.display.foreground.os.getpid", return_value=1000),
+        patch(
+            "petatto_kanban.display.foreground._foreground_process_id",
+            return_value=1000,
+        ),
+    ):
+        from petatto_kanban.display.foreground import is_foreign_app_foreground
+
+        assert is_foreign_app_foreground() is False
