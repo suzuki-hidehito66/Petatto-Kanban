@@ -35,6 +35,7 @@ class SettingsApplyChanges:
     mode_changed: bool
     monitor_changed: bool
     ui_size_changed: bool
+    ui_font_changed: bool
 
     @property
     def needs_display_refresh(self) -> bool:
@@ -42,7 +43,7 @@ class SettingsApplyChanges:
 
     @property
     def needs_ui_refresh(self) -> bool:
-        return self.ui_size_changed
+        return self.ui_size_changed or self.ui_font_changed
 
 
 def apply_dialog_result(
@@ -54,12 +55,14 @@ def apply_dialog_result(
         mode_changed=result.mode != display_settings.mode,
         monitor_changed=result.monitor_index != display_settings.monitor_index,
         ui_size_changed=result.ui_size != display_settings.ui_size,
+        ui_font_changed=result.ui_font != display_settings.ui_font,
     )
     display_settings.mode = result.mode
     display_settings.confirm_delete = result.confirm_delete
     display_settings.confirm_exit = result.confirm_exit
     display_settings.monitor_index = result.monitor_index
     display_settings.ui_size = result.ui_size
+    display_settings.ui_font = result.ui_font
     return changes
 
 

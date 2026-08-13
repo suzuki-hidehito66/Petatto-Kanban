@@ -18,7 +18,13 @@ from petatto_kanban.display.settings_dialog_labels import (
     COMBOBOX_WIDTH,
     LABEL_DISPLAY_MODE,
     LABEL_DISPLAY_MONITOR,
+    LABEL_UI_FONT,
     LABEL_UI_SIZE,
+)
+from petatto_kanban.display.ui_font import UiFont
+from petatto_kanban.display.ui_font_labels import (
+    selectable_ui_font_labels,
+    ui_font_label,
 )
 from petatto_kanban.display.ui_scale import UiSize
 from petatto_kanban.display.ui_scale_labels import (
@@ -38,6 +44,7 @@ class DisplayTabState:
     mode_var: tk.StringVar
     monitor_var: tk.StringVar
     ui_size_var: tk.StringVar
+    ui_font_var: tk.StringVar
 
 
 @dataclass
@@ -54,6 +61,7 @@ def build_display_tab(
     mode: DisplayMode,
     monitor_index: int,
     ui_size: UiSize,
+    ui_font: UiFont,
     monitors: list[Monitor],
 ) -> DisplayTabState:
     """表示タブ（モード・ディスプレイ）を構築する."""
@@ -90,12 +98,23 @@ def build_display_tab(
         values=selectable_ui_size_labels(),
         state="readonly",
         width=COMBOBOX_WIDTH,
-    ).grid(row=5, column=0, sticky=tk.EW)
+    ).grid(row=5, column=0, sticky=tk.EW, pady=(0, 12))
+
+    ttk.Label(parent, text=LABEL_UI_FONT).grid(row=6, column=0, sticky=tk.W, pady=(0, 4))
+    ui_font_var = tk.StringVar(value=ui_font_label(ui_font))
+    ttk.Combobox(
+        parent,
+        textvariable=ui_font_var,
+        values=selectable_ui_font_labels(),
+        state="readonly",
+        width=COMBOBOX_WIDTH,
+    ).grid(row=7, column=0, sticky=tk.EW)
     parent.columnconfigure(0, weight=1)
     return DisplayTabState(
         mode_var=mode_var,
         monitor_var=monitor_var,
         ui_size_var=ui_size_var,
+        ui_font_var=ui_font_var,
     )
 
 

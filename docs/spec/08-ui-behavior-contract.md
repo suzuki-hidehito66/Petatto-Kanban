@@ -270,7 +270,7 @@
 |------|-----|
 | 関連 FR | FR-026 |
 | 関連 AC | AC-026-01, AC-026-02, AC-026-03 |
-| 実装 | `src/petatto_kanban/display/ui_scale.py`, `display/ui_font.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py`, `card_renderer.py`, `display/ui_chrome.py` |
+| 実装 | `src/petatto_kanban/display/ui_scale.py`, `display/ui_font.py`, `display/ui_metrics.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py`, `card_renderer.py`, `display/ui_chrome.py` |
 
 `ui_size`（FR-026）と `ui_font`（FR-027）を組み合わせて `UiMetrics` を生成する。**サイズ** は `ui_size` のスケール係数、**ファミリー名** は `ui_font` から決定する。
 
@@ -311,7 +311,7 @@
 |------|-----|
 | 関連 FR | FR-027 |
 | 関連 AC | AC-027-01, AC-027-02, AC-027-03 |
-| 実装（予定） | `src/petatto_kanban/display/ui_font.py`, `display/ui_font_labels.py`, `display/ui_scale.py`, `app.py`, `card_renderer.py`, `display/ui_chrome.py`, `menu_panel.py`, `due_date_picker.py` |
+| 実装 | `src/petatto_kanban/display/ui_font.py`, `display/ui_font_labels.py`, `display/ui_metrics.py`, `app.py`, `card_renderer.py`, `display/ui_chrome.py`, `menu_panel.py`, `due_date_picker.py` |
 
 `ui_font`（`settings.json`）に応じて、カード・メニュー・期限パネル等の **フォントファミリー** を切り替える。サイズ（pt）は UC-009 のスケールを用い、本 UC ではファミリー名のみを定義する。
 
@@ -386,3 +386,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.3.3 | 2026-08-13 | UC-006 実装リファクタ（`settings_dialog_labels` / `settings_dialog_panels` / `settings_actions`） |
 | 2.4.0 | 2026-08-13 | UC-006 表示タブ: UI サイズ設定（FR-026）。UC-009 UI スケール契約を追加 |
 | 2.5.0 | 2026-08-13 | UC-006 表示タブ: フォント設定（FR-027）。UC-010 UI フォント契約を追加 |
+| 2.6.0 | 2026-08-13 | FR-027 実装。UC-009/UC-010 を `ui_metrics.py` で合成 |

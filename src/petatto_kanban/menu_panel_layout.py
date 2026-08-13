@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from petatto_kanban.display.ui_scale import UiMetrics, medium_metrics
+from petatto_kanban.display.ui_metrics import UiMetrics, medium_metrics
 
 MENU_CIRCLE_PAD = 0
 MENU_ACTION_LABELS = ("＋", "⚙", "×")

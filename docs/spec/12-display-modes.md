@@ -117,8 +117,9 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 | `display/settings_actions.py` | 設定適用・終了確認・全カード削除 |
 | `display/ui_scale.py` | UI サイズプリセット・スケール寸法（FR-026） |
 | `display/ui_scale_labels.py` | UI サイズ UI ラベル |
-| `display/ui_font.py` | UI フォントプリセット（FR-027、**specified**） |
-| `display/ui_font_labels.py` | UI フォント UI ラベル（**specified**） |
+| `display/ui_metrics.py` | UiMetrics 合成（FR-026 + FR-027） |
+| `display/ui_font.py` | UI フォントプリセット（FR-027） |
+| `display/ui_font_labels.py` | UI フォント UI ラベル |
 
 ### DM-COMMON-03: モード切替（M1 拡張）
 

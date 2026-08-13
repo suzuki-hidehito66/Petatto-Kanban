@@ -43,7 +43,7 @@
 | [FR-018](#fr-018-ウィンドウモード) | ウィンドウモード | Should | deferred | M2 |
 | [FR-022](#fr-022-表示モード切替) | 表示モード切替 | Should | implemented | M1 拡張 / M2 |
 | [FR-026](#fr-026-uiサイズ設定) | UI サイズ設定 | Must | implemented | M1 拡張 |
-| [FR-027](#fr-027-uiフォント設定) | UI フォント設定 | Must | specified | M1 拡張 |
+| [FR-027](#fr-027-uiフォント設定) | UI フォント設定 | Must | implemented | M1 拡張 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -497,10 +497,10 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 属性 | 値 |
 |------|-----|
 | 優先度 | Must |
-| ステータス | specified |
+| ステータス | implemented |
 | 関連 US | US-017 |
 | 関連 AC | AC-027-01, AC-027-02, AC-027-03 |
-| 実装（予定） | `src/petatto_kanban/display/ui_font.py`, `display/ui_font_labels.py`, `display/ui_scale.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/ui_font.py`, `display/ui_font_labels.py`, `display/ui_metrics.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `app.py` |
 | UI 契約 | [UC-006 §表示タブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-010 §UI フォント](./08-ui-behavior-contract.md#uc-010-ui-フォント) |
 
 **説明**  

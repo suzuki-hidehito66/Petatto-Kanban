@@ -787,7 +787,7 @@ And スケール係数 1.0 が適用される
 | 関連 FR | FR-027 |
 | 関連 US | US-017 |
 | 関連 UC | UC-006, UC-010 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動 |
 
 ```gherkin
@@ -800,7 +800,7 @@ And カードの x / y 座標は変更されない
 And UI サイズ（ui_size）のスケールは維持される
 ```
 
-**テスト**: `test_ui_font.py`, `test_settings_dialog.py`（実装後）
+**テスト**: `test_ui_font.py`, `test_settings_dialog.py`, `test_settings_actions.py`
 
 ### AC-027-02
 
@@ -808,7 +808,7 @@ And UI サイズ（ui_size）のスケールは維持される
 |------|-----|
 | 関連 FR | FR-027 |
 | 関連 US | US-017 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 |
 
 ```gherkin
@@ -817,14 +817,14 @@ When アプリを再起動する
 Then 起動直後から UI が Yu Gothic UI ファミリーで描画される
 ```
 
-**テスト**: `test_save_and_load_ui_font`, `test_ui_font.py`（実装後）
+**テスト**: `test_save_and_load_ui_font`, `test_ui_font.py`
 
 ### AC-027-03
 
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-027 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 |
 
 ```gherkin
@@ -834,7 +834,7 @@ Then ui_font は "segoe_ui" として扱われる
 And tkinter フォントファミリーは "Segoe UI" になる
 ```
 
-**テスト**: `test_display_settings_from_dict_invalid_ui_font`（実装後）
+**テスト**: `test_display_settings_from_dict_invalid_ui_font`, `test_ui_font.py`
 
 ---
 

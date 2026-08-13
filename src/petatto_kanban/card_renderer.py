@@ -6,7 +6,7 @@ import tkinter as tk
 from typing import TYPE_CHECKING
 
 from petatto_kanban.card_ui import CardUiRefs
-from petatto_kanban.display.ui_scale import UiMetrics
+from petatto_kanban.display.ui_metrics import UiMetrics
 from petatto_kanban.due_date import due_date_panel_style, format_due_date
 from petatto_kanban.models import Card
 from petatto_kanban.progress import progress_color
