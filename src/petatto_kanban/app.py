@@ -17,6 +17,7 @@ from petatto_kanban.display import (
     load_display_settings,
     save_display_settings,
 )
+from petatto_kanban.display.menu_panel_host import MenuPanelHost
 from petatto_kanban.display.modes import apply_display_mode
 from petatto_kanban.display.monitors import Monitor, get_monitor
 from petatto_kanban.display.settings_dialog import SettingsDialog, SettingsDialogResult
@@ -80,6 +81,7 @@ class KanbanApp:
     def _apply_display_mode(self) -> None:
         monitor = get_monitor(self.display_settings.monitor_index)
         apply_display_mode(self.root, monitor, self.display_settings.mode)
+        self._menu_panel_host.apply(monitor, self.display_settings.mode)
         self._place_menu_panel(monitor)
 
     def _place_menu_panel(self, monitor: Monitor | None = None) -> None:
@@ -110,11 +112,12 @@ class KanbanApp:
             ui.frame.lift()
         if self._due_date_picker.host_frame is not None:
             self._due_date_picker.host_frame.lift()
-        self.menu_panel.widget.lift()
+        self._menu_panel_host.lift()
 
     def _build_menu_panel(self) -> None:
+        self._menu_panel_host = MenuPanelHost(self.root)
         self.menu_panel = MenuPanel(
-            self.root,
+            self._menu_panel_host.window,
             on_close=self._on_close,
             on_settings=self._open_settings,
             on_add_card=self._add_card,

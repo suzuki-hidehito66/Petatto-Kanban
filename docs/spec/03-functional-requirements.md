@@ -70,7 +70,7 @@
 **制約**
 - 背景は透過。カードとメニューパネルのみ不透明
 - 透過領域はクリック透過（下のアプリまたはデスクトップを操作可能）
-- オーバーレイ時は常に最前面。デスクトップ時は [FR-019](#fr-019-デスクトップモード) の Z オーダー
+- オーバーレイ時は常に最前面。デスクトップ時は [FR-019](#fr-019-デスクトップモード) の Z オーダー（**メニューパネルのみ最前面**）
 
 ---
 
@@ -382,19 +382,19 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-009 |
 | 関連 AC | AC-019-01, AC-019-02 |
-| 実装 | `src/petatto_kanban/display/desktop.py`, `display/transparent.py`, `display/modes.py` |
+| 実装 | `src/petatto_kanban/display/desktop.py`, `display/transparent.py`, `display/modes.py`, `display/menu_panel_host.py` |
 | UI 契約 | [12-display-modes.md §5](./12-display-modes.md#5-デスクトップモードdesktop-mode) |
 
 **説明**  
-指定ディスプレイを全画面表示。**オーバーレイモードと基本的に同一**（透過・全画面・カンバン UI）だが、**通常ウィンドウ（ブラウザ等）より背面**に固定する。
+指定ディスプレイを全画面表示。**オーバーレイモードと基本的に同一**（透過・全画面・カンバン UI）だが、**カード等は通常ウィンドウ（ブラウザ等）より背面**に固定する。**メニューパネルだけは常に最前面**とし、＋・設定・終了をいつでも操作可能にする。
 
-**Z オーダー（下 → 上）:** デスクトップ（壁紙）→ **Petatto-Kanban** → 他のウィンドウ
+**Z オーダー（下 → 上）:** デスクトップ（壁紙）→ **Petatto-Kanban 本体（カード等）** → 他のウィンドウ → **メニューパネル**
 
 **制約**
 - オーバーレイモードと共通の透過・クリック透過・ディスプレイ指定（[12-display-modes.md §2](./12-display-modes.md#2-モード比較)）
 - 設定ダイアログ（UC-006）でオーバーレイモードと相互切替（FR-022）
 - `settings.json` の `mode: "desktop"` で永続化
-- 実装は `display/desktop.py`（Z オーダー `HWND_BOTTOM` 等）。共通処理はオーバーレイと共有可
+- 本体は `display/desktop.py`（Z オーダー `HWND_BOTTOM` 等）。メニューは `display/menu_panel_host.py`（独立 Toplevel + `-topmost`）
 - Windows 11 以降
 
 ---

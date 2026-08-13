@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 if "tkinter" not in sys.modules:
     _tk = types.ModuleType("tkinter")
     _tk.Tk = MagicMock
+    _tk.Toplevel = MagicMock
     _tk.W = "w"
     _tk.BooleanVar = MagicMock
     _tk.StringVar = MagicMock
@@ -57,3 +58,27 @@ def test_apply_display_mode_window_falls_back_to_overlay() -> None:
     with patch("petatto_kanban.display.overlay.apply_overlay_mode") as overlay:
         apply_display_mode(root, _MONITOR, DisplayMode.WINDOW)
     overlay.assert_called_once_with(root, _MONITOR)
+
+
+def test_menu_panel_host_topmost_in_desktop_mode() -> None:
+    root = MagicMock()
+    host_window = MagicMock()
+    with patch("tkinter.Toplevel", return_value=host_window, create=True):
+        from petatto_kanban.display.menu_panel_host import MenuPanelHost
+
+        host = MenuPanelHost(root)
+    host.apply(_MONITOR, DisplayMode.DESKTOP)
+    host_window.attributes.assert_any_call("-topmost", True)
+    host_window.lift.assert_called()
+    host_window.deiconify.assert_called_once()
+
+
+def test_menu_panel_host_topmost_in_overlay_mode() -> None:
+    root = MagicMock()
+    host_window = MagicMock()
+    with patch("tkinter.Toplevel", return_value=host_window, create=True):
+        from petatto_kanban.display.menu_panel_host import MenuPanelHost
+
+        host = MenuPanelHost(root)
+    host.apply(_MONITOR, DisplayMode.OVERLAY)
+    host_window.attributes.assert_any_call("-topmost", True)

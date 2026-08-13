@@ -72,7 +72,8 @@ petatto-kanban/
 │   ├── display/                  # 表示モード・モニター
 │   │   ├── transparent.py        # 透過色・全画面シェル
 │   │   ├── overlay.py            # オーバーレイ（最前面）
-│   │   ├── desktop.py            # デスクトップ（背面）
+│   │   ├── desktop.py            # デスクトップ（本体背面）
+│   │   ├── menu_panel_host.py    # メニューパネル透過 Toplevel（デスクトップ時最前面）
 │   │   ├── modes.py              # モード適用ディスパッチ
 │   │   ├── mode_labels.py        # 設定 UI ラベル
 │   │   ├── settings_dialog.py    # UC-006 設定ダイアログ
@@ -98,6 +99,7 @@ petatto-kanban/
 | `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement` |
 | `display/transparent.py` | 透過色・全画面シェル（オーバーレイ/デスクトップ共通） | 標準ライブラリ + tkinter |
 | `display/modes.py` | 表示モード適用のディスパッチ | `overlay`, `desktop`, `settings` |
+| `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） | tkinter, `transparent`, `settings` |
 | `display/settings_dialog.py` | UC-006 設定ダイアログ | tkinter, `mode_labels`, `settings`, `monitors` |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
 | `menu_panel.py` | メニューパネル UI（円形・NE アンカー・ホバー展開） | tkinter, `menu_panel_layout` |
@@ -206,7 +208,7 @@ M3 着手時に ADR を追加する。
 | モード | 主要 API / 属性 |
 |--------|----------------|
 | ウィンドウ | 標準 `tk.Tk()`、`minsize` |
-| デスクトップ | 全画面 geometry、`-transparentcolor` / Layered Window、`HWND_BOTTOM` |
+| デスクトップ | 本体: 全画面 geometry、`-transparentcolor`、`HWND_BOTTOM`。メニュー: 独立 Toplevel + `-topmost` |
 | オーバーレイ | 全画面 geometry、Layered Window、`-topmost` / `WS_EX_TOPMOST`、クリック透過 |
 
 ### モジュール分割（計画）

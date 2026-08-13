@@ -44,8 +44,8 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-003, FR-023 |
-| 実装 | `src/petatto_kanban/menu_panel.py`, `menu_panel_layout.py`, `app.py` |
+| 関連 FR | FR-003, FR-019, FR-023 |
+| 実装 | `src/petatto_kanban/menu_panel.py`, `menu_panel_layout.py`, `display/menu_panel_host.py`, `app.py` |
 | UI 契約 | 旧「ツールバー」をメニューパネルに置換（M1） |
 
 ### 概要
@@ -84,6 +84,12 @@
 - **背景:** `TRANSPARENT_COLOR`。操作ボタン Canvas と `<` 円のみクリック可能
 - **ホバー維持:** 子ウィジェット間の Enter/Leave を深度カウント。操作ボタンは単一 Canvas に描画
 - **デフォルト位置:** 画面右上（右端・上端とも 16px マージン）
+
+### デスクトップモードでの Z オーダー（DM-DESKTOP-01）
+
+- メニューパネルは **独立した透過 Toplevel**（`display/menu_panel_host.py`）上に描画する
+- デスクトップモードでは Toplevel に `-topmost` を付与し、**他アプリより常に前面**に表示する
+- カード等は本体ウィンドウ（背面）に残る。メニューのホバー・ドラッグ・永続化はオーバーレイ時と同一
 
 ### 永続化
 
@@ -270,3 +276,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.1.5 | 2026-08-13 | UC-004 左インデント 128px・モニター内クランプ追加 |
 | 2.2.0 | 2026-08-13 | UC-001/UC-006: デスクトップモード追加。設定でオーバーレイと切替 |
 | 2.2.1 | 2026-08-13 | UC-006 実装を `settings_dialog.py` / `mode_labels.py` に分離 |
+| 2.2.2 | 2026-08-13 | UC-002: デスクトップモードでメニューパネルのみ常時最前面（`menu_panel_host`） |
