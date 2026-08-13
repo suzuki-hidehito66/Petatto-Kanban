@@ -6,6 +6,19 @@
 
 ---
 
+## アプリリリースバージョン
+
+GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[project].version`** を正とする。以下 3 箇所を **常に同一値** に保ち、CI（`tests/test_release_version.py`）で検証する。
+
+| 項目 | 値 |
+|------|-----|
+| バージョン | `0.1.0` |
+| 同期先 | `pyproject.toml` `[project].version`、`src/petatto_kanban/__init__.py` `__version__` |
+
+**main へマージ（PR マージ）時**: `build-windows.yml` が exe をビルドし、未使用の `v{バージョン}` タグで [GitHub Release](https://github.com/suzuki-hidehito66/Petatto-Kanban/releases) を作成する。同じバージョンで再マージする場合は **リリース前にバージョンをインクリメント** すること（タグ重複で CI が失敗する）。
+
+---
+
 ## マイルストーン一覧
 
 | ID | 名称 | 目標 | ステータス |
@@ -35,7 +48,7 @@
 | 実行可能 exe | `dist/Petatto-Kanban.exe` |
 | ソース | `src/petatto_kanban/` |
 | SDD 仕様 | `docs/spec/` |
-| CI | `.github/workflows/build-windows.yml` |
+| CI | `.github/workflows/build-windows.yml`（PR: ビルド + Artifact / main マージ: + GitHub Release） |
 
 ### 完了条件（Definition of Done）
 
@@ -124,3 +137,4 @@
 | 2.1.0 | 2026-08-12 | 初期スコープを単一ユーザー独立 .exe と明確化 |
 | 2.2.0 | 2026-08-12 | UI 表示モード 3 種を追加 |
 | 2.3.0 | 2026-08-12 | ターゲット OS を Windows 11 以降に変更 |
+| 2.4.0 | 2026-08-13 | GitHub Release 自動作成（main マージ時・バージョン同期 CI） |

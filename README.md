@@ -68,6 +68,35 @@ python -m PyInstaller petatto-kanban.spec --noconfirm
 
 ビルド成果物: `dist\Petatto-Kanban.exe`
 
+## CI / リリース
+
+| イベント | 動作 |
+|----------|------|
+| `main` 向け PR | Windows でテスト・Lint・exe ビルド、Artifact アップロード |
+| PR を `main` にマージ | 上記に加え **GitHub Release** 作成（`v{バージョン}` タグ、`Petatto-Kanban.exe` 添付） |
+
+ダウンロード: [Releases](https://github.com/suzuki-hidehito66/Petatto-Kanban/releases)
+
+**バージョン更新**（リリース PR マージ前）: 次の 3 箇所を同じ SemVer に揃える。
+
+1. `pyproject.toml` → `[project].version`
+2. `src/petatto_kanban/__init__.py` → `__version__`
+3. `docs/spec/11-release-plan.md` → アプリリリースバージョン表
+
+同じバージョンで main に再マージするとタグが重複し Release ジョブが失敗します（意図的なガード）。
+
+### GitHub Actions 権限（Release 作成に必要）
+
+ワークフロー側: `release` ジョブに `permissions: contents: write` を設定済み。
+
+リポジトリ側（初回または Release が 403 になる場合）:
+
+1. GitHub リポジトリ → **Settings** → **Actions** → **General**
+2. **Workflow permissions** で **Read and write permissions** を選択
+3. **Save**
+
+`GITHUB_TOKEN` に Release 作成・タグ push 権限が付与されます。
+
 ## データ保存場所
 
 ボードデータは次の JSON ファイルに保存されます。
