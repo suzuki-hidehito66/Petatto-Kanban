@@ -20,6 +20,7 @@ from petatto_kanban.display.settings_dialog_labels import (
     LABEL_DISPLAY_MONITOR,
     LABEL_UI_FONT,
     LABEL_UI_SIZE,
+    LABEL_UI_THEME,
 )
 from petatto_kanban.display.ui_font import UiFont
 from petatto_kanban.display.ui_font_labels import (
@@ -30,6 +31,11 @@ from petatto_kanban.display.ui_scale import UiSize
 from petatto_kanban.display.ui_scale_labels import (
     selectable_ui_size_labels,
     ui_size_label,
+)
+from petatto_kanban.display.ui_theme import UiTheme
+from petatto_kanban.display.ui_theme_labels import (
+    selectable_ui_theme_labels,
+    ui_theme_label,
 )
 
 if TYPE_CHECKING:
@@ -53,6 +59,13 @@ class SystemTabState:
 
     confirm_delete_var: tk.BooleanVar
     confirm_exit_var: tk.BooleanVar
+
+
+@dataclass
+class ThemeTabState:
+    """テーマタブの入力状態."""
+
+    ui_theme_var: tk.StringVar
 
 
 def build_display_tab(
@@ -116,6 +129,28 @@ def build_display_tab(
         ui_size_var=ui_size_var,
         ui_font_var=ui_font_var,
     )
+
+
+def build_theme_tab(
+    parent: tk.Misc,
+    *,
+    ui_theme: UiTheme,
+) -> ThemeTabState:
+    """テーマタブ（カラーテーマ）を構築する."""
+    import tkinter as tk
+    from tkinter import ttk
+
+    ttk.Label(parent, text=LABEL_UI_THEME).grid(row=0, column=0, sticky=tk.W, pady=(0, 4))
+    ui_theme_var = tk.StringVar(value=ui_theme_label(ui_theme))
+    ttk.Combobox(
+        parent,
+        textvariable=ui_theme_var,
+        values=selectable_ui_theme_labels(),
+        state="readonly",
+        width=COMBOBOX_WIDTH,
+    ).grid(row=1, column=0, sticky=tk.EW)
+    parent.columnconfigure(0, weight=1)
+    return ThemeTabState(ui_theme_var=ui_theme_var)
 
 
 def build_system_tab(

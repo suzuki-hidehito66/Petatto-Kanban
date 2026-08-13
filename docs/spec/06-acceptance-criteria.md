@@ -838,6 +838,68 @@ And tkinter フォントファミリーは "Segoe UI" になる
 
 ---
 
+## FR-028: UI カラーテーマ設定
+
+### AC-028-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-028 |
+| 関連 US | US-018 |
+| 関連 UC | UC-006, UC-011 |
+| ステータス | implemented |
+| 検証 | 自動 + 手動 |
+
+```gherkin
+Given 設定ダイアログが開いている
+And ユーザーが「テーマ」タブを表示している
+When ユーザーがカラーテーマを「ダーク」に変更して OK する
+Then settings.json の ui_theme が "dark" になる
+And カード背景が暗色・タイトル文字が明色で描画される
+And メニューパネルの円ボタンがテーマ色で描画される
+And カード上の期限パネルで当日は黄・超過は赤のまま表示される
+And 進捗バーの塗り色は 0%≈赤 / 50%≈黄 / 100%≈緑のままである
+And カードの x / y 座標は変更されない
+```
+
+**テスト**: `test_ui_theme.py`, `test_settings_dialog.py`, `test_settings_actions.py`
+
+### AC-028-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-028 |
+| 関連 US | US-018 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json に ui_theme が "forest" で保存されている
+When アプリを再起動する
+Then 起動直後から UI が forest テーマの配色で描画される
+```
+
+**テスト**: `test_save_and_load_ui_theme`, `test_ui_theme.py`
+
+### AC-028-03
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-028 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json の ui_theme が不明な文字列または欠損している
+When 表示設定を読み込む
+Then ui_theme は "default" として扱われる
+And 配色は default テーマ（現行既定）になる
+```
+
+**テスト**: `test_display_settings_from_dict_invalid_ui_theme`, `test_ui_theme.py`
+
+---
+
 ## M2 以降（プレースホルダー）
 
 | ID | 関連 FR | ステータス |

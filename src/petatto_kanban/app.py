@@ -7,7 +7,7 @@ from collections.abc import Callable
 from datetime import date
 from tkinter import messagebox, ttk
 
-from petatto_kanban.card_renderer import CARD_BG, CARD_FG, CardRenderer
+from petatto_kanban.card_renderer import CardRenderer
 from petatto_kanban.card_ui import (
     CardUiRefs,
     ClickReleaseTracker,
@@ -37,6 +37,7 @@ from petatto_kanban.display.settings_dialog_labels import MSG_SETTINGS_SAVED
 from petatto_kanban.display.transparent import TRANSPARENT_COLOR
 from petatto_kanban.display.ui_chrome import UiChrome
 from petatto_kanban.display.ui_metrics import metrics_for_display
+from petatto_kanban.display.ui_theme import palette_for_theme
 from petatto_kanban.models import Card
 from petatto_kanban.new_card_placement import (
     DEFAULT_NEW_CARD_TITLE,
@@ -60,6 +61,7 @@ class KanbanApp:
             self.display_settings.ui_size,
             self.display_settings.ui_font,
         )
+        self._ui_palette = palette_for_theme(self.display_settings.ui_theme)
         self._card_ui: dict[str, CardUiRefs] = {}
         self._card_progress_widgets: dict[str, tk.Canvas] = {}
         self._drag_state: dict[int, tuple[int, int]] = {}
@@ -93,6 +95,7 @@ class KanbanApp:
         self._card_renderer = CardRenderer(
             self.root,
             metrics=self._ui_metrics,
+            palette=self._ui_palette,
             on_card_enter=self._on_kanban_card_enter,
             progress_widgets=self._card_progress_widgets,
         )
@@ -108,13 +111,14 @@ class KanbanApp:
             )
 
     def _sync_ui_appearance(self) -> None:
-        """UI サイズ・フォント変更時にメトリクス・クローム・カード描画を更新する."""
+        """UI サイズ・フォント・テーマ変更時に外観を更新する."""
         self._ui_metrics = metrics_for_display(
             self.display_settings.ui_size,
             self.display_settings.ui_font,
         )
+        self._ui_palette = palette_for_theme(self.display_settings.ui_theme)
         monitor = get_monitor(self.display_settings.monitor_index)
-        self._chrome.apply_metrics(self._ui_metrics)
+        self._chrome.apply_appearance(self._ui_metrics, self._ui_palette)
         self._chrome.clamp_menu_to_monitor(monitor)
         self._sync_card_renderer()
 
@@ -179,6 +183,7 @@ class KanbanApp:
             self.root,
             self._menu_panel_host.window,
             metrics=self._ui_metrics,
+            palette=self._ui_palette,
             on_close=self._on_close,
             on_settings=self._open_settings,
             on_add_card=self._add_card,
@@ -295,8 +300,8 @@ class KanbanApp:
 
         entry = tk.Entry(
             ui.title_frame,
-            bg=CARD_BG,
-            fg=CARD_FG,
+            bg=self._ui_palette.card_bg,
+            fg=self._ui_palette.card_fg,
             font=self._ui_metrics.title_font,
             relief=tk.FLAT,
             bd=0,
@@ -647,6 +652,7 @@ class KanbanApp:
                 monitor_index=self.display_settings.monitor_index,
                 ui_size=self.display_settings.ui_size,
                 ui_font=self.display_settings.ui_font,
+                ui_theme=self.display_settings.ui_theme,
                 monitors=self._monitors,
             ),
             on_delete_all_cards=self._delete_all_cards,

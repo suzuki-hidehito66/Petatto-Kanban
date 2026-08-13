@@ -10,6 +10,7 @@ from typing import Any
 
 from petatto_kanban.display.ui_font import UiFont, parse_ui_font
 from petatto_kanban.display.ui_scale import UiSize, parse_ui_size
+from petatto_kanban.display.ui_theme import UiTheme, parse_ui_theme
 
 SETTINGS_FILE_NAME = "settings.json"
 
@@ -33,6 +34,7 @@ class DisplaySettings:
     confirm_exit: bool = False
     ui_size: UiSize = UiSize.MEDIUM
     ui_font: UiFont = UiFont.SEGOE_UI
+    ui_theme: UiTheme = UiTheme.DEFAULT
     menu_panel_x: int | None = None
     menu_panel_y: int | None = None
 
@@ -60,6 +62,7 @@ def display_settings_to_dict(settings: DisplaySettings) -> dict[str, Any]:
         "confirm_exit": settings.confirm_exit,
         "ui_size": settings.ui_size.value,
         "ui_font": settings.ui_font.value,
+        "ui_theme": settings.ui_theme.value,
     }
     if settings.menu_panel_x is not None:
         data["menu_panel_x"] = settings.menu_panel_x
@@ -79,6 +82,7 @@ def display_settings_from_dict(data: dict[str, Any]) -> DisplaySettings:
         confirm_exit=bool(data.get("confirm_exit", False)),
         ui_size=parse_ui_size(data.get("ui_size")),
         ui_font=parse_ui_font(data.get("ui_font")),
+        ui_theme=parse_ui_theme(data.get("ui_theme")),
         menu_panel_x=int(menu_x) if menu_x is not None else None,
         menu_panel_y=int(menu_y) if menu_y is not None else None,
     )

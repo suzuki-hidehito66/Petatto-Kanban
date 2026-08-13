@@ -88,6 +88,8 @@ petatto-kanban/
 │   │   ├── ui_metrics.py         # UiMetrics 合成（FR-026 + FR-027）
 │   │   ├── ui_font.py              # UI フォントプリセット（FR-027）
 │   │   ├── ui_font_labels.py       # UI フォント UI ラベル
+│   │   ├── ui_theme.py             # UI カラーテーマパレット（FR-028）
+│   │   ├── ui_theme_labels.py      # UI カラーテーマ UI ラベル
 │   │   ├── ui_chrome.py          # メニュー・期限パネルホスト再構築
 │   ├── card_renderer.py          # カード UI 描画（UiMetrics）
 │   │   ├── settings.py           # settings.json
@@ -125,8 +127,10 @@ petatto-kanban/
 | `display/ui_metrics.py` | `UiMetrics` 生成（ui_size + ui_font 合成） | `ui_scale`, `ui_font` |
 | `display/ui_font.py` | UI フォントプリセット・tkinter ファミリー解決（FR-027） | 標準ライブラリのみ |
 | `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ |
-| `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_metrics`, `menu_panel`, `due_date_picker`, `card_renderer` |
-| `card_renderer.py` | カード UI 描画（UiMetrics 適用） | tkinter, `ui_metrics`, `due_date`, `progress` |
+| `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
+| `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
+| `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_metrics`, `ui_theme`, `menu_panel`, `due_date_picker`, `card_renderer` |
+| `card_renderer.py` | カード UI 描画（UiMetrics + UiThemePalette 適用） | tkinter, `ui_metrics`, `ui_theme`, `due_date`, `progress` |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
 | `menu_panel.py` | メニューパネル UI（円形・NE アンカー・ホバー展開） | tkinter, `menu_panel_layout` |
 | `menu_panel_layout.py` | メニューパネル座標・ヒット判定、`MenuPanelRect` | 標準ライブラリのみ |

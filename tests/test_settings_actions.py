@@ -15,6 +15,7 @@ from petatto_kanban.display.settings_actions import (
 from petatto_kanban.display.settings_dialog import SettingsDialogResult
 from petatto_kanban.display.ui_font import UiFont
 from petatto_kanban.display.ui_scale import UiSize
+from petatto_kanban.display.ui_theme import UiTheme
 from petatto_kanban.models import Board, Card
 from petatto_kanban.storage import load_board
 
@@ -51,6 +52,7 @@ def test_apply_dialog_result_updates_settings_and_detects_changes() -> None:
         monitor_index=1,
         ui_size=UiSize.LARGE,
         ui_font=UiFont.SEGOE_UI,
+        ui_theme=UiTheme.DEFAULT,
     )
 
     changes = apply_dialog_result(settings, result)
@@ -74,6 +76,7 @@ def test_apply_dialog_result_no_display_refresh_when_only_flags_change() -> None
         monitor_index=0,
         ui_size=UiSize.MEDIUM,
         ui_font=UiFont.SEGOE_UI,
+        ui_theme=UiTheme.DEFAULT,
     )
 
     changes = apply_dialog_result(settings, result)
@@ -94,6 +97,7 @@ def test_apply_dialog_result_detects_ui_size_change() -> None:
         monitor_index=0,
         ui_size=UiSize.SMALL,
         ui_font=UiFont.SEGOE_UI,
+        ui_theme=UiTheme.DEFAULT,
     )
 
     changes = apply_dialog_result(settings, result)
@@ -113,6 +117,7 @@ def test_apply_dialog_result_detects_ui_font_change() -> None:
         monitor_index=0,
         ui_size=UiSize.MEDIUM,
         ui_font=UiFont.MEIRYO,
+        ui_theme=UiTheme.DEFAULT,
     )
 
     changes = apply_dialog_result(settings, result)
@@ -122,6 +127,26 @@ def test_apply_dialog_result_detects_ui_font_change() -> None:
     assert changes.needs_ui_refresh is True
     assert changes.needs_display_refresh is False
     assert settings.ui_font == UiFont.MEIRYO
+
+
+def test_apply_dialog_result_detects_ui_theme_change() -> None:
+    settings = DisplaySettings(mode=DisplayMode.OVERLAY, monitor_index=0)
+    result = SettingsDialogResult(
+        mode=DisplayMode.OVERLAY,
+        confirm_delete=True,
+        confirm_exit=False,
+        monitor_index=0,
+        ui_size=UiSize.MEDIUM,
+        ui_font=UiFont.SEGOE_UI,
+        ui_theme=UiTheme.DARK,
+    )
+
+    changes = apply_dialog_result(settings, result)
+
+    assert changes.ui_theme_changed is True
+    assert changes.ui_font_changed is False
+    assert changes.needs_ui_refresh is True
+    assert settings.ui_theme == UiTheme.DARK
 
 
 def test_confirm_exit_skips_dialog_when_disabled() -> None:
