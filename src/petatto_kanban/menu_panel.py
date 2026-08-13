@@ -109,6 +109,7 @@ class MenuPanel:
         self._drag_moved = False
         self._hide_after_id: str | None = None
         self._hover_depth = 0
+        self._actions_expanded = False
         self._action_press_index: int | None = None
 
         self.widget = tk.Frame(parent, bg=bg, bd=0, highlightthickness=0)
@@ -217,15 +218,17 @@ class MenuPanel:
         return height if height > 1 else self.widget.winfo_reqheight()
 
     def _show_actions(self) -> None:
-        if self._actions.winfo_ismapped():
+        if self._actions_expanded:
             return
+        self._actions_expanded = True
         delta = self._actions_expansion_width()
         self.place_at(self._place_x - delta, self._place_y)
         self._actions.pack(side=tk.RIGHT, padx=(0, MENU_ACTIONS_GAP))
 
     def _hide_actions(self) -> None:
-        if not self._actions.winfo_ismapped():
+        if not self._actions_expanded:
             return
+        self._actions_expanded = False
         delta = self._actions_expansion_width()
         self._actions.pack_forget()
         self.place_at(self._place_x + delta, self._place_y)
@@ -235,7 +238,8 @@ class MenuPanel:
         if self._hide_after_id is not None:
             self.widget.after_cancel(self._hide_after_id)
             self._hide_after_id = None
-        self._show_actions()
+        if self._hover_depth == 1:
+            self._show_actions()
 
     def _on_leave(self, _event: tk.Event) -> None:
         self._hover_depth = max(0, self._hover_depth - 1)
