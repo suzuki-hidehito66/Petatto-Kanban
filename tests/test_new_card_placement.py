@@ -3,6 +3,7 @@
 from petatto_kanban.menu_panel_layout import MenuPanelRect
 from petatto_kanban.new_card_placement import (
     DEFAULT_NEW_CARD_GAP_Y,
+    DEFAULT_NEW_CARD_INSET_X,
     DEFAULT_NEW_CARD_STACK_OFFSET_X,
     DEFAULT_NEW_CARD_STACK_OFFSET_Y,
     compute_new_card_position,
@@ -27,14 +28,14 @@ def test_first_card_below_panel_right_aligned() -> None:
         card_width=222,
         stack_index=0,
     )
-    assert x == panel.right - 222
+    assert x == panel.right - 222 - DEFAULT_NEW_CARD_INSET_X
     assert y == panel.bottom + DEFAULT_NEW_CARD_GAP_Y
 
 
 def test_right_edge_uses_anchor_not_stale_width() -> None:
     panel = _panel(x=100, y=20, width=36, height=36, right_edge=1916)
     x, _y = compute_new_card_position(panel=panel, card_width=222, stack_index=0)
-    assert x == 1916 - 222
+    assert x == 1916 - 222 - DEFAULT_NEW_CARD_INSET_X
     assert x != panel.x + panel.width - 222
 
 
