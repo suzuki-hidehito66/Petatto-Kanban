@@ -719,6 +719,30 @@ class KanbanApp:
         self.board.remove_card(card.id)
         self._persist_and_refresh()
 
+    def _delete_all_cards(self) -> None:
+        """設定ダイアログから全カードを削除する（常に確認ダイアログ）。"""
+        count = len(self.board.cards)
+        if count == 0:
+            messagebox.showinfo(
+                APP_TITLE,
+                "削除するカードがありません。",
+                parent=self.root,
+            )
+            return
+
+        if not messagebox.askyesno(
+            APP_TITLE,
+            f"全てのカード（{count}枚）を削除しますか？\nこの操作は取り消せません。",
+            parent=self.root,
+        ):
+            return
+
+        self._due_date_picker.cancel_if_any()
+        self._commit_inline_title_edit_if_any(refresh_after=False)
+        self.board.clear_cards()
+        save_board(self.board)
+        self.refresh()
+
     def _open_settings(self) -> None:
         self._due_date_picker.cancel_if_any()
         self._commit_inline_title_edit_if_any(refresh_after=False)
@@ -729,6 +753,7 @@ class KanbanApp:
             confirm_exit=self.display_settings.confirm_exit,
             monitor_index=self.display_settings.monitor_index,
             monitors=self._monitors,
+            on_delete_all_cards=self._delete_all_cards,
         )
         if dialog.result is None:
             return

@@ -11,6 +11,7 @@ from petatto_kanban.display.settings_dialog_tabs import (
     DISPLAY_TAB_FIELDS,
     SETTINGS_TAB_DISPLAY,
     SETTINGS_TAB_SYSTEM,
+    SYSTEM_TAB_ACTIONS,
     SYSTEM_TAB_FIELDS,
 )
 
@@ -25,6 +26,7 @@ def test_settings_tab_labels_and_field_groups() -> None:
     assert SETTINGS_TAB_SYSTEM == "システム"
     assert DISPLAY_TAB_FIELDS == ("mode", "monitor_index")
     assert SYSTEM_TAB_FIELDS == ("confirm_delete", "confirm_exit")
+    assert SYSTEM_TAB_ACTIONS == ("delete_all_cards",)
 
 
 def test_result_from_form_values_display_tab() -> None:

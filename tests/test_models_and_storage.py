@@ -13,6 +13,14 @@ def test_create_default_board_is_empty() -> None:
     assert board.cards == []
 
 
+def test_board_clear_cards() -> None:
+    board = Board.create_default()
+    board.cards.append(Card(title="A"))
+    board.cards.append(Card(title="B"))
+    board.clear_cards()
+    assert board.cards == []
+
+
 def test_save_and_load_board(tmp_path: Path) -> None:
     board = Board.create_default(name="Test Board")
     board.cards.append(Card(title="Write docs", x=50, y=60))

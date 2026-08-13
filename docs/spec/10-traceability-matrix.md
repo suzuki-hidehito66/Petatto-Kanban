@@ -22,7 +22,7 @@
 | FR-002 | US-001 | AC-002-01 | `models.py`, `app.py` | `test_create_default_board_is_empty` | verified |
 | FR-003 | US-002 | AC-003-01, AC-003-02 | `app.py` | 手動 | implemented |
 | FR-004 | US-003 | AC-004-01, AC-004-02 | `app.py` | 手動 | implemented |
-| FR-005 | US-004 | AC-005-01, AC-005-02 | `app.py` | 手動 | implemented |
+| FR-005 | US-004 | AC-005-01, AC-005-02, AC-005-03 | `app.py`, `models.py`, `display/settings_dialog.py` | `test_board_clear_cards` + 手動 | implemented |
 | FR-007 | US-006 | AC-007-01〜03 | `storage.py`, `app.py` | `test_save_and_load_board`, `test_board_roundtrip_dict`, `test_migrate_legacy_columns_format` | verified |
 | FR-010 | US-012 | AC-010-01 | `app.py` | 手動 | implemented |
 | FR-020 | US-010 | AC-020-01, AC-020-02 | `display/overlay.py`, `app.py` | 手動 | implemented |
@@ -65,7 +65,7 @@
 | DC-003 | FR-021, FR-024 | `display/settings.py` | `test_display_settings.py` | implemented |
 | UC-001 | FR-001, FR-019, FR-020 | `app.py`, `display/modes.py`, `display/overlay.py`, `display/desktop.py` | 手動 | implemented |
 | UC-002 | FR-003, FR-019, FR-023 | `menu_panel.py`, `menu_panel_layout.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `app.py` | `test_menu_panel.py`, `test_display_modes.py` + 手動 | implemented |
-| UC-006 | FR-019, FR-020, FR-021, FR-022, FR-024 | `display/settings_dialog.py`, `settings_dialog_tabs.py`, `mode_labels.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py` + 手動 | implemented |
+| UC-006 | FR-005, FR-019, FR-020, FR-021, FR-022, FR-023, FR-024 | `display/settings_dialog.py`, `settings_dialog_tabs.py`, `mode_labels.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py`, `test_board_clear_cards` + 手動 | implemented |
 | UC-003 | FR-002, FR-003〜005, FR-010, FR-014, FR-025 | `app.py`, `card_ui.py` | 手動 | implemented |
 | UC-004 | FR-003 | `app.py`, `menu_panel.py`, `menu_panel_layout.py`, `new_card_placement.py` | `test_new_card_placement.py`, `test_menu_panel.py` + 手動 | implemented |
 | UC-005 | FR-004 | `app.py` | 手動 | implemented |

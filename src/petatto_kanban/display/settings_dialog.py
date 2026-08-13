@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from tkinter import simpledialog, ttk
 from typing import TYPE_CHECKING
@@ -75,12 +76,14 @@ class SettingsDialog(simpledialog.Dialog):
         confirm_exit: bool,
         monitor_index: int,
         monitors: list[Monitor],
+        on_delete_all_cards: Callable[[], None] | None = None,
     ) -> None:
         self._mode = mode
         self._confirm_delete = confirm_delete
         self._confirm_exit = confirm_exit
         self._monitor_index = monitor_index
         self._monitors = monitors
+        self._on_delete_all_cards = on_delete_all_cards
         self.result: SettingsDialogResult | None = None
         super().__init__(parent, title="設定")
 
@@ -145,8 +148,18 @@ class SettingsDialog(simpledialog.Dialog):
             parent,
             text="アプリ終了時に確認ダイアログを表示する",
             variable=self.confirm_exit_var,
-        ).grid(row=1, column=0, sticky=tk.W)
+        ).grid(row=1, column=0, sticky=tk.W, pady=(0, 8))
+
+        ttk.Button(
+            parent,
+            text="全てのカードを削除",
+            command=self._invoke_delete_all_cards,
+        ).grid(row=2, column=0, sticky=tk.W, pady=(8, 0))
         parent.columnconfigure(0, weight=1)
+
+    def _invoke_delete_all_cards(self) -> None:
+        if self._on_delete_all_cards is not None:
+            self._on_delete_all_cards()
 
     def apply(self) -> None:
         self.result = result_from_form_values(
