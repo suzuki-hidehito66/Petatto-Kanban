@@ -108,7 +108,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-002, FR-003, FR-004, FR-005, FR-010, FR-025, FR-014 |
+| 関連 FR | FR-002, FR-003, FR-004, FR-005, FR-010, FR-025, FR-014, FR-026, FR-028 |
 
 | 要素 | 操作 | 結果 |
 |------|------|------|
@@ -297,6 +297,12 @@
 | `CARD_FRAME_PAD` | 6 px | カード外枠内余白 |
 | `CARD_TITLE_FRAME_PAD` | 5 × 3 px | タイトル枠内余白 |
 | `CARD_DUE_PANEL_PAD` | 5 × 2 px | 期限パネル内余白 |
+| `CARD_DUE_SECTION_GAP` | 3 px | タイトル行と期限行の間隔 |
+| `CARD_PROGRESS_SECTION_GAP` | 4 px | 期限行と進捗バーの間隔 |
+| `CARD_FRAME_BORDER` | 1 px | カード外枠線（**スケールしない**） |
+| `CARD_TITLE_FRAME_BORDER` | 1 px | タイトル枠線 |
+| `CARD_DUE_PANEL_BORDER` | 1 px | 期限パネル枠線 |
+| `DUE_PICKER_PANEL_WIDTH` | 240 px | 期限編集パネル幅 |
 | `MENU_CIRCLE_SIZE` | 36 px | メニューパネル円ボタン（UC-002） |
 | メニュー円フォント pt | **14** bold | ＋ / ⚙ / × / `<` |
 | 期限パネル月ラベル pt | **9** bold | `due_date_picker` |

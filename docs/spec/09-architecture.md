@@ -79,12 +79,13 @@ petatto-kanban/
 │   │   ├── modes.py              # モード適用ディスパッチ
 │   │   ├── mode_labels.py        # 設定 UI ラベル
 │   │   ├── settings_dialog.py    # UC-006 設定ダイアログ（タブ UI シェル）
-│   │   ├── settings_dialog_tabs.py  # タブ定義（表示 / システム）
+│   │   ├── settings_dialog_tabs.py  # タブ定義（表示 / テーマ / システム）
 │   │   ├── settings_dialog_labels.py  # 設定 UI 文言（tkinter 非依存）
 │   │   ├── settings_dialog_panels.py  # 各タブのウィジェット構築
 │   │   ├── settings_actions.py   # 設定適用・終了確認・全カード削除
-│   │   ├── ui_scale.py           # UI サイズプリセット・基準寸法（FR-026）
+│   │   ├── ui_scale.py           # UI サイズプリセット・スケール係数（FR-026）
 │   │   ├── ui_scale_labels.py    # UI サイズ UI ラベル
+│   │   ├── card_layout.py        # カード基準寸法・黄金比（UC-003 / UC-009）
 │   │   ├── ui_metrics.py         # UiMetrics 合成（FR-026 + FR-027）
 │   │   ├── ui_font.py              # UI フォントプリセット（FR-027）
 │   │   ├── ui_font_labels.py       # UI フォント UI ラベル
@@ -122,15 +123,16 @@ petatto-kanban/
 | `display/settings_dialog_labels.py` | 設定ダイアログ UI 文言 | 標準ライブラリのみ |
 | `display/settings_dialog_panels.py` | 表示 / システムタブのウィジェット構築 | tkinter, `mode_labels`, `settings_dialog_labels`, `monitors` |
 | `display/settings_actions.py` | 設定適用・終了確認・全カード削除（`app.py` から利用） | `settings_dialog`, `settings_dialog_labels`, `storage` |
-| `display/ui_scale.py` | UI サイズプリセット・スケール係数・基準寸法（FR-026） | 標準ライブラリのみ |
+| `display/ui_scale.py` | UI サイズプリセット・スケール係数（FR-026） | 標準ライブラリのみ |
 | `display/ui_scale_labels.py` | UI サイズコンボボックス用ラベル | 標準ライブラリのみ |
-| `display/ui_metrics.py` | `UiMetrics` 生成（ui_size + ui_font 合成） | `ui_scale`, `ui_font` |
+| `display/card_layout.py` | カード基準寸法・黄金比・スケール（UC-003 / UC-009） | 標準ライブラリのみ |
+| `display/ui_metrics.py` | `UiMetrics` 生成（ui_size + ui_font + card_layout 合成） | `ui_scale`, `ui_font`, `card_layout` |
+| `card_renderer.py` | カード UI 描画（UiMetrics + UiThemePalette） | tkinter, `ui_metrics`, `ui_theme`, `due_date`, `progress` |
+| `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_metrics`, `ui_theme`, `menu_panel`, `due_date_picker` |
 | `display/ui_font.py` | UI フォントプリセット・tkinter ファミリー解決（FR-027） | 標準ライブラリのみ |
 | `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
-| `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_metrics`, `ui_theme`, `menu_panel`, `due_date_picker`, `card_renderer` |
-| `card_renderer.py` | カード UI 描画（UiMetrics + UiThemePalette 適用） | tkinter, `ui_metrics`, `ui_theme`, `due_date`, `progress` |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
 | `menu_panel.py` | メニューパネル UI（円形・NE アンカー・ホバー展開） | tkinter, `menu_panel_layout` |
 | `menu_panel_layout.py` | メニューパネル座標・ヒット判定、`MenuPanelRect` | 標準ライブラリのみ |
