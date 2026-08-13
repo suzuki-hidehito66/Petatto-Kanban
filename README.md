@@ -1,18 +1,75 @@
 # Petatto-Kanban
 
-ペタッとカンバン — **単一ユーザー向けの独立した Windows デスクトップ**カンバンタスク管理アプリ（`.exe`）
+**ペタッとカンバン** — 付箋のようにタスクを貼れる、単一ユーザー向け Windows デスクトップカンバンアプリ
 
-## 概要
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Windows 11+](https://img.shields.io/badge/platform-Windows%2011%2B-lightgrey)](https://www.microsoft.com/windows)
 
-1 人のユーザーが自分の PC 上で完結して使えるカンバンアプリです。  
-**M1 ではオーバーレイモード**（指定ディスプレイ全画面・透過・最前面表示）を既定 UI とし、カードはドラッグで自由配置できます。PyInstaller により `.exe` として配布します。
+---
 
-## 必要条件
+## このアプリについて
 
-- Python 3.11 以上（開発時）
-- **Windows 11 以降**（`.exe` ビルド・実行時）
+Petatto-Kanban は **1 人の PC 上で完結** するタスク管理アプリです。ログイン不要・クラウド不要で、カードを画面上に自由に配置して進められます。
 
-## セットアップ
+- **オーバーレイモード** — 指定ディスプレイ全画面・透過・最前面（既定）
+- **デスクトップモード** — 通常ウィンドウより背面に表示
+- **カード** — タイトル編集、期限（当日黄 / 超過赤）、進捗バー（0〜100%）
+- **見た目** — UI サイズ（小 / 標準 / 大 / 極大）、フォント、10 種カラーテーマ
+
+配布形式は PyInstaller による単一 `.exe` です。
+
+---
+
+## ダウンロード（一般ユーザー向け）
+
+最新版は GitHub Releases から入手できます。
+
+**[Releases ページ](https://github.com/suzuki-hidehito66/Petatto-Kanban/releases)** → `Petatto-Kanban.exe` をダウンロード → ダブルクリックで起動
+
+| 項目 | 要件 |
+|------|------|
+| OS | **Windows 11 以降** |
+| ネットワーク | 不要（オフライン動作） |
+| インストール | 不要（ポータブル exe） |
+
+---
+
+## 主な機能
+
+| カテゴリ | 内容 |
+|----------|------|
+| カード操作 | 追加（＋ボタン）、ドラッグ移動、右クリック離しで削除 |
+| タイトル | ダブルクリック相当の操作でインライン編集 |
+| 期限 | カレンダーで設定。「期限なし」も可 |
+| 進捗 | ホバー中にマウスホイールで ±10% |
+| 設定 | 表示モード、ディスプレイ、UI サイズ、フォント、テーマ、削除確認 |
+| データ | すべてローカル JSON に自動保存 |
+
+---
+
+## データの保存場所
+
+ユーザーデータはリポジトリ外のホームディレクトリに保存されます（**公開リポジトリに含まれません**）。
+
+```
+%USERPROFILE%\.petatto-kanban\
+├── board.json      # カード・座標・進捗・期限
+└── settings.json   # 表示モード・UI サイズ・フォント・テーマ等
+```
+
+バックアップする場合は上記フォルダをコピーしてください。
+
+---
+
+## 開発者向け
+
+### 必要条件
+
+- Python **3.11 以上**
+- **Windows 11 以降**（exe ビルド・実行時）
+
+### セットアップ
 
 ```bash
 git clone https://github.com/suzuki-hidehito66/Petatto-Kanban.git
@@ -20,99 +77,89 @@ cd Petatto-Kanban
 python -m pip install -e ".[dev]"
 ```
 
-## 開発モードで起動
+### 開発モードで起動
 
 ```bash
 python -m petatto_kanban
 ```
 
-または:
-
-```bash
-petatto-kanban
-```
-
-## テスト・Lint
+### テスト・Lint
 
 ```bash
 python -m pytest
 python -m ruff check src tests
 ```
 
-## Windows 実行ファイル（.exe）のビルド
+### Windows `.exe` のローカルビルド
 
-`build_exe.bat` / `build_exe.ps1` のコンソール出力は **ASCII（英語）** です。UTF-8 無 BOM の日本語は cmd / PowerShell 5.x で文字化けするため。
+`build_exe.bat` / `build_exe.ps1` のコンソール出力は **ASCII（英語）** です（cmd / PowerShell 5.x の文字化け回避）。
 
-**ビルド前:** 実行中の `Petatto-Kanban.exe` を終了してください。起動中だと `dist\Petatto-Kanban.exe` がロックされ PyInstaller が失敗します（`WinError 5`）。スクリプトは起動検知と旧 exe の退避を試みます。
-
-### 方法 1: バッチファイル
+**ビルド前:** 実行中の `Petatto-Kanban.exe` を終了してください。起動中だと `dist\Petatto-Kanban.exe` がロックされ PyInstaller が失敗します。
 
 ```cmd
 scripts\build_exe.bat
 ```
 
-### 方法 2: PowerShell
+または:
 
 ```powershell
 .\scripts\build_exe.ps1
 ```
 
-PowerShell 5.x では `"[INFO]"` のような角括弧付き二重引用符文字列が構文エラーになるため、ログは単一引用符・英語表記にしています。
+成果物: `dist\Petatto-Kanban.exe`
 
-### 方法 3: 手動
+---
 
-```cmd
-python -m pip install -e ".[dev]"
-python -m PyInstaller petatto-kanban.spec --noconfirm
-```
+## ブランチ運用（コントリビュータ向け）
 
-ビルド成果物: `dist\Petatto-Kanban.exe`
+| ブランチ | 用途 |
+|----------|------|
+| `main` | リリース用。マージ時に CI が exe ビルド + GitHub Release |
+| `test` | 統合・検証用 |
+| `dev_*-017d` | 機能開発用（PR は通常 `test` 向け） |
+
+リリース前は `pyproject.toml` / `__init__.py` / `docs/spec/11-release-plan.md` の **3 箇所でバージョンを同期** してください（`tests/test_release_version.py` で検証）。
+
+---
 
 ## CI / リリース
 
 | イベント | 動作 |
 |----------|------|
 | `main` 向け PR | Windows でテスト・Lint・exe ビルド |
-| PR を `main` にマージ | 上記に加え **GitHub Release** 作成（`v{バージョン}` タグ、`Petatto-Kanban.exe` 添付） |
+| `main` へマージ | GitHub Release 作成（`v{バージョン}` タグ、`Petatto-Kanban.exe` 添付） |
 
-ダウンロード: [Releases](https://github.com/suzuki-hidehito66/Petatto-Kanban/releases)
+### GitHub Actions 権限（メンテナ向け）
 
-**バージョン更新**（リリース PR マージ前）: 次の 3 箇所を同じ SemVer に揃える。
+Release 作成にはリポジトリ Settings → Actions → **Read and write permissions** が必要です。403 になる場合は README 旧版の手順を参照するか、[Issue](https://github.com/suzuki-hidehito66/Petatto-Kanban/issues) で確認してください。
 
-1. `pyproject.toml` → `[project].version`
-2. `src/petatto_kanban/__init__.py` → `__version__`
-3. `docs/spec/11-release-plan.md` → アプリリリースバージョン表
-
-同じバージョンで main に再マージするとタグが重複し Release ジョブが失敗します（意図的なガード）。
-
-### GitHub Actions 権限（Release 作成に必要）
-
-ワークフロー側: `release` ジョブに `permissions: contents: write` を設定済み。
-
-リポジトリ側（初回または Release が 403 になる場合）:
-
-1. GitHub リポジトリ → **Settings** → **Actions** → **General**
-2. **Workflow permissions** で **Read and write permissions** を選択
-3. **Save**
-
-`GITHUB_TOKEN` に Release 作成・タグ push 権限が付与されます。
-
-## データ保存場所
-
-ボードデータは次の JSON ファイルに保存されます。
-
-```
-%USERPROFILE%\.petatto-kanban\board.json
-```
+---
 
 ## ドキュメント
 
 | ファイル | 内容 |
 |----------|------|
-| [docs/SPECIFICATION.md](docs/SPECIFICATION.md) | **SDD 仕様書索引**（仕様駆動開発のエントリポイント） |
-| [docs/spec/](docs/spec/) | 要件・受け入れ基準・トレーサビリティ等の詳細仕様 |
+| [docs/SPECIFICATION.md](docs/SPECIFICATION.md) | SDD 仕様書索引 |
+| [docs/spec/](docs/spec/) | 要件・受け入れ基準・UI 契約 |
 | [docs/PYTHON_CODING_RULES.md](docs/PYTHON_CODING_RULES.md) | Python コーディングルール |
+| [docs/spec/11-release-plan.md](docs/spec/11-release-plan.md) | リリース計画・バージョン管理 |
+
+---
+
+## 公開・セキュリティに関する注意
+
+- 本リポジトリには **API キーやパスワードを含めない** でください
+- ユーザーの `board.json` / `settings.json` をコミットしないでください
+- 脆弱性報告は GitHub Security Advisories または Issue をご利用ください
+
+---
 
 ## ライセンス
 
-MIT License — 詳細は [LICENSE](LICENSE) を参照してください。
+[MIT License](LICENSE) — Copyright (c) suzuki-hidehito66
+
+---
+
+## ステータス
+
+M1 MVP 開発中（Alpha）。機能追加・仕様変更が続く可能性があります。本番利用は自己責任でお願いします。
