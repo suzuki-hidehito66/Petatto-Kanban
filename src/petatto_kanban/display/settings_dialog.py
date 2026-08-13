@@ -29,6 +29,7 @@ class SettingsDialogResult:
 
     mode: DisplayMode
     confirm_delete: bool
+    confirm_exit: bool
     monitor_index: int
 
 
@@ -39,6 +40,7 @@ class SettingsFormValues:
     mode_label: str
     monitor_name: str
     confirm_delete: bool
+    confirm_exit: bool
 
 
 def result_from_form_values(
@@ -52,6 +54,7 @@ def result_from_form_values(
     return SettingsDialogResult(
         mode=display_mode_from_label(values.mode_label, default_mode),
         confirm_delete=values.confirm_delete,
+        confirm_exit=values.confirm_exit,
         monitor_index=monitor_index_for_name(
             monitors,
             values.monitor_name,
@@ -69,11 +72,13 @@ class SettingsDialog(simpledialog.Dialog):
         *,
         mode: DisplayMode,
         confirm_delete: bool,
+        confirm_exit: bool,
         monitor_index: int,
         monitors: list[Monitor],
     ) -> None:
         self._mode = mode
         self._confirm_delete = confirm_delete
+        self._confirm_exit = confirm_exit
         self._monitor_index = monitor_index
         self._monitors = monitors
         self.result: SettingsDialogResult | None = None
@@ -133,7 +138,14 @@ class SettingsDialog(simpledialog.Dialog):
             parent,
             text="カード削除時に確認ダイアログを表示する",
             variable=self.confirm_var,
-        ).grid(row=0, column=0, sticky=tk.W)
+        ).grid(row=0, column=0, sticky=tk.W, pady=(0, 8))
+
+        self.confirm_exit_var = tk.BooleanVar(value=self._confirm_exit)
+        ttk.Checkbutton(
+            parent,
+            text="アプリ終了時に確認ダイアログを表示する",
+            variable=self.confirm_exit_var,
+        ).grid(row=1, column=0, sticky=tk.W)
         parent.columnconfigure(0, weight=1)
 
     def apply(self) -> None:
@@ -142,6 +154,7 @@ class SettingsDialog(simpledialog.Dialog):
                 mode_label=self.mode_var.get(),
                 monitor_name=self.monitor_var.get(),
                 confirm_delete=self.confirm_var.get(),
+                confirm_exit=self.confirm_exit_var.get(),
             ),
             monitors=self._monitors,
             default_mode=self._mode,

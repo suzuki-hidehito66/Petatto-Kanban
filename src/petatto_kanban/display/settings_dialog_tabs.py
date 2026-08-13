@@ -9,4 +9,4 @@ SETTINGS_TAB_SYSTEM = "システム"
 DISPLAY_TAB_FIELDS = ("mode", "monitor_index")
 
 # システムタブ: FR-024
-SYSTEM_TAB_FIELDS = ("confirm_delete",)
+SYSTEM_TAB_FIELDS = ("confirm_delete", "confirm_exit")

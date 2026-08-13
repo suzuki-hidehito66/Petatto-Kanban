@@ -115,7 +115,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-021, FR-024 |
+| 関連 FR | FR-021, FR-024, FR-023 |
 | 保存先 | `%USERPROFILE%\.petatto-kanban\settings.json` |
 | マイルストーン | M1 |
 
@@ -127,6 +127,7 @@
 | `monitor_index` | number | - | 表示先ディスプレイ（0 始まり） |
 | `window_geometry` | string | - | ウィンドウモード復帰用 `"WxH+X+Y"` |
 | `confirm_delete` | boolean | ○ | カード削除時に確認ダイアログを表示するか |
+| `confirm_exit` | boolean | ○ | アプリ終了時に確認ダイアログを表示するか |
 | `menu_panel_x` | number | - | メニューパネル左上 X（保存時の展開状態に依存。未設定時デフォルト） |
 | `menu_panel_y` | number | - | メニューパネル左上 Y |
 
@@ -137,6 +138,7 @@
 | `mode` | `"overlay"` |
 | `monitor_index` | `0`（プライマリ） |
 | `confirm_delete` | `true` |
+| `confirm_exit` | `false` |
 
 ### サンプル
 
@@ -145,7 +147,8 @@
   "mode": "overlay",
   "monitor_index": 1,
   "window_geometry": "960x540+120+80",
-  "confirm_delete": true
+  "confirm_delete": true,
+  "confirm_exit": false
 }
 ```
 

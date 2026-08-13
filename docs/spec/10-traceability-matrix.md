@@ -27,7 +27,7 @@
 | FR-010 | US-012 | AC-010-01 | `app.py` | 手動 | implemented |
 | FR-020 | US-010 | AC-020-01, AC-020-02 | `display/overlay.py`, `app.py` | 手動 | implemented |
 | FR-021 | US-010 | AC-021-01 | `display/monitors.py`, `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
-| FR-023 | US-011 | AC-023-01 | `app.py` | 手動 | implemented |
+| FR-023 | US-011 | AC-023-01, AC-023-02 | `app.py`, `display/settings.py`, `display/settings_dialog.py` | `test_display_settings.py`, `test_settings_dialog.py` + 手動 | implemented |
 | FR-024 | US-013 | AC-024-01 | `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
 | FR-025 | US-014 | AC-025-01, AC-025-02, AC-025-03 | `app.py`, `progress.py` | `test_progress.py`, `test_board_roundtrip_dict_with_progress` | implemented |
 | FR-014 | US-015 | AC-014-01, AC-014-02, AC-014-03, AC-014-04 | `app.py`, `due_date.py`, `due_date_picker.py`, `card_ui.py` | `test_due_date.py`, `test_board_roundtrip_dict_with_due_date` | implemented |

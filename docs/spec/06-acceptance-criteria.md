@@ -649,6 +649,27 @@ Then アプリが終了する
 And board.json と settings.json に最新データが保存されている
 ```
 
+### AC-023-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-023 |
+| 関連 US | US-011 |
+| ステータス | implemented |
+| 検証 | 手動 + 自動 |
+
+```gherkin
+Given 設定ダイアログの「システム」タブで confirm_exit が true に設定されている
+When ユーザーがメニューパネルの「×」をクリックして離す
+Then 「アプリを終了しますか？」確認ダイアログが表示される
+When ユーザーが「いいえ」を選ぶ
+Then アプリは終了しない
+When ユーザーが再度「×」で終了し「はい」を選ぶ
+Then アプリが終了し board.json と settings.json が保存される
+```
+
+**テスト**: `test_save_and_load_confirm_exit`, `test_settings_dialog.py`
+
 ---
 
 ## FR-024: 削除確認設定

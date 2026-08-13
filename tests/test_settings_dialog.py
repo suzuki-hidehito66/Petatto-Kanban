@@ -24,7 +24,7 @@ def test_settings_tab_labels_and_field_groups() -> None:
     assert SETTINGS_TAB_DISPLAY == "表示"
     assert SETTINGS_TAB_SYSTEM == "システム"
     assert DISPLAY_TAB_FIELDS == ("mode", "monitor_index")
-    assert SYSTEM_TAB_FIELDS == ("confirm_delete",)
+    assert SYSTEM_TAB_FIELDS == ("confirm_delete", "confirm_exit")
 
 
 def test_result_from_form_values_display_tab() -> None:
@@ -33,6 +33,7 @@ def test_result_from_form_values_display_tab() -> None:
             mode_label="デスクトップ",
             monitor_name="ディスプレイ 2",
             confirm_delete=True,
+            confirm_exit=False,
         ),
         monitors=_MONITORS,
         default_mode=DisplayMode.OVERLAY,
@@ -41,6 +42,7 @@ def test_result_from_form_values_display_tab() -> None:
     assert result.mode == DisplayMode.DESKTOP
     assert result.monitor_index == 1
     assert result.confirm_delete is True
+    assert result.confirm_exit is False
 
 
 def test_result_from_form_values_system_tab_only_change() -> None:
@@ -49,6 +51,7 @@ def test_result_from_form_values_system_tab_only_change() -> None:
             mode_label=display_mode_label(DisplayMode.OVERLAY),
             monitor_name="ディスプレイ 1",
             confirm_delete=False,
+            confirm_exit=True,
         ),
         monitors=_MONITORS,
         default_mode=DisplayMode.OVERLAY,
@@ -57,3 +60,4 @@ def test_result_from_form_values_system_tab_only_change() -> None:
     assert result.mode == DisplayMode.OVERLAY
     assert result.monitor_index == 0
     assert result.confirm_delete is False
+    assert result.confirm_exit is True

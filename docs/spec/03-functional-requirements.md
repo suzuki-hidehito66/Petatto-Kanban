@@ -407,7 +407,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 優先度 | Must |
 | ステータス | implemented |
 | 関連 US | US-011 |
-| 関連 AC | AC-023-01 |
+| 関連 AC | AC-023-01, AC-023-02 |
 | 実装 | `src/petatto_kanban/app.py` |
 | UI 契約 | [UC-002](./08-ui-behavior-contract.md#uc-002-メニューパネル) |
 
@@ -417,6 +417,8 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 **制約**
 - オーバーレイモード（タイトルバーなし）でも終了できること
 - `WM_DELETE_WINDOW` と同じ `_on_close` 処理を呼ぶ
+- 設定ダイアログ「システム」タブの `confirm_exit` が `true` のとき、終了前に確認ダイアログを表示（キャンセル時は終了しない）
+- `confirm_exit` 既定値は `false`（即時終了）
 
 ---
 

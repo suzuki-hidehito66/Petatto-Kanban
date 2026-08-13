@@ -726,6 +726,7 @@ class KanbanApp:
             self.root,
             mode=self.display_settings.mode,
             confirm_delete=self.display_settings.confirm_delete,
+            confirm_exit=self.display_settings.confirm_exit,
             monitor_index=self.display_settings.monitor_index,
             monitors=self._monitors,
         )
@@ -740,6 +741,7 @@ class KanbanApp:
         monitor_changed = settings.monitor_index != self.display_settings.monitor_index
         self.display_settings.mode = settings.mode
         self.display_settings.confirm_delete = settings.confirm_delete
+        self.display_settings.confirm_exit = settings.confirm_exit
         self.display_settings.monitor_index = settings.monitor_index
         save_display_settings(self.display_settings)
 
@@ -752,6 +754,12 @@ class KanbanApp:
         self.refresh()
 
     def _on_close(self) -> None:
+        if self.display_settings.confirm_exit and not messagebox.askyesno(
+            APP_TITLE,
+            "アプリを終了しますか？",
+            parent=self.root,
+        ):
+            return
         if self._desktop_board is not None:
             self._desktop_board.stop()
         self._due_date_picker.cancel_if_any()
