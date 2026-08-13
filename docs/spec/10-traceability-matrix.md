@@ -35,8 +35,8 @@
 | FR-008 | US-006 | AC-008-01 | （M2） | — | deferred |
 | FR-009 | US-006 | AC-009-01 | （M2） | — | deferred |
 | FR-018 | US-008 | AC-018-01 | （M2） | 手動 | deferred |
-| FR-019 | US-009 | AC-019-01, AC-019-02 | `display/desktop.py`, `app.py` | 手動 | specified |
-| FR-022 | US-008, US-009, US-010 | AC-022-01, AC-022-02 | `app.py`, `display/settings.py` | 手動 | specified |
+| FR-019 | US-009 | AC-019-01, AC-019-02 | `display/desktop.py`, `display/modes.py`, `app.py` | `test_display_modes.py` + 手動 | implemented |
+| FR-022 | US-008, US-009, US-010 | AC-022-01, AC-022-02 | `display/modes.py`, `app.py`, `display/settings.py` | `test_display_modes.py` + 手動 | implemented |
 
 ---
 
@@ -63,17 +63,17 @@
 | DC-001 | FR-007 | `storage.py` | `test_*` | verified |
 | DC-002 | FR-002, FR-007 | `models.py` | `test_create_default_board_is_empty` | verified |
 | DC-003 | FR-021, FR-024 | `display/settings.py` | `test_display_settings.py` | implemented |
-| UC-001 | FR-001, FR-019, FR-020 | `app.py`, `display/overlay.py`, `display/desktop.py` | 手動 | implemented / specified |
+| UC-001 | FR-001, FR-019, FR-020 | `app.py`, `display/modes.py`, `display/overlay.py`, `display/desktop.py` | 手動 | implemented |
 | UC-002 | FR-003, FR-023 | `menu_panel.py`, `menu_panel_layout.py`, `app.py` | `test_menu_panel.py` + 手動 | implemented |
-| UC-006 | FR-019, FR-020, FR-021, FR-022, FR-024 | `app.py`, `display/settings.py` | 手動 | implemented / specified |
+| UC-006 | FR-019, FR-020, FR-021, FR-022, FR-024 | `app.py`, `display/settings.py`, `display/modes.py` | `test_display_modes.py` + 手動 | implemented |
 | UC-003 | FR-002, FR-003〜005, FR-010, FR-014, FR-025 | `app.py`, `card_ui.py` | 手動 | implemented |
 | UC-004 | FR-003 | `app.py`, `menu_panel.py`, `menu_panel_layout.py`, `new_card_placement.py` | `test_new_card_placement.py`, `test_menu_panel.py` + 手動 | implemented |
 | UC-005 | FR-004 | `app.py` | 手動 | implemented |
 | UC-008 | FR-014 | `app.py`, `due_date_picker.py`, `card_ui.py` | 手動 | implemented |
-| UC-DM-002 | FR-019 | `display/desktop.py`, `app.py` | 手動 | specified |
-| UC-DM-003 | FR-020 | `display/overlay.py`, `app.py` | 手動 | implemented |
+| UC-DM-002 | FR-019 | `display/desktop.py`, `display/modes.py`, `app.py` | `test_display_modes.py` + 手動 | implemented |
+| UC-DM-003 | FR-020 | `display/overlay.py`, `display/modes.py`, `app.py` | 手動 | implemented |
 | UC-DM-001 | FR-018 | （M2） | 手動 | deferred |
-| UC-DM-004 | FR-022 | （M2） | 手動 | deferred |
+| UC-DM-004 | FR-022 | `app.py`, `display/modes.py` | `test_display_modes.py` + 手動 | implemented |
 
 ---
 

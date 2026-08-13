@@ -39,9 +39,9 @@
 | [FR-014](#fr-014-カード期限) | カード期限 | Must | implemented | M1 |
 | [FR-008](#fr-008-手動保存) | 手動保存 | Should | deferred | M2 |
 | [FR-009](#fr-009-再読み込み) | 再読み込み | Should | deferred | M2 |
-| [FR-019](#fr-019-デスクトップモード) | デスクトップモード | Should | specified | M1 拡張 |
+| [FR-019](#fr-019-デスクトップモード) | デスクトップモード | Should | implemented | M1 拡張 |
 | [FR-018](#fr-018-ウィンドウモード) | ウィンドウモード | Should | deferred | M2 |
-| [FR-022](#fr-022-表示モード切替) | 表示モード切替 | Should | specified | M1 拡張 / M2 |
+| [FR-022](#fr-022-表示モード切替) | 表示モード切替 | Should | implemented | M1 拡張 / M2 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -379,10 +379,10 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 属性 | 値 |
 |------|-----|
 | 優先度 | Should |
-| ステータス | specified |
+| ステータス | implemented |
 | 関連 US | US-009 |
 | 関連 AC | AC-019-01, AC-019-02 |
-| 実装 | `src/petatto_kanban/display/desktop.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/desktop.py`, `display/modes.py`, `app.py` |
 | UI 契約 | [12-display-modes.md §5](./12-display-modes.md#5-デスクトップモードdesktop-mode) |
 
 **説明**  
@@ -444,7 +444,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 属性 | 値 |
 |------|-----|
 | 優先度 | Should |
-| ステータス | specified |
+| ステータス | implemented |
 | 関連 US | US-008, US-009, US-010 |
 | 関連 AC | AC-022-01, AC-022-02 |
 | UI 契約 | [12-display-modes.md §7](./12-display-modes.md#7-モード切替-ui) |

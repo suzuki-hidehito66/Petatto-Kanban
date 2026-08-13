@@ -162,8 +162,8 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 |------|-----|
 | モード ID | `desktop` |
 | 関連 FR | FR-019, FR-020, FR-021, FR-022 |
-| ステータス | specified（M1 拡張・実装予定） |
-| 実装 | `src/petatto_kanban/display/desktop.py`, `display/overlay.py`（共通処理）, `app.py` |
+| ステータス | **implemented**（M1 拡張） |
+| 実装 | `src/petatto_kanban/display/desktop.py`, `display/modes.py`, `app.py` |
 
 | 要素 | 仕様 |
 |------|------|

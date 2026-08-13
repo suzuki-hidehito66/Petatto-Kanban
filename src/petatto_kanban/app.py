@@ -1,4 +1,4 @@
-"""Tkinter ベースの GUI アプリケーション（オーバーレイモード）."""
+"""Tkinter ベースの GUI アプリケーション（オーバーレイ / デスクトップモード）."""
 
 from __future__ import annotations
 
@@ -13,10 +13,15 @@ from petatto_kanban.card_ui import (
     ClickReleaseTracker,
     double_click_interval_ms,
 )
-from petatto_kanban.display import list_monitors, load_display_settings, save_display_settings
+from petatto_kanban.display import (
+    DisplayMode,
+    list_monitors,
+    load_display_settings,
+    save_display_settings,
+)
 from petatto_kanban.display.desktop import TRANSPARENT_COLOR
+from petatto_kanban.display.modes import apply_display_mode
 from petatto_kanban.display.monitors import Monitor, get_monitor, monitor_index_for_name
-from petatto_kanban.display.overlay import apply_overlay_mode
 from petatto_kanban.due_date import due_date_panel_style, format_due_date
 from petatto_kanban.due_date_picker import DueDatePickerHost
 from petatto_kanban.menu_panel import MenuPanel
@@ -42,11 +47,18 @@ PROGRESS_TRACK_BG = "#e8e8e8"
 PROGRESS_BAR_HEIGHT = 18
 CARD_LABEL_WRAP = 200
 
+DISPLAY_MODE_LABELS: dict[DisplayMode, str] = {
+    DisplayMode.OVERLAY: "オーバーレイ",
+    DisplayMode.DESKTOP: "デスクトップ",
+}
+DISPLAY_MODE_BY_LABEL = {label: mode for mode, label in DISPLAY_MODE_LABELS.items()}
+
 
 @dataclass(frozen=True)
 class SettingsDialogResult:
     """設定ダイアログの確定値."""
 
+    mode: DisplayMode
     confirm_delete: bool
     monitor_index: int
 
@@ -78,12 +90,12 @@ class KanbanApp:
         self.root.configure(bg=TRANSPARENT_COLOR)
 
         self._build_menu_panel()
-        self._apply_overlay_mode()
+        self._apply_display_mode()
         self.refresh()
 
-    def _apply_overlay_mode(self) -> None:
+    def _apply_display_mode(self) -> None:
         monitor = get_monitor(self.display_settings.monitor_index)
-        apply_overlay_mode(self.root, monitor)
+        apply_display_mode(self.root, monitor, self.display_settings.mode)
         self._place_menu_panel(monitor)
 
     def _place_menu_panel(self, monitor: Monitor | None = None) -> None:
@@ -675,6 +687,7 @@ class KanbanApp:
         self._commit_inline_title_edit_if_any(refresh_after=False)
         dialog = _SettingsDialog(
             self.root,
+            mode=self.display_settings.mode,
             confirm_delete=self.display_settings.confirm_delete,
             monitor_index=self.display_settings.monitor_index,
             monitors=self._monitors,
@@ -686,13 +699,15 @@ class KanbanApp:
         messagebox.showinfo(APP_TITLE, "設定を保存しました。", parent=self.root)
 
     def _apply_settings(self, settings: SettingsDialogResult) -> None:
+        mode_changed = settings.mode != self.display_settings.mode
         monitor_changed = settings.monitor_index != self.display_settings.monitor_index
+        self.display_settings.mode = settings.mode
         self.display_settings.confirm_delete = settings.confirm_delete
         self.display_settings.monitor_index = settings.monitor_index
         save_display_settings(self.display_settings)
 
-        if monitor_changed:
-            self._apply_overlay_mode()
+        if mode_changed or monitor_changed:
+            self._apply_display_mode()
             self.refresh()
 
     def _persist_and_refresh(self) -> None:
@@ -714,10 +729,12 @@ class _SettingsDialog(simpledialog.Dialog):
         self,
         parent: tk.Misc,
         *,
+        mode: DisplayMode,
         confirm_delete: bool,
         monitor_index: int,
         monitors: list[Monitor],
     ) -> None:
+        self._mode = mode
         self._confirm_delete = confirm_delete
         self._monitor_index = monitor_index
         self._monitors = monitors
@@ -725,7 +742,18 @@ class _SettingsDialog(simpledialog.Dialog):
         super().__init__(parent, title="設定")
 
     def body(self, master: tk.Misc) -> tk.Widget:
-        ttk.Label(master, text="表示ディスプレイ").grid(row=0, column=0, sticky=tk.W, pady=(0, 4))
+        ttk.Label(master, text="表示モード").grid(row=0, column=0, sticky=tk.W, pady=(0, 4))
+        self.mode_var = tk.StringVar(value=DISPLAY_MODE_LABELS[self._mode])
+        self.mode_menu = ttk.Combobox(
+            master,
+            textvariable=self.mode_var,
+            values=list(DISPLAY_MODE_LABELS.values()),
+            state="readonly",
+            width=28,
+        )
+        self.mode_menu.grid(row=1, column=0, sticky=tk.EW, pady=(0, 12))
+
+        ttk.Label(master, text="表示ディスプレイ").grid(row=2, column=0, sticky=tk.W, pady=(0, 4))
         monitor_names = [monitor.name for monitor in self._monitors]
         default_name = monitor_names[min(self._monitor_index, len(monitor_names) - 1)]
         self.monitor_var = tk.StringVar(value=default_name)
@@ -736,19 +764,22 @@ class _SettingsDialog(simpledialog.Dialog):
             state="readonly",
             width=28,
         )
-        self.monitor_menu.grid(row=1, column=0, sticky=tk.EW, pady=(0, 12))
+        self.monitor_menu.grid(row=3, column=0, sticky=tk.EW, pady=(0, 12))
 
         self.confirm_var = tk.BooleanVar(value=self._confirm_delete)
         ttk.Checkbutton(
             master,
             text="カード削除時に確認ダイアログを表示する",
             variable=self.confirm_var,
-        ).grid(row=2, column=0, sticky=tk.W)
+        ).grid(row=4, column=0, sticky=tk.W)
         master.columnconfigure(0, weight=1)
-        return self.monitor_menu
+        return self.mode_menu
 
     def apply(self) -> None:
+        mode_label = self.mode_var.get()
+        mode = DISPLAY_MODE_BY_LABEL.get(mode_label, self._mode)
         self.result = SettingsDialogResult(
+            mode=mode,
             confirm_delete=self.confirm_var.get(),
             monitor_index=monitor_index_for_name(
                 self._monitors,

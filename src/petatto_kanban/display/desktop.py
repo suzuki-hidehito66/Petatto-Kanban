@@ -48,6 +48,7 @@ def apply_desktop_mode(root: tk.Tk, monitor: Monitor) -> None:
     root.geometry(f"{monitor.width}x{monitor.height}+{monitor.x}+{monitor.y}")
 
     if sys.platform == "win32":
+        root.attributes("-topmost", False)
         root.attributes("-transparentcolor", TRANSPARENT_COLOR)
         root.update_idletasks()
         send_window_to_back(root)

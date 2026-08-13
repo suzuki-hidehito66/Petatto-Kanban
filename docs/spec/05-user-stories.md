@@ -26,7 +26,7 @@
 | [US-015](#us-015-カードの期限を設定する) | Must | implemented | M1 |
 | [US-005](#us-005-カードを別列へ移動する) | Should | deferred | M2 |
 | [US-008](#us-008-ウィンドウモードで使う) | Should | deferred | M2 |
-| [US-009](#us-009-デスクトップモードで使う) | Should | specified | M1 拡張 |
+| [US-009](#us-009-デスクトップモードで使う) | Should | implemented | M1 拡張 |
 
 ---
 
@@ -154,7 +154,7 @@
 |------|-----|
 | 関連 FR | FR-019, FR-021, FR-022 |
 | 関連 AC | AC-019-01, AC-019-02, AC-022-02 |
-| ステータス | specified |
+| ステータス | implemented |
 
 **Z オーダー:** デスクトップ → ペタッとカンバン → 他のウィンドウ
 
