@@ -382,7 +382,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-009 |
 | 関連 AC | AC-019-01, AC-019-02 |
-| 実装 | `src/petatto_kanban/display/desktop.py`, `display/modes.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/desktop.py`, `display/transparent.py`, `display/modes.py` |
 | UI 契約 | [12-display-modes.md §5](./12-display-modes.md#5-デスクトップモードdesktop-mode) |
 
 **説明**  
@@ -447,6 +447,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-008, US-009, US-010 |
 | 関連 AC | AC-022-01, AC-022-02 |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/modes.py`, `app.py` |
 | UI 契約 | [12-display-modes.md §7](./12-display-modes.md#7-モード切替-ui) |
 
 **説明**  

@@ -69,7 +69,15 @@ petatto-kanban/
 │   ├── menu_panel_layout.py      # メニューパネル座標・ヒット判定
 │   ├── new_card_placement.py     # 新規カード初期配置（tkinter 非依存）
 │   ├── progress.py               # 進捗率ユーティリティ
-│   ├── display/                  # 表示モード・モニター（M1: オーバーレイ）
+│   ├── display/                  # 表示モード・モニター
+│   │   ├── transparent.py        # 透過色・全画面シェル
+│   │   ├── overlay.py            # オーバーレイ（最前面）
+│   │   ├── desktop.py            # デスクトップ（背面）
+│   │   ├── modes.py              # モード適用ディスパッチ
+│   │   ├── mode_labels.py        # 設定 UI ラベル
+│   │   ├── settings_dialog.py    # UC-006 設定ダイアログ
+│   │   ├── settings.py           # settings.json
+│   │   └── monitors.py           # モニター列挙
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -88,6 +96,10 @@ petatto-kanban/
 | `models.py` | ドメインエンティティ、不変条件 | 標準ライブラリのみ |
 | `storage.py` | JSON シリアライズ / デシリアライズ | `models` |
 | `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement` |
+| `display/transparent.py` | 透過色・全画面シェル（オーバーレイ/デスクトップ共通） | 標準ライブラリ + tkinter |
+| `display/modes.py` | 表示モード適用のディスパッチ | `overlay`, `desktop`, `settings` |
+| `display/settings_dialog.py` | UC-006 設定ダイアログ | tkinter, `mode_labels`, `settings`, `monitors` |
+| `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
 | `menu_panel.py` | メニューパネル UI（円形・NE アンカー・ホバー展開） | tkinter, `menu_panel_layout` |
 | `menu_panel_layout.py` | メニューパネル座標・ヒット判定、`MenuPanelRect` | 標準ライブラリのみ |
 | `new_card_placement.py` | 新規カード初期配置座標（UC-004 / FR-003） | `menu_panel_layout` |

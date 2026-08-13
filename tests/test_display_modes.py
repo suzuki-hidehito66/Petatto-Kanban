@@ -9,14 +9,33 @@ if "tkinter" not in sys.modules:
     _tk = types.ModuleType("tkinter")
     _tk.Tk = MagicMock
     _tk.W = "w"
+    _tk.BooleanVar = MagicMock
+    _tk.StringVar = MagicMock
     sys.modules["tkinter"] = _tk
-    sys.modules["tkinter.ttk"] = types.ModuleType("tkinter.ttk")
+    _ttk = types.ModuleType("tkinter.ttk")
+    sys.modules["tkinter.ttk"] = _ttk
+    _simpledialog = types.ModuleType("tkinter.simpledialog")
+    _simpledialog.Dialog = type("Dialog", (), {})
+    sys.modules["tkinter.simpledialog"] = _simpledialog
 
+from petatto_kanban.display.mode_labels import (
+    display_mode_from_label,
+    display_mode_label,
+    selectable_display_mode_labels,
+)
 from petatto_kanban.display.modes import apply_display_mode
 from petatto_kanban.display.monitors import Monitor
 from petatto_kanban.display.settings import DisplayMode
 
 _MONITOR = Monitor(index=0, name="Test", x=0, y=0, width=1920, height=1080)
+
+
+def test_display_mode_labels_for_selectable_modes() -> None:
+    labels = selectable_display_mode_labels()
+    assert labels == ["オーバーレイ", "デスクトップ"]
+    assert display_mode_label(DisplayMode.OVERLAY) == "オーバーレイ"
+    assert display_mode_from_label("デスクトップ", DisplayMode.OVERLAY) == DisplayMode.DESKTOP
+    assert display_mode_from_label("不明", DisplayMode.OVERLAY) == DisplayMode.OVERLAY
 
 
 def test_apply_display_mode_uses_overlay() -> None:

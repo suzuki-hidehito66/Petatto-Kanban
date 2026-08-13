@@ -2,26 +2,28 @@
 
 from __future__ import annotations
 
-import sys
-import tkinter as tk
+from typing import TYPE_CHECKING
 
-from petatto_kanban.display.desktop import TRANSPARENT_COLOR
 from petatto_kanban.display.monitors import Monitor
+from petatto_kanban.display.transparent import (
+    apply_fullscreen_transparent_shell,
+    apply_non_windows_fallback,
+    configure_windows_transparency,
+    is_windows,
+)
+
+if TYPE_CHECKING:
+    import tkinter as tk
 
 
 def apply_overlay_mode(root: tk.Tk, monitor: Monitor) -> None:
-    """オーバーレイモードを適用する（最前面・全画面・背景透過）."""
-    root.overrideredirect(True)
-    root.title("")
-    root.configure(bg=TRANSPARENT_COLOR)
-    root.geometry(f"{monitor.width}x{monitor.height}+{monitor.x}+{monitor.y}")
+    """オーバーレイモードを適用する（共通シェル + 最前面）。"""
+    apply_fullscreen_transparent_shell(root, monitor)
 
-    if sys.platform == "win32":
+    if is_windows():
         root.attributes("-topmost", True)
-        root.attributes("-transparentcolor", TRANSPARENT_COLOR)
-        root.update_idletasks()
-    else:
-        root.overrideredirect(False)
-        root.title("Petatto-Kanban (overlay fallback)")
-        root.attributes("-topmost", True)
-        root.minsize(960, 540)
+        configure_windows_transparency(root)
+        return
+
+    apply_non_windows_fallback(root, title="Petatto-Kanban (overlay fallback)")
+    root.attributes("-topmost", True)

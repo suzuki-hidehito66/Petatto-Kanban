@@ -97,6 +97,17 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 - **それ以外のウィンドウ領域**は完全透過とし、マウスクリックは下層へ透過する（click-through）
 - 透過色・レイヤードウィンドウは Windows API で実現（[09-architecture.md §4](./09-architecture.md#4-表示モード実装方針)）
 
+### DM-COMMON-02b: 実装モジュール
+
+| モジュール | 責務 |
+|------------|------|
+| `display/transparent.py` | `TRANSPARENT_COLOR`、全画面シェル、Windows 透過設定 |
+| `display/overlay.py` | オーバーレイ（`-topmost`） |
+| `display/desktop.py` | デスクトップ（`-topmost` 解除 + `HWND_BOTTOM`） |
+| `display/modes.py` | `DisplayMode` → 適用関数ディスパッチ |
+| `display/mode_labels.py` | 設定 UI ラベル（tkinter 非依存） |
+| `display/settings_dialog.py` | UC-006 設定ダイアログ |
+
 ### DM-COMMON-03: モード切替（M1 拡張）
 
 | 属性 | 値 |
@@ -163,7 +174,7 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 | モード ID | `desktop` |
 | 関連 FR | FR-019, FR-020, FR-021, FR-022 |
 | ステータス | **implemented**（M1 拡張） |
-| 実装 | `src/petatto_kanban/display/desktop.py`, `display/modes.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/desktop.py`, `display/transparent.py`, `display/modes.py` |
 
 | 要素 | 仕様 |
 |------|------|
@@ -200,7 +211,7 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 | 関連 FR | FR-020 |
 | ステータス | **implemented（M1 既定）** |
 | マイルストーン | M1 |
-| 実装 | `src/petatto_kanban/display/overlay.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/overlay.py`, `display/transparent.py`, `display/modes.py`, `app.py` |
 
 | 要素 | 仕様 |
 |------|------|
@@ -287,3 +298,4 @@ stateDiagram-v2
 | 1.0.0 | 2026-08-12 | 3 種類の表示モード仕様を初版定義 |
 | 1.1.0 | 2026-08-12 | M1 既定をオーバーレイモードに変更 |
 | 1.2.0 | 2026-08-13 | デスクトップモードを M1 拡張として定義。オーバーレイとの共通点・Z オーダー・設定での切替を明記 |
+| 1.3.0 | 2026-08-13 | 実装モジュール分割（`transparent` / `mode_labels` / `settings_dialog`）を追記 |
