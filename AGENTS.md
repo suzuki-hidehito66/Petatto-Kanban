@@ -23,6 +23,7 @@ No background server. The app is a single-process tkinter GUI. Start with `pytho
 - Use `python3`, not `python` (not on PATH in this environment).
 - M1 default UI is **overlay mode** (`display/overlay.py`): fullscreen, topmost, transparent background; cards use `place(x, y)` with drag-to-move.
 - Data paths: `%USERPROFILE%\.petatto-kanban\board.json` (schema v2, flat `cards` with `x`/`y`) and `settings.json` (`mode`, `monitor_index`, `confirm_delete`).
+- **GitHub Release**: main マージ時に `v{pyproject version}` で Release 作成。バージョンは `pyproject.toml` / `__init__.py` / `docs/spec/11-release-plan.md` を同期（`tests/test_release_version.py`）。
 - Legacy `board.json` with `columns` is migrated on load.
 
 See [README.md](README.md) and [docs/SPECIFICATION.md](docs/SPECIFICATION.md) for full SDD docs.
