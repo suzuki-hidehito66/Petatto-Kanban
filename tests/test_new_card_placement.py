@@ -57,12 +57,12 @@ def test_clamp_keeps_card_inside_monitor() -> None:
         -50,
         1000,
         card_width=222,
-        card_height=122,
+        card_height=138,
         monitor_width=1920,
         monitor_height=1080,
     )
     assert x == 0
-    assert y == 1080 - 122
+    assert y == 1080 - 138
 
 
 def test_clamp_does_not_move_in_bounds_position() -> None:
@@ -70,7 +70,7 @@ def test_clamp_does_not_move_in_bounds_position() -> None:
         100,
         200,
         card_width=222,
-        card_height=122,
+        card_height=138,
         monitor_width=1920,
         monitor_height=1080,
     )
