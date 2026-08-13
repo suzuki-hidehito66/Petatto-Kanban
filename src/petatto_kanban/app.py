@@ -636,8 +636,7 @@ class KanbanApp:
         """メニューパネル付近に新規カードを置く座標を返す."""
         self.root.update_idletasks()
         self.menu_panel.widget.update_idletasks()
-        panel_x = self.menu_panel.widget.winfo_x()
-        panel_y = self.menu_panel.widget.winfo_y()
+        panel_x, panel_y = self.menu_panel.position
         panel_height = self.menu_panel.widget.winfo_height()
         base_x = panel_x + NEW_CARD_NEAR_MENU_PANEL_OFFSET_X
         base_y = panel_y + panel_height + NEW_CARD_NEAR_MENU_PANEL_OFFSET_Y
