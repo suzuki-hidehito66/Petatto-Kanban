@@ -153,8 +153,9 @@
 | 優先度 | Must |
 | ステータス | implemented |
 | 関連 US | US-004 |
-| 関連 AC | AC-005-01 |
-| 実装 | `src/petatto_kanban/app.py` |
+| 関連 AC | AC-005-01, AC-005-02, AC-005-03 |
+| 実装 | `src/petatto_kanban/app.py`, `models.py`, `display/settings_dialog.py` |
+| UI 契約 | [UC-003 §削除](./08-ui-behavior-contract.md#uc-003-カードコンポーネント), [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 
 **説明**  
 カードを **右クリックして離した** ときに削除する。設定により確認ダイアログを表示するか省略する。コンテキストメニューは表示しない。
