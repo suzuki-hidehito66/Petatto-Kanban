@@ -508,6 +508,7 @@ And due_date は変更されない
 
 ```gherkin
 Given ユーザーが設定ダイアログを開いている
+And ユーザーが「表示」タブを表示している
 When 表示モードを「デスクトップ」に変更して OK する
 Then 指定ディスプレイ全体にカンバンが全画面表示される
 And オーバーレイモードと同様にカード・メニューパネルのみ不透明でそれ以外は透過である
@@ -663,12 +664,13 @@ And board.json と settings.json に最新データが保存されている
 
 ```gherkin
 Given 設定ダイアログが開いている
+And ユーザーが「システム」タブを表示している
 When ユーザーが「カード削除時に確認ダイアログを表示する」のチェックを外して OK する
 Then settings.json の confirm_delete が false になる
 And 次回のカード削除で確認ダイアログが表示されない
 ```
 
-**テスト**: `test_save_and_load_display_settings`, `test_display_settings_roundtrip_dict`
+**テスト**: `test_save_and_load_display_settings`, `test_display_settings_roundtrip_dict`, `test_settings_dialog.py`
 
 ---
 

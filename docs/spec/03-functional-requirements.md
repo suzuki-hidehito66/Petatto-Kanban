@@ -362,11 +362,11 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-013 |
 | 関連 AC | AC-024-01 |
-| 実装 | `src/petatto_kanban/display/settings.py`, `app.py` |
-| データ契約 | [DC-003](./07-data-contract.md#dc-003-表示設定スキーマ) |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/settings.py`, `app.py` |
+| UI 契約 | [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 
 **説明**  
-設定ダイアログで「カード削除時に確認ダイアログを表示する」を ON/OFF できる。
+設定ダイアログ **「システム」タブ** で「カード削除時に確認ダイアログを表示する」を ON/OFF できる。
 
 **制約**
 - 既定値: `true`（確認あり）
@@ -449,14 +449,14 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 関連 US | US-008, US-009, US-010 |
 | 関連 AC | AC-022-01, AC-022-02 |
 | 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/modes.py`, `app.py` |
-| UI 契約 | [12-display-modes.md §7](./12-display-modes.md#7-モード切替-ui) |
+| UI 契約 | [UC-006 §表示タブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 
 **説明**  
-**M1 拡張:** 設定ダイアログから **オーバーレイモード** と **デスクトップモード** を実行中に切り替える。  
+**M1 拡張:** 設定ダイアログ **「表示」タブ** から **オーバーレイモード** と **デスクトップモード** を実行中に切り替える。  
 **M2:** ウィンドウモードを追加し 3 モード切替を完成させる。
 
 **制約（M1 拡張）**
-- 切替 UI は設定ダイアログ内（メニューパネル ⚙）
+- 切替 UI は設定ダイアログ「表示」タブ（メニューパネル ⚙ から開く）
 - OK 確定で `settings.json` の `mode` を保存し、即時再描画
 - ボードデータ・カード座標は保持
 

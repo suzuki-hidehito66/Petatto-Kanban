@@ -111,6 +111,7 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 | `display/modes.py` | `DisplayMode` → 適用関数ディスパッチ |
 | `display/mode_labels.py` | 設定 UI ラベル（tkinter 非依存） |
 | `display/settings_dialog.py` | UC-006 設定ダイアログ |
+| `display/settings_dialog_tabs.py` | タブ定義（表示 / システム） |
 
 ### DM-COMMON-03: モード切替（M1 拡張）
 

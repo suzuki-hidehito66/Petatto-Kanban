@@ -65,7 +65,7 @@
 | DC-003 | FR-021, FR-024 | `display/settings.py` | `test_display_settings.py` | implemented |
 | UC-001 | FR-001, FR-019, FR-020 | `app.py`, `display/modes.py`, `display/overlay.py`, `display/desktop.py` | 手動 | implemented |
 | UC-002 | FR-003, FR-019, FR-023 | `menu_panel.py`, `menu_panel_layout.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `app.py` | `test_menu_panel.py`, `test_display_modes.py` + 手動 | implemented |
-| UC-006 | FR-019, FR-020, FR-021, FR-022, FR-024 | `display/settings_dialog.py`, `display/mode_labels.py`, `app.py` | `test_display_modes.py` + 手動 | implemented |
+| UC-006 | FR-019, FR-020, FR-021, FR-022, FR-024 | `display/settings_dialog.py`, `settings_dialog_tabs.py`, `mode_labels.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py` + 手動 | implemented |
 | UC-003 | FR-002, FR-003〜005, FR-010, FR-014, FR-025 | `app.py`, `card_ui.py` | 手動 | implemented |
 | UC-004 | FR-003 | `app.py`, `menu_panel.py`, `menu_panel_layout.py`, `new_card_placement.py` | `test_new_card_placement.py`, `test_menu_panel.py` + 手動 | implemented |
 | UC-005 | FR-004 | `app.py` | 手動 | implemented |

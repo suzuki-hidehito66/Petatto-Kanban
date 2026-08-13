@@ -78,7 +78,8 @@ petatto-kanban/
 │   │   ├── foreground.py         # 他アプリ前面判定
 │   │   ├── modes.py              # モード適用ディスパッチ
 │   │   ├── mode_labels.py        # 設定 UI ラベル
-│   │   ├── settings_dialog.py    # UC-006 設定ダイアログ
+│   │   ├── settings_dialog.py    # UC-006 設定ダイアログ（タブ UI）
+│   │   ├── settings_dialog_tabs.py  # タブ定義（表示 / システム）
 │   │   ├── settings.py           # settings.json
 │   │   └── monitors.py           # モニター列挙
 │   ├── models.py                 # ドメインモデル
@@ -104,7 +105,8 @@ petatto-kanban/
 | `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） | tkinter, `transparent`, `settings` |
 | `display/desktop_board_controller.py` | DM-DESKTOP-02/03 本体 Z オーダー制御 | tkinter, `desktop`, `foreground`, `menu_panel_host` |
 | `display/foreground.py` | 前面ウィンドウのプロセス判定 | `transparent`, Windows API |
-| `display/settings_dialog.py` | UC-006 設定ダイアログ | tkinter, `mode_labels`, `settings`, `monitors` |
+| `display/settings_dialog.py` | UC-006 設定ダイアログ（`ttk.Notebook`） | tkinter, `mode_labels`, `settings_dialog_tabs`, `settings`, `monitors` |
+| `display/settings_dialog_tabs.py` | タブラベル・タブ別項目定義 | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
 | `menu_panel.py` | メニューパネル UI（円形・NE アンカー・ホバー展開） | tkinter, `menu_panel_layout` |
 | `menu_panel_layout.py` | メニューパネル座標・ヒット判定、`MenuPanelRect` | 標準ライブラリのみ |
