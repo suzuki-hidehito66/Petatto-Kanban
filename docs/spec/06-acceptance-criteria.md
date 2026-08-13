@@ -183,7 +183,7 @@ When カードが0枚の状態で「全てのカードを削除」を押す
 Then 情報ダイアログが表示され削除は行われない
 ```
 
-**テスト**: `test_board_clear_cards`
+**テスト**: `test_board_clear_cards`, `test_settings_actions.py`
 
 ---
 
@@ -692,7 +692,7 @@ When ユーザーが再度「×」で終了し「はい」を選ぶ
 Then アプリが終了し board.json と settings.json が保存される
 ```
 
-**テスト**: `test_save_and_load_confirm_exit`, `test_settings_dialog.py`
+**テスト**: `test_save_and_load_confirm_exit`, `test_settings_dialog.py`, `test_settings_actions.py`
 
 ---
 

@@ -154,7 +154,7 @@
 | ステータス | implemented |
 | 関連 US | US-004 |
 | 関連 AC | AC-005-01, AC-005-02, AC-005-03 |
-| 実装 | `src/petatto_kanban/app.py`, `models.py`, `display/settings_dialog.py` |
+| 実装 | `src/petatto_kanban/app.py`, `models.py`, `display/settings_actions.py`, `display/settings_dialog_panels.py` |
 | UI 契約 | [UC-003 §削除](./08-ui-behavior-contract.md#uc-003-カードコンポーネント), [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 
 **説明**  
@@ -364,7 +364,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-013 |
 | 関連 AC | AC-024-01 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/settings.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/settings.py`, `app.py` |
 | UI 契約 | [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 
 **説明**  
@@ -410,7 +410,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-011 |
 | 関連 AC | AC-023-01, AC-023-02 |
-| 実装 | `src/petatto_kanban/app.py` |
+| 実装 | `src/petatto_kanban/app.py`, `display/settings_actions.py` |
 | UI 契約 | [UC-002](./08-ui-behavior-contract.md#uc-002-メニューパネル) |
 
 **説明**  
@@ -452,7 +452,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-008, US-009, US-010 |
 | 関連 AC | AC-022-01, AC-022-02 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/modes.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/settings_dialog_panels.py`, `display/modes.py`, `app.py` |
 | UI 契約 | [UC-006 §表示タブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 
 **説明**  

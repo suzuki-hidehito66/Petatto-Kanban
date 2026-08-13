@@ -22,12 +22,12 @@
 | FR-002 | US-001 | AC-002-01 | `models.py`, `app.py` | `test_create_default_board_is_empty` | verified |
 | FR-003 | US-002 | AC-003-01, AC-003-02 | `app.py` | 手動 | implemented |
 | FR-004 | US-003 | AC-004-01, AC-004-02 | `app.py` | 手動 | implemented |
-| FR-005 | US-004 | AC-005-01, AC-005-02, AC-005-03 | `app.py`, `models.py`, `display/settings_dialog.py` | `test_board_clear_cards` + 手動 | implemented |
+| FR-005 | US-004 | AC-005-01, AC-005-02, AC-005-03 | `app.py`, `models.py`, `display/settings_actions.py`, `display/settings_dialog_panels.py` | `test_board_clear_cards`, `test_settings_actions.py` + 手動 | implemented |
 | FR-007 | US-006 | AC-007-01〜03 | `storage.py`, `app.py` | `test_save_and_load_board`, `test_board_roundtrip_dict`, `test_migrate_legacy_columns_format` | verified |
 | FR-010 | US-012 | AC-010-01 | `app.py` | 手動 | implemented |
 | FR-020 | US-010 | AC-020-01, AC-020-02 | `display/overlay.py`, `app.py` | 手動 | implemented |
 | FR-021 | US-010 | AC-021-01 | `display/monitors.py`, `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
-| FR-023 | US-011 | AC-023-01, AC-023-02 | `app.py`, `display/settings.py`, `display/settings_dialog.py` | `test_display_settings.py`, `test_settings_dialog.py` + 手動 | implemented |
+| FR-023 | US-011 | AC-023-01, AC-023-02 | `app.py`, `display/settings.py`, `display/settings_actions.py`, `display/settings_dialog.py` | `test_display_settings.py`, `test_settings_dialog.py`, `test_settings_actions.py` + 手動 | implemented |
 | FR-024 | US-013 | AC-024-01 | `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
 | FR-025 | US-014 | AC-025-01, AC-025-02, AC-025-03 | `app.py`, `progress.py` | `test_progress.py`, `test_board_roundtrip_dict_with_progress` | implemented |
 | FR-014 | US-015 | AC-014-01, AC-014-02, AC-014-03, AC-014-04 | `app.py`, `due_date.py`, `due_date_picker.py`, `card_ui.py` | `test_due_date.py`, `test_board_roundtrip_dict_with_due_date` | implemented |
@@ -36,7 +36,7 @@
 | FR-009 | US-006 | AC-009-01 | （M2） | — | deferred |
 | FR-018 | US-008 | AC-018-01 | （M2） | 手動 | deferred |
 | FR-019 | US-009 | AC-019-01, AC-019-02 | `display/desktop.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreground.py`, `display/modes.py` | `test_display_modes.py` + 手動 | implemented |
-| FR-022 | US-008, US-009, US-010 | AC-022-01, AC-022-02 | `display/settings_dialog.py`, `display/modes.py`, `app.py` | `test_display_modes.py` + 手動 | implemented |
+| FR-022 | US-008, US-009, US-010 | AC-022-01, AC-022-02 | `display/settings_dialog.py`, `display/settings_dialog_panels.py`, `display/modes.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py` + 手動 | implemented |
 
 ---
 
@@ -65,7 +65,7 @@
 | DC-003 | FR-021, FR-024 | `display/settings.py` | `test_display_settings.py` | implemented |
 | UC-001 | FR-001, FR-019, FR-020 | `app.py`, `display/modes.py`, `display/overlay.py`, `display/desktop.py` | 手動 | implemented |
 | UC-002 | FR-003, FR-019, FR-023 | `menu_panel.py`, `menu_panel_layout.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `app.py` | `test_menu_panel.py`, `test_display_modes.py` + 手動 | implemented |
-| UC-006 | FR-005, FR-019, FR-020, FR-021, FR-022, FR-023, FR-024 | `display/settings_dialog.py`, `settings_dialog_tabs.py`, `mode_labels.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py`, `test_board_clear_cards` + 手動 | implemented |
+| UC-006 | FR-005, FR-019, FR-020, FR-021, FR-022, FR-023, FR-024 | `display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py`, `test_settings_actions.py`, `test_board_clear_cards` + 手動 | implemented |
 | UC-003 | FR-002, FR-003〜005, FR-010, FR-014, FR-025 | `app.py`, `card_ui.py` | 手動 | implemented |
 | UC-004 | FR-003 | `app.py`, `menu_panel.py`, `menu_panel_layout.py`, `new_card_placement.py` | `test_new_card_placement.py`, `test_menu_panel.py` + 手動 | implemented |
 | UC-005 | FR-004 | `app.py` | 手動 | implemented |

@@ -221,7 +221,7 @@
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `mode_labels.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `app.py` |
 | 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01 |
 
 ### タブ構成
@@ -309,3 +309,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.3.0 | 2026-08-13 | UC-006: 設定ダイアログを「表示」「システム」タブに分割 |
 | 2.3.1 | 2026-08-13 | UC-006 システムタブ: アプリ終了時の確認オプション（`confirm_exit`） |
 | 2.3.2 | 2026-08-13 | UC-006 システムタブ: 「全てのカードを削除」ボタン（FR-005） |
+| 2.3.3 | 2026-08-13 | UC-006 実装リファクタ（`settings_dialog_labels` / `settings_dialog_panels` / `settings_actions`） |
