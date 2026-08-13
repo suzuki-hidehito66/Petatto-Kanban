@@ -31,13 +31,13 @@ See [README.md](README.md) and [docs/SPECIFICATION.md](docs/SPECIFICATION.md) fo
 
 | ブランチ | 用途 |
 |----------|------|
-| `dev_*-017d` | 機能開発（例: `dev_new-card-position-tune-017d`） |
+| `dev_*` | 機能開発（例: `dev_new-card-position-tune`） |
 | `test` | 開発ブランチの統合・検証用ステージング |
 | `main` | リリース相当（本番） |
 
 **フロー**
 
-1. テーマごとに `dev_<name>-017d` を `main` から作成して開発
+1. テーマごとに `dev_<name>` を `main` から作成して開発
 2. 区切りがついたら **`dev_*` → `test` にマージ**（`git checkout test && git merge dev_... && git push origin test`）
 3. `test` で問題なければ、**`test` → `main` 向け PR** を作成してマージ
 
