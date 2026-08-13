@@ -89,7 +89,8 @@
 
 - メニューパネルは **独立した透過 Toplevel**（`display/menu_panel_host.py`）上に描画する
 - デスクトップモードでは Toplevel に `-topmost` を付与し、**他アプリより常に前面**に表示する
-- **メニューアクティブ時**（ホバー・フォーカス・押下）は `bring_board_to_front()` で **全カードを含む本体** を一時最前面に出す（DM-DESKTOP-02）
+- **メニューアクティブ時**（ホバー・フォーカス・押下）は `DesktopBoardController.activate_from_menu()` で **全カードを含む本体** を一時最前面に出す（DM-DESKTOP-02）
+- **他アプリアクティブ時**は `DesktopBoardController.lower_on_foreign_app_active()` で本体を即時背面へ（DM-DESKTOP-03）
 - カード等は本体ウィンドウ（背面）に残る。メニューのホバー・ドラッグ・永続化はオーバーレイ時と同一
 
 ### 永続化
@@ -279,3 +280,5 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.2.1 | 2026-08-13 | UC-006 実装を `settings_dialog.py` / `mode_labels.py` に分離 |
 | 2.2.2 | 2026-08-13 | UC-002: デスクトップモードでメニューパネルのみ常時最前面（`menu_panel_host`） |
 | 2.2.3 | 2026-08-13 | UC-002: メニューアクティブ時にカード等を一時最前面（DM-DESKTOP-02） |
+| 2.2.4 | 2026-08-13 | UC-002: 他アプリアクティブ時の即時背面復帰（DM-DESKTOP-03） |
+| 2.2.5 | 2026-08-13 | Z オーダー制御を `desktop_board_controller.py` に集約 |

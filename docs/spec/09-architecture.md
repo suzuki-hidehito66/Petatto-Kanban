@@ -74,6 +74,8 @@ petatto-kanban/
 │   │   ├── overlay.py            # オーバーレイ（最前面）
 │   │   ├── desktop.py            # デスクトップ（本体背面）
 │   │   ├── menu_panel_host.py    # メニューパネル透過 Toplevel（デスクトップ時最前面）
+│   │   ├── desktop_board_controller.py  # 本体 Z オーダー昇格・降格
+│   │   ├── foreground.py         # 他アプリ前面判定
 │   │   ├── modes.py              # モード適用ディスパッチ
 │   │   ├── mode_labels.py        # 設定 UI ラベル
 │   │   ├── settings_dialog.py    # UC-006 設定ダイアログ
@@ -100,6 +102,8 @@ petatto-kanban/
 | `display/transparent.py` | 透過色・全画面シェル（オーバーレイ/デスクトップ共通） | 標準ライブラリ + tkinter |
 | `display/modes.py` | 表示モード適用のディスパッチ | `overlay`, `desktop`, `settings` |
 | `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） | tkinter, `transparent`, `settings` |
+| `display/desktop_board_controller.py` | DM-DESKTOP-02/03 本体 Z オーダー制御 | tkinter, `desktop`, `foreground`, `menu_panel_host` |
+| `display/foreground.py` | 前面ウィンドウのプロセス判定 | `transparent`, Windows API |
 | `display/settings_dialog.py` | UC-006 設定ダイアログ | tkinter, `mode_labels`, `settings`, `monitors` |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
 | `menu_panel.py` | メニューパネル UI（円形・NE アンカー・ホバー展開） | tkinter, `menu_panel_layout` |

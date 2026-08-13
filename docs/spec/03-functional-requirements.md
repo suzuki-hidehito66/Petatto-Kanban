@@ -382,7 +382,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-009 |
 | 関連 AC | AC-019-01, AC-019-02 |
-| 実装 | `src/petatto_kanban/display/desktop.py`, `display/transparent.py`, `display/modes.py`, `display/menu_panel_host.py` |
+| 実装 | `src/petatto_kanban/display/desktop.py`, `display/transparent.py`, `display/modes.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreground.py` |
 | UI 契約 | [12-display-modes.md §5](./12-display-modes.md#5-デスクトップモードdesktop-mode) |
 
 **説明**  
@@ -395,7 +395,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - 設定ダイアログ（UC-006）でオーバーレイモードと相互切替（FR-022）
 - `settings.json` の `mode: "desktop"` で永続化
 - 本体は `display/desktop.py`（Z オーダー `HWND_BOTTOM` 等）。メニューは `display/menu_panel_host.py`（独立 Toplevel + `-topmost`）
-- メニューアクティブ時は `bring_board_to_front()` で本体を一時最前面（DM-DESKTOP-02）
+- 昇格・降格ロジックは `display/desktop_board_controller.py`（DM-DESKTOP-02 / 03）。他アプリ判定は `display/foreground.py`
 - Windows 11 以降
 
 ---

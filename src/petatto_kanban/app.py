@@ -17,11 +17,7 @@ from petatto_kanban.display import (
     load_display_settings,
     save_display_settings,
 )
-from petatto_kanban.display.desktop import (
-    bring_board_to_front,
-    restore_desktop_board_z_order,
-)
-from petatto_kanban.display.foreground import is_foreign_app_foreground
+from petatto_kanban.display.desktop_board_controller import DesktopBoardController
 from petatto_kanban.display.menu_panel_host import MenuPanelHost
 from petatto_kanban.display.modes import apply_display_mode
 from petatto_kanban.display.monitors import Monitor, get_monitor
@@ -52,8 +48,6 @@ DUE_PICKER_PANEL_WIDTH = 240
 PROGRESS_TRACK_BG = "#e8e8e8"
 PROGRESS_BAR_HEIGHT = 18
 CARD_LABEL_WRAP = 200
-DESKTOP_BOARD_LOWER_DELAY_MS = 1500
-DESKTOP_FOREGROUND_POLL_MS = 300
 
 
 class KanbanApp:
@@ -78,9 +72,7 @@ class KanbanApp:
         self._due_panel_clicks = ClickReleaseTracker()
         self._title_clicks = ClickReleaseTracker()
         self._monitors = list_monitors()
-        self._desktop_board_lower_after_id: str | None = None
-        self._desktop_foreground_poll_after_id: str | None = None
-        self._desktop_board_elevated = False
+        self._desktop_board: DesktopBoardController | None = None
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         self.root.configure(bg=TRANSPARENT_COLOR)
@@ -91,28 +83,13 @@ class KanbanApp:
 
     def _apply_display_mode(self) -> None:
         monitor = get_monitor(self.display_settings.monitor_index)
-        self._cancel_desktop_board_lower()
-        self._stop_desktop_foreground_watch()
-        self._desktop_board_elevated = False
         apply_display_mode(self.root, monitor, self.display_settings.mode)
         self._menu_panel_host.apply(monitor, self.display_settings.mode)
         self._place_menu_panel(monitor)
-        if self.display_settings.mode == DisplayMode.DESKTOP:
-            self._start_desktop_foreground_watch()
-
-    def _cancel_desktop_board_lower(self) -> None:
-        if self._desktop_board_lower_after_id is not None:
-            self.root.after_cancel(self._desktop_board_lower_after_id)
-            self._desktop_board_lower_after_id = None
-
-    def _schedule_desktop_board_lower(self) -> None:
-        if self.display_settings.mode != DisplayMode.DESKTOP:
-            return
-        self._cancel_desktop_board_lower()
-        self._desktop_board_lower_after_id = self.root.after(
-            DESKTOP_BOARD_LOWER_DELAY_MS,
-            self._lower_desktop_board_if_idle,
-        )
+        if self._desktop_board is not None:
+            self._desktop_board.on_display_mode_applied(
+                desktop=self.display_settings.mode == DisplayMode.DESKTOP,
+            )
 
     def _can_lower_desktop_board(self) -> bool:
         if self._inline_edit_card_id is not None:
@@ -126,71 +103,12 @@ class KanbanApp:
             pass
         return True
 
-    def _activate_desktop_board_from_menu(self) -> None:
-        if self.display_settings.mode != DisplayMode.DESKTOP:
-            return
-        self._cancel_desktop_board_lower()
-        bring_board_to_front(self.root)
-        self._desktop_board_elevated = True
-        self._menu_panel_host.lift()
-
-    def _restore_desktop_board_z_order(self) -> None:
-        if self.display_settings.mode != DisplayMode.DESKTOP:
-            return
-        restore_desktop_board_z_order(self.root)
-        self._desktop_board_elevated = False
-        self._menu_panel_host.lift()
-
-    def _lower_desktop_board_if_idle(self) -> None:
-        self._desktop_board_lower_after_id = None
-        if not self._can_lower_desktop_board():
-            self._schedule_desktop_board_lower()
-            return
-        if self.display_settings.mode != DisplayMode.DESKTOP:
-            return
-        self._restore_desktop_board_z_order()
-
-    def _lower_desktop_board_on_foreign_app_active(self) -> None:
-        if self.display_settings.mode != DisplayMode.DESKTOP:
-            return
-        if not is_foreign_app_foreground():
-            return
-        self._cancel_desktop_board_lower()
-        if not self._can_lower_desktop_board():
-            return
-        if not self._desktop_board_elevated:
-            return
-        self._restore_desktop_board_z_order()
-
-    def _start_desktop_foreground_watch(self) -> None:
-        if self.display_settings.mode != DisplayMode.DESKTOP:
-            return
-        self._stop_desktop_foreground_watch()
-        self._schedule_desktop_foreground_poll()
-
-    def _stop_desktop_foreground_watch(self) -> None:
-        if self._desktop_foreground_poll_after_id is not None:
-            self.root.after_cancel(self._desktop_foreground_poll_after_id)
-            self._desktop_foreground_poll_after_id = None
-
-    def _schedule_desktop_foreground_poll(self) -> None:
-        self._desktop_foreground_poll_after_id = self.root.after(
-            DESKTOP_FOREGROUND_POLL_MS,
-            self._on_desktop_foreground_poll,
-        )
-
-    def _on_desktop_foreground_poll(self) -> None:
-        self._desktop_foreground_poll_after_id = None
-        if self.display_settings.mode != DisplayMode.DESKTOP:
-            return
-        self._lower_desktop_board_on_foreign_app_active()
-        self._schedule_desktop_foreground_poll()
-
-    def _on_menu_panel_deactivate(self) -> None:
-        self._schedule_desktop_board_lower()
+    def _is_desktop_display_mode(self) -> bool:
+        return self.display_settings.mode == DisplayMode.DESKTOP
 
     def _on_kanban_card_enter(self, _event: tk.Event) -> None:
-        self._cancel_desktop_board_lower()
+        if self._desktop_board is not None:
+            self._desktop_board.on_card_pointer_enter()
 
     def _place_menu_panel(self, monitor: Monitor | None = None) -> None:
         monitor = monitor or get_monitor(self.display_settings.monitor_index)
@@ -224,28 +142,30 @@ class KanbanApp:
 
     def _build_menu_panel(self) -> None:
         self._menu_panel_host = MenuPanelHost(self.root)
+        self._desktop_board = DesktopBoardController(
+            self.root,
+            self._menu_panel_host,
+            is_desktop_mode=self._is_desktop_display_mode,
+            can_lower=self._can_lower_desktop_board,
+        )
         self.menu_panel = MenuPanel(
             self._menu_panel_host.window,
             on_close=self._on_close,
             on_settings=self._open_settings,
             on_add_card=self._add_card,
             on_position_changed=self._on_menu_panel_position_changed,
-            on_activate=self._activate_desktop_board_from_menu,
-            on_deactivate=self._on_menu_panel_deactivate,
+            on_activate=self._desktop_board.activate_from_menu,
+            on_deactivate=self._desktop_board.on_menu_deactivate,
         )
         self._menu_panel_host.window.bind(
             "<FocusIn>",
-            lambda _event: self._activate_desktop_board_from_menu(),
+            lambda _event: self._desktop_board.activate_from_menu(),
             add="+",
         )
-        for widget in (self.root, self._menu_panel_host.window):
-            widget.bind(
-                "<FocusOut>",
-                lambda _event: self.root.after_idle(
-                    self._lower_desktop_board_on_foreign_app_active
-                ),
-                add="+",
-            )
+        self._desktop_board.bind_focus_handlers(
+            self.root,
+            self._menu_panel_host.window,
+        )
 
     def _on_menu_panel_position_changed(self, x: int, y: int) -> None:
         self.display_settings.menu_panel_x = x
@@ -430,9 +350,9 @@ class KanbanApp:
     def _cancel_due_date_picker(self) -> None:
         if (
             self._due_date_picker.cancel_if_any()
-            and self.display_settings.mode == DisplayMode.DESKTOP
+            and self._desktop_board is not None
         ):
-            self._schedule_desktop_board_lower()
+            self._desktop_board.schedule_lower()
 
     def _set_card_due_date(self, card: Card, value: date | None) -> None:
         if card.due_date == value:
@@ -540,8 +460,8 @@ class KanbanApp:
             save_board(self.board)
 
         self._clear_inline_edit_state()
-        if self.display_settings.mode == DisplayMode.DESKTOP:
-            self._schedule_desktop_board_lower()
+        if self.display_settings.mode == DisplayMode.DESKTOP and self._desktop_board is not None:
+            self._desktop_board.schedule_lower()
         return True
 
     def _clear_inline_edit_state(self) -> None:
@@ -832,7 +752,8 @@ class KanbanApp:
         self.refresh()
 
     def _on_close(self) -> None:
-        self._stop_desktop_foreground_watch()
+        if self._desktop_board is not None:
+            self._desktop_board.stop()
         self._due_date_picker.cancel_if_any()
         self._commit_inline_title_edit_if_any(refresh_after=False)
         save_board(self.board)
