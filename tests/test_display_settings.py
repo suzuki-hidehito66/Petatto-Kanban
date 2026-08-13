@@ -17,6 +17,7 @@ def test_default_display_settings_is_overlay_mode() -> None:
     settings = DisplaySettings()
     assert settings.mode == DisplayMode.OVERLAY
     assert settings.confirm_delete is True
+    assert settings.confirm_exit is False
 
 
 def test_save_and_load_display_settings(tmp_path: Path) -> None:
@@ -46,6 +47,15 @@ def test_save_and_load_desktop_mode(tmp_path: Path) -> None:
 def test_invalid_mode_falls_back_to_overlay() -> None:
     restored = display_settings_from_dict({"mode": "unknown"})
     assert restored.mode == DisplayMode.OVERLAY
+
+
+def test_save_and_load_confirm_exit(tmp_path: Path) -> None:
+    settings = DisplaySettings(confirm_exit=True)
+    path = tmp_path / "settings.json"
+    save_display_settings(settings, path)
+
+    loaded = load_display_settings(path)
+    assert loaded.confirm_exit is True
 
 
 def test_display_settings_roundtrip_dict() -> None:

@@ -22,7 +22,17 @@ from petatto_kanban.display.menu_panel_host import MenuPanelHost
 from petatto_kanban.display.modes import apply_display_mode
 from petatto_kanban.display.monitors import Monitor, get_monitor
 from petatto_kanban.display.settings import DisplayMode
-from petatto_kanban.display.settings_dialog import SettingsDialog, SettingsDialogResult
+from petatto_kanban.display.settings_actions import (
+    apply_dialog_result,
+    confirm_exit,
+    delete_all_cards_with_confirm,
+)
+from petatto_kanban.display.settings_dialog import (
+    SettingsDialog,
+    SettingsDialogInput,
+    SettingsDialogResult,
+)
+from petatto_kanban.display.settings_dialog_labels import MSG_SETTINGS_SAVED
 from petatto_kanban.display.transparent import TRANSPARENT_COLOR
 from petatto_kanban.due_date import due_date_panel_style, format_due_date
 from petatto_kanban.due_date_picker import DueDatePickerHost
@@ -719,31 +729,44 @@ class KanbanApp:
         self.board.remove_card(card.id)
         self._persist_and_refresh()
 
+    def _delete_all_cards(self) -> None:
+        """設定ダイアログから全カードを削除する（常に確認ダイアログ）。"""
+        if not delete_all_cards_with_confirm(
+            parent=self.root,
+            app_title=APP_TITLE,
+            board=self.board,
+            messagebox=messagebox,
+        ):
+            return
+        self._due_date_picker.cancel_if_any()
+        self._commit_inline_title_edit_if_any(refresh_after=False)
+        self.refresh()
+
     def _open_settings(self) -> None:
         self._due_date_picker.cancel_if_any()
         self._commit_inline_title_edit_if_any(refresh_after=False)
         dialog = SettingsDialog(
             self.root,
-            mode=self.display_settings.mode,
-            confirm_delete=self.display_settings.confirm_delete,
-            monitor_index=self.display_settings.monitor_index,
-            monitors=self._monitors,
+            dialog_input=SettingsDialogInput(
+                mode=self.display_settings.mode,
+                confirm_delete=self.display_settings.confirm_delete,
+                confirm_exit=self.display_settings.confirm_exit,
+                monitor_index=self.display_settings.monitor_index,
+                monitors=self._monitors,
+            ),
+            on_delete_all_cards=self._delete_all_cards,
         )
         if dialog.result is None:
             return
 
         self._apply_settings(dialog.result)
-        messagebox.showinfo(APP_TITLE, "設定を保存しました。", parent=self.root)
+        messagebox.showinfo(APP_TITLE, MSG_SETTINGS_SAVED, parent=self.root)
 
     def _apply_settings(self, settings: SettingsDialogResult) -> None:
-        mode_changed = settings.mode != self.display_settings.mode
-        monitor_changed = settings.monitor_index != self.display_settings.monitor_index
-        self.display_settings.mode = settings.mode
-        self.display_settings.confirm_delete = settings.confirm_delete
-        self.display_settings.monitor_index = settings.monitor_index
+        changes = apply_dialog_result(self.display_settings, settings)
         save_display_settings(self.display_settings)
 
-        if mode_changed or monitor_changed:
+        if changes.needs_display_refresh:
             self._apply_display_mode()
             self.refresh()
 
@@ -752,6 +775,13 @@ class KanbanApp:
         self.refresh()
 
     def _on_close(self) -> None:
+        if not confirm_exit(
+            parent=self.root,
+            app_title=APP_TITLE,
+            confirm_exit_enabled=self.display_settings.confirm_exit,
+            messagebox=messagebox,
+        ):
+            return
         if self._desktop_board is not None:
             self._desktop_board.stop()
         self._due_date_picker.cancel_if_any()

@@ -153,8 +153,9 @@
 | 優先度 | Must |
 | ステータス | implemented |
 | 関連 US | US-004 |
-| 関連 AC | AC-005-01 |
-| 実装 | `src/petatto_kanban/app.py` |
+| 関連 AC | AC-005-01, AC-005-02, AC-005-03 |
+| 実装 | `src/petatto_kanban/app.py`, `models.py`, `display/settings_actions.py`, `display/settings_dialog_panels.py` |
+| UI 契約 | [UC-003 §削除](./08-ui-behavior-contract.md#uc-003-カードコンポーネント), [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 
 **説明**  
 カードを **右クリックして離した** ときに削除する。設定により確認ダイアログを表示するか省略する。コンテキストメニューは表示しない。
@@ -165,6 +166,7 @@
 - `confirm_delete` が `true` のとき、削除前に確認ダイアログを表示
 - `confirm_delete` が `false` のとき、即時削除
 - 削除後 `board.json` を保存
+- 設定ダイアログ「システム」タブの **「全てのカードを削除」** で一括削除可能（UC-006）。この操作は `confirm_delete` に関係なく **常に確認ダイアログ** を表示
 
 ---
 
@@ -362,11 +364,11 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-013 |
 | 関連 AC | AC-024-01 |
-| 実装 | `src/petatto_kanban/display/settings.py`, `app.py` |
-| データ契約 | [DC-003](./07-data-contract.md#dc-003-表示設定スキーマ) |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/settings.py`, `app.py` |
+| UI 契約 | [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 
 **説明**  
-設定ダイアログで「カード削除時に確認ダイアログを表示する」を ON/OFF できる。
+設定ダイアログ **「システム」タブ** で「カード削除時に確認ダイアログを表示する」を ON/OFF できる。
 
 **制約**
 - 既定値: `true`（確認あり）
@@ -407,8 +409,8 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 優先度 | Must |
 | ステータス | implemented |
 | 関連 US | US-011 |
-| 関連 AC | AC-023-01 |
-| 実装 | `src/petatto_kanban/app.py` |
+| 関連 AC | AC-023-01, AC-023-02 |
+| 実装 | `src/petatto_kanban/app.py`, `display/settings_actions.py` |
 | UI 契約 | [UC-002](./08-ui-behavior-contract.md#uc-002-メニューパネル) |
 
 **説明**  
@@ -417,6 +419,8 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 **制約**
 - オーバーレイモード（タイトルバーなし）でも終了できること
 - `WM_DELETE_WINDOW` と同じ `_on_close` 処理を呼ぶ
+- 設定ダイアログ「システム」タブの `confirm_exit` が `true` のとき、終了前に確認ダイアログを表示（キャンセル時は終了しない）
+- `confirm_exit` 既定値は `false`（即時終了）
 
 ---
 
@@ -448,15 +452,15 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-008, US-009, US-010 |
 | 関連 AC | AC-022-01, AC-022-02 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/modes.py`, `app.py` |
-| UI 契約 | [12-display-modes.md §7](./12-display-modes.md#7-モード切替-ui) |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/settings_dialog_panels.py`, `display/modes.py`, `app.py` |
+| UI 契約 | [UC-006 §表示タブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 
 **説明**  
-**M1 拡張:** 設定ダイアログから **オーバーレイモード** と **デスクトップモード** を実行中に切り替える。  
+**M1 拡張:** 設定ダイアログ **「表示」タブ** から **オーバーレイモード** と **デスクトップモード** を実行中に切り替える。  
 **M2:** ウィンドウモードを追加し 3 モード切替を完成させる。
 
 **制約（M1 拡張）**
-- 切替 UI は設定ダイアログ内（メニューパネル ⚙）
+- 切替 UI は設定ダイアログ「表示」タブ（メニューパネル ⚙ から開く）
 - OK 確定で `settings.json` の `mode` を保存し、即時再描画
 - ボードデータ・カード座標は保持
 

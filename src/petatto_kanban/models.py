@@ -56,5 +56,10 @@ class Board:
     def remove_card(self, card_id: str) -> None:
         self.cards = [card for card in self.cards if card.id != card_id]
 
+    def clear_cards(self) -> None:
+        """全カードを削除する."""
+        self.cards.clear()
+        self.touch()
+
     def find_card(self, card_id: str) -> Card | None:
         return next((card for card in self.cards if card.id == card_id), None)

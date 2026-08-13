@@ -220,16 +220,40 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-019, FR-020, FR-021, FR-022, FR-024 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `display/mode_labels.py`, `app.py` |
-| 関連 AC | AC-019-01, AC-021-01, AC-022-02, AC-024-01 |
+| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024 |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `app.py` |
+| 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01 |
+
+### タブ構成
+
+| タブ | ID（実装定数） | 関連 FR | 項目 |
+|------|----------------|---------|------|
+| **表示** | `SETTINGS_TAB_DISPLAY` | FR-019, FR-020, FR-021, FR-022 | 表示モード、表示ディスプレイ |
+| **システム** | `SETTINGS_TAB_SYSTEM` | FR-024, FR-023, FR-005 | 確認オプション、**全カード削除** |
+
+- UI は `ttk.Notebook` でタブ切り替え
+- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit` を保存（タブに関係なく一括）
+- キャンセル時は変更を破棄
+
+### 表示タブ
 
 | 要素 | 仕様 |
 |------|------|
-| **表示モード** | ラジオボタンまたはコンボボックス: `オーバーレイ` / `デスクトップ` |
-| 表示ディスプレイ | コンボボックス（OS 認識モニター一覧、`readonly`） |
+| **表示モード** | コンボボックス（`readonly`）: `オーバーレイ` / `デスクトップ` |
+| **表示ディスプレイ** | コンボボックス（OS 認識モニター一覧、`readonly`） |
+
+### システムタブ
+
+| 要素 | 仕様 |
+|------|------|
 | チェックボックス | 「カード削除時に確認ダイアログを表示する」 |
-| 保存 | OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete` を保存 |
+| チェックボックス | 「アプリ終了時に確認ダイアログを表示する」（`confirm_exit`、既定 `false`） |
+| ボタン | **「全てのカードを削除」** — 押下で確認ダイアログ（枚数表示）→ 全カード削除・`board.json` 保存・即時再描画。`confirm_delete` 設定に関係なく **常に確認** |
+
+### 共通
+
+| 項目 | 仕様 |
+|------|------|
 | モード変更時 | 指定ディスプレイ上でオーバーレイまたはデスクトップ表示に即時切替。カード・メニューパネルは保持 |
 | ディスプレイ変更時 | 現在の表示モードのまま全画面を再配置し、カードを再描画 |
 
@@ -282,3 +306,7 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.2.3 | 2026-08-13 | UC-002: メニューアクティブ時にカード等を一時最前面（DM-DESKTOP-02） |
 | 2.2.4 | 2026-08-13 | UC-002: 他アプリアクティブ時の即時背面復帰（DM-DESKTOP-03） |
 | 2.2.5 | 2026-08-13 | Z オーダー制御を `desktop_board_controller.py` に集約 |
+| 2.3.0 | 2026-08-13 | UC-006: 設定ダイアログを「表示」「システム」タブに分割 |
+| 2.3.1 | 2026-08-13 | UC-006 システムタブ: アプリ終了時の確認オプション（`confirm_exit`） |
+| 2.3.2 | 2026-08-13 | UC-006 システムタブ: 「全てのカードを削除」ボタン（FR-005） |
+| 2.3.3 | 2026-08-13 | UC-006 実装リファクタ（`settings_dialog_labels` / `settings_dialog_panels` / `settings_actions`） |

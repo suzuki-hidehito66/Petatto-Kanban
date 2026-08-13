@@ -163,6 +163,30 @@ Then 確認ダイアログなしでカードが削除される
 And コンテキストメニューは表示されない
 ```
 
+### AC-005-03
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-005 |
+| 関連 UC | UC-006 |
+| ステータス | implemented |
+| 検証 | 手動 + 自動 |
+
+```gherkin
+Given ボードにカードが1枚以上存在する
+And ユーザーが設定ダイアログの「システム」タブを表示している
+When ユーザーが「全てのカードを削除」を押し確認ダイアログで「はい」を選ぶ
+Then 全カードが削除される
+And board.json に空の cards 配列が保存される
+And 画面上のカードが消える
+When カードが0枚の状態で「全てのカードを削除」を押す
+Then 情報ダイアログが表示され削除は行われない
+```
+
+**テスト**: `test_board_clear_cards`, `test_settings_actions.py`
+
+---
+
 ---
 
 ## FR-006: カード列間移動（M2）
@@ -508,6 +532,7 @@ And due_date は変更されない
 
 ```gherkin
 Given ユーザーが設定ダイアログを開いている
+And ユーザーが「表示」タブを表示している
 When 表示モードを「デスクトップ」に変更して OK する
 Then 指定ディスプレイ全体にカンバンが全画面表示される
 And オーバーレイモードと同様にカード・メニューパネルのみ不透明でそれ以外は透過である
@@ -648,6 +673,27 @@ Then アプリが終了する
 And board.json と settings.json に最新データが保存されている
 ```
 
+### AC-023-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-023 |
+| 関連 US | US-011 |
+| ステータス | implemented |
+| 検証 | 手動 + 自動 |
+
+```gherkin
+Given 設定ダイアログの「システム」タブで confirm_exit が true に設定されている
+When ユーザーがメニューパネルの「×」をクリックして離す
+Then 「アプリを終了しますか？」確認ダイアログが表示される
+When ユーザーが「いいえ」を選ぶ
+Then アプリは終了しない
+When ユーザーが再度「×」で終了し「はい」を選ぶ
+Then アプリが終了し board.json と settings.json が保存される
+```
+
+**テスト**: `test_save_and_load_confirm_exit`, `test_settings_dialog.py`, `test_settings_actions.py`
+
 ---
 
 ## FR-024: 削除確認設定
@@ -663,12 +709,13 @@ And board.json と settings.json に最新データが保存されている
 
 ```gherkin
 Given 設定ダイアログが開いている
+And ユーザーが「システム」タブを表示している
 When ユーザーが「カード削除時に確認ダイアログを表示する」のチェックを外して OK する
 Then settings.json の confirm_delete が false になる
 And 次回のカード削除で確認ダイアログが表示されない
 ```
 
-**テスト**: `test_save_and_load_display_settings`, `test_display_settings_roundtrip_dict`
+**テスト**: `test_save_and_load_display_settings`, `test_display_settings_roundtrip_dict`, `test_settings_dialog.py`
 
 ---
 

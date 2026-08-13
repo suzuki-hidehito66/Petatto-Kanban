@@ -27,6 +27,7 @@ class DisplaySettings:
     monitor_index: int = 0
     window_geometry: str = "960x540+100+100"
     confirm_delete: bool = True
+    confirm_exit: bool = False
     menu_panel_x: int | None = None
     menu_panel_y: int | None = None
 
@@ -51,6 +52,7 @@ def display_settings_to_dict(settings: DisplaySettings) -> dict[str, Any]:
         "monitor_index": settings.monitor_index,
         "window_geometry": settings.window_geometry,
         "confirm_delete": settings.confirm_delete,
+        "confirm_exit": settings.confirm_exit,
     }
     if settings.menu_panel_x is not None:
         data["menu_panel_x"] = settings.menu_panel_x
@@ -67,6 +69,7 @@ def display_settings_from_dict(data: dict[str, Any]) -> DisplaySettings:
         monitor_index=int(data.get("monitor_index", 0)),
         window_geometry=str(data.get("window_geometry", "960x540+100+100")),
         confirm_delete=bool(data.get("confirm_delete", True)),
+        confirm_exit=bool(data.get("confirm_exit", False)),
         menu_panel_x=int(menu_x) if menu_x is not None else None,
         menu_panel_y=int(menu_y) if menu_y is not None else None,
     )
