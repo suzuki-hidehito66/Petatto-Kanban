@@ -1,18 +1,18 @@
-"""新規カードの初期配置座標."""
+"""新規カードの初期配置座標（tkinter 非依存）."""
 
 from __future__ import annotations
+
+from petatto_kanban.menu_panel_layout import MenuPanelRect
 
 DEFAULT_NEW_CARD_GAP_Y = 8
 DEFAULT_NEW_CARD_STACK_OFFSET = 32
 DEFAULT_NEW_CARD_STACK_COLUMNS = 4
+DEFAULT_NEW_CARD_TITLE = "新しいタスク"
 
 
 def compute_new_card_position(
     *,
-    menu_panel_x: int,
-    menu_panel_y: int,
-    menu_panel_width: int,
-    menu_panel_height: int,
+    panel: MenuPanelRect,
     card_width: int,
     stack_index: int,
     gap_y: int = DEFAULT_NEW_CARD_GAP_Y,
@@ -20,9 +20,8 @@ def compute_new_card_position(
     stack_columns: int = DEFAULT_NEW_CARD_STACK_COLUMNS,
 ) -> tuple[int, int]:
     """メニューパネル直下・右端揃えで新規カードの左上座標を返す."""
-    menu_right = menu_panel_x + menu_panel_width
-    base_x = menu_right - card_width
-    base_y = menu_panel_y + menu_panel_height + gap_y
+    base_x = panel.right - card_width
+    base_y = panel.bottom + gap_y
     column = stack_index % stack_columns
     row = stack_index // stack_columns
     return (
