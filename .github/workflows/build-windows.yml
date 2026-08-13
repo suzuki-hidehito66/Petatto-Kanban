@@ -22,10 +22,14 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -49,31 +53,8 @@ jobs:
       - name: Build executable
         run: python -m PyInstaller petatto-kanban.spec --noconfirm
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Petatto-Kanban-windows-${{ github.sha }}
-          path: dist/Petatto-Kanban.exe
-
-  release:
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Read app version
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: version
         shell: bash
         run: |
@@ -82,6 +63,7 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Ensure release tag is new
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: bash
         run: |
           TAG="${{ steps.version.outputs.tag }}"
@@ -90,16 +72,12 @@ jobs:
             exit 1
           fi
 
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: Petatto-Kanban-windows-${{ github.sha }}
-
       - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: Petatto-Kanban ${{ steps.version.outputs.tag }}
-          files: Petatto-Kanban.exe
+          files: dist/Petatto-Kanban.exe
           generate_release_notes: true
           fail_on_unmatched_files: true

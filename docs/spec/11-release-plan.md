@@ -48,7 +48,7 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 | 実行可能 exe | `dist/Petatto-Kanban.exe` |
 | ソース | `src/petatto_kanban/` |
 | SDD 仕様 | `docs/spec/` |
-| CI | `.github/workflows/build-windows.yml`（PR: ビルド + Artifact / main マージ: + GitHub Release） |
+| CI | `.github/workflows/build-windows.yml`（PR: ビルド検証 / main マージ: GitHub Release） |
 
 ### 完了条件（Definition of Done）
 
