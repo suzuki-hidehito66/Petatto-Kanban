@@ -25,6 +25,7 @@ class DueDatePicker(tk.Frame):
         on_apply: Callable[[date | None], None],
         on_cancel: Callable[[], None],
         bg: str,
+        fg: str,
         month_font: tuple[str, int, str] | tuple[str, int] = ("Segoe UI", 9, "bold"),
         weekday_font: tuple[str, int] | tuple[str, int, str] = ("Segoe UI", 8),
     ) -> None:
@@ -32,6 +33,7 @@ class DueDatePicker(tk.Frame):
         self._on_apply = on_apply
         self._on_cancel = on_cancel
         self._bg = bg
+        self._fg = fg
         self._selected = initial
         anchor = initial or date.today()
         self._view_year = anchor.year
@@ -40,7 +42,7 @@ class DueDatePicker(tk.Frame):
         header = tk.Frame(self, bg=bg)
         header.pack(fill=tk.X, pady=(0, 4))
         ttk.Button(header, text="◀", width=3, command=self._prev_month).pack(side=tk.LEFT)
-        self._month_label = tk.Label(header, bg=bg, font=month_font)
+        self._month_label = tk.Label(header, bg=bg, fg=fg, font=month_font)
         self._month_label.pack(side=tk.LEFT, expand=True)
         ttk.Button(header, text="▶", width=3, command=self._next_month).pack(side=tk.RIGHT)
 
@@ -51,6 +53,7 @@ class DueDatePicker(tk.Frame):
                 weekday_row,
                 text=label,
                 bg=bg,
+                fg=fg,
                 width=3,
                 font=weekday_font,
             ).pack(side=tk.LEFT, expand=True)
@@ -117,6 +120,7 @@ class DueDatePicker(tk.Frame):
                     day,
                     selected=self._selected,
                     default_bg=self._bg,
+                    default_fg=self._fg,
                 )
                 tk.Button(
                     row,
@@ -139,6 +143,7 @@ class DueDatePickerHost:
         root: tk.Misc,
         *,
         bg: str,
+        fg: str,
         panel_width: int,
         month_font: tuple[str, int, str] | tuple[str, int] = ("Segoe UI", 9, "bold"),
         weekday_font: tuple[str, int] | tuple[str, int, str] = ("Segoe UI", 8),
@@ -146,6 +151,7 @@ class DueDatePickerHost:
     ) -> None:
         self._root = root
         self._bg = bg
+        self._fg = fg
         self._panel_width = panel_width
         self._month_font = month_font
         self._weekday_font = weekday_font
@@ -213,6 +219,7 @@ class DueDatePickerHost:
             on_apply=apply,
             on_cancel=cancel,
             bg=self._bg,
+            fg=self._fg,
             month_font=self._month_font,
             weekday_font=self._weekday_font,
         )

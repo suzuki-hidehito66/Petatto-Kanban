@@ -8,13 +8,19 @@ UI_SIZE_LABELS: dict[UiSize, str] = {
     UiSize.SMALL: "小",
     UiSize.MEDIUM: "標準",
     UiSize.LARGE: "大",
+    UiSize.XLARGE: "極大",
 }
 
 SELECTABLE_UI_SIZES: tuple[UiSize, ...] = (
     UiSize.SMALL,
     UiSize.MEDIUM,
     UiSize.LARGE,
+    UiSize.XLARGE,
 )
+
+_LABEL_TO_UI_SIZE: dict[str, UiSize] = {
+    label: size for size, label in UI_SIZE_LABELS.items()
+}
 
 
 def ui_size_label(ui_size: UiSize) -> str:
@@ -22,10 +28,7 @@ def ui_size_label(ui_size: UiSize) -> str:
 
 
 def ui_size_from_label(label: str, default: UiSize) -> UiSize:
-    for size, size_label in UI_SIZE_LABELS.items():
-        if size_label == label:
-            return size
-    return default
+    return _LABEL_TO_UI_SIZE.get(label, default)
 
 
 def selectable_ui_size_labels() -> list[str]:

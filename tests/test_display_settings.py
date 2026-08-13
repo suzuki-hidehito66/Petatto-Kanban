@@ -20,6 +20,7 @@ def test_default_display_settings_is_overlay_mode() -> None:
     assert settings.confirm_exit is False
     assert settings.ui_size.value == "medium"
     assert settings.ui_font.value == "segoe_ui"
+    assert settings.ui_theme.value == "default"
 
 
 def test_save_and_load_display_settings(tmp_path: Path) -> None:
@@ -89,12 +90,12 @@ def test_display_settings_from_dict_invalid_ui_size() -> None:
 def test_save_and_load_ui_size(tmp_path: Path) -> None:
     from petatto_kanban.display.ui_scale import UiSize
 
-    settings = DisplaySettings(ui_size=UiSize.LARGE)
+    settings = DisplaySettings(ui_size=UiSize.XLARGE)
     path = tmp_path / "settings.json"
     save_display_settings(settings, path)
 
     loaded = load_display_settings(path)
-    assert loaded.ui_size == UiSize.LARGE
+    assert loaded.ui_size == UiSize.XLARGE
 
 
 def test_display_settings_from_dict_invalid_ui_font() -> None:
@@ -111,6 +112,22 @@ def test_save_and_load_ui_font(tmp_path: Path) -> None:
 
     loaded = load_display_settings(path)
     assert loaded.ui_font == UiFont.MEIRYO
+
+
+def test_display_settings_from_dict_invalid_ui_theme() -> None:
+    restored = display_settings_from_dict({"ui_theme": "unknown"})
+    assert restored.ui_theme.value == "default"
+
+
+def test_save_and_load_ui_theme(tmp_path: Path) -> None:
+    from petatto_kanban.display.ui_theme import UiTheme
+
+    settings = DisplaySettings(ui_theme=UiTheme.FOREST)
+    path = tmp_path / "settings.json"
+    save_display_settings(settings, path)
+
+    loaded = load_display_settings(path)
+    assert loaded.ui_theme == UiTheme.FOREST
 
 
 def test_monitor_index_for_name() -> None:

@@ -12,7 +12,7 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 
 | 項目 | 値 |
 |------|-----|
-| バージョン | `0.1.1` |
+| バージョン | `0.1.2` |
 | 同期先 | `pyproject.toml` `[project].version`、`src/petatto_kanban/__init__.py` `__version__` |
 
 **main へマージ（PR マージ）時**: `build-windows.yml` が exe をビルドし、未使用の `v{バージョン}` タグで [GitHub Release](https://github.com/suzuki-hidehito66/Petatto-Kanban/releases) を作成する。同じバージョンで再マージする場合は **リリース前にバージョンをインクリメント** すること（タグ重複で CI が失敗する）。

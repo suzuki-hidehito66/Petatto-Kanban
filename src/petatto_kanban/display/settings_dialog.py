@@ -14,15 +14,19 @@ from petatto_kanban.display.settings_dialog_labels import SETTINGS_DIALOG_TITLE
 from petatto_kanban.display.settings_dialog_panels import (
     build_display_tab,
     build_system_tab,
+    build_theme_tab,
 )
 from petatto_kanban.display.settings_dialog_tabs import (
     SETTINGS_TAB_DISPLAY,
     SETTINGS_TAB_SYSTEM,
+    SETTINGS_TAB_THEME,
 )
 from petatto_kanban.display.ui_font import UiFont
 from petatto_kanban.display.ui_font_labels import ui_font_from_label
 from petatto_kanban.display.ui_scale import UiSize
 from petatto_kanban.display.ui_scale_labels import ui_size_from_label
+from petatto_kanban.display.ui_theme import UiTheme
+from petatto_kanban.display.ui_theme_labels import ui_theme_from_label
 
 if TYPE_CHECKING:
     import tkinter as tk
@@ -39,6 +43,7 @@ class SettingsDialogResult:
     monitor_index: int
     ui_size: UiSize
     ui_font: UiFont
+    ui_theme: UiTheme
 
 
 @dataclass(frozen=True)
@@ -49,6 +54,7 @@ class SettingsFormValues:
     monitor_name: str
     ui_size_label: str
     ui_font_label: str
+    ui_theme_label: str
     confirm_delete: bool
     confirm_exit: bool
 
@@ -63,6 +69,7 @@ class SettingsDialogInput:
     monitor_index: int
     ui_size: UiSize
     ui_font: UiFont
+    ui_theme: UiTheme
     monitors: list[Monitor]
 
 
@@ -74,6 +81,7 @@ def result_from_form_values(
     default_monitor_index: int,
     default_ui_size: UiSize,
     default_ui_font: UiFont,
+    default_ui_theme: UiTheme,
 ) -> SettingsDialogResult:
     """フォーム値から SettingsDialogResult を組み立てる."""
     return SettingsDialogResult(
@@ -87,11 +95,12 @@ def result_from_form_values(
         ),
         ui_size=ui_size_from_label(values.ui_size_label, default_ui_size),
         ui_font=ui_font_from_label(values.ui_font_label, default_ui_font),
+        ui_theme=ui_theme_from_label(values.ui_theme_label, default_ui_theme),
     )
 
 
 class SettingsDialog(simpledialog.Dialog):
-    """アプリ設定ダイアログ（UC-006）。「表示」「システム」タブ."""
+    """アプリ設定ダイアログ（UC-006）。「表示」「テーマ」「システム」タブ."""
 
     def __init__(
         self,
@@ -112,8 +121,10 @@ class SettingsDialog(simpledialog.Dialog):
         notebook.pack(fill=tk.BOTH, expand=True)
 
         display_tab = ttk.Frame(notebook, padding=12)
+        theme_tab = ttk.Frame(notebook, padding=12)
         system_tab = ttk.Frame(notebook, padding=12)
         notebook.add(display_tab, text=SETTINGS_TAB_DISPLAY)
+        notebook.add(theme_tab, text=SETTINGS_TAB_THEME)
         notebook.add(system_tab, text=SETTINGS_TAB_SYSTEM)
 
         self._display_tab = build_display_tab(
@@ -123,6 +134,10 @@ class SettingsDialog(simpledialog.Dialog):
             ui_size=self._input.ui_size,
             ui_font=self._input.ui_font,
             monitors=self._input.monitors,
+        )
+        self._theme_tab = build_theme_tab(
+            theme_tab,
+            ui_theme=self._input.ui_theme,
         )
         self._system_tab = build_system_tab(
             system_tab,
@@ -142,6 +157,7 @@ class SettingsDialog(simpledialog.Dialog):
                 monitor_name=self._display_tab.monitor_var.get(),
                 ui_size_label=self._display_tab.ui_size_var.get(),
                 ui_font_label=self._display_tab.ui_font_var.get(),
+                ui_theme_label=self._theme_tab.ui_theme_var.get(),
                 confirm_delete=self._system_tab.confirm_delete_var.get(),
                 confirm_exit=self._system_tab.confirm_exit_var.get(),
             ),
@@ -150,4 +166,5 @@ class SettingsDialog(simpledialog.Dialog):
             default_monitor_index=self._input.monitor_index,
             default_ui_size=self._input.ui_size,
             default_ui_font=self._input.ui_font,
+            default_ui_theme=self._input.ui_theme,
         )

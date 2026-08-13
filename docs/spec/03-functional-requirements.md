@@ -44,6 +44,7 @@
 | [FR-022](#fr-022-表示モード切替) | 表示モード切替 | Should | implemented | M1 拡張 / M2 |
 | [FR-026](#fr-026-uiサイズ設定) | UI サイズ設定 | Must | implemented | M1 拡張 |
 | [FR-027](#fr-027-uiフォント設定) | UI フォント設定 | Must | implemented | M1 拡張 |
+| [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | implemented | M1 拡張 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -95,7 +96,7 @@
 - タイトルは枠線付きの内側フレーム（`relief=GROOVE`, `bd=1`）で囲む
 - 進捗率（0〜100%）をバーで表示し、左から進捗に応じた色で塗りつぶす（FR-025）
 - 期限パネルを表示（FR-014）。期限なし / 日付表示、状態に応じた背景色
-- カード枠はタイトル表示領域より大きくなるよう、最小サイズ（幅 220px・高さ 120px）を下限とする
+- カード枠はタイトル表示領域より大きくなるよう、最小サイズ（幅 175px・高さ 108px、横長黄金比 φ、medium 時フォント 10pt）を下限とする
 
 ---
 
@@ -475,15 +476,15 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 優先度 | Must |
 | ステータス | implemented |
 | 関連 US | US-016 |
-| 関連 AC | AC-026-01, AC-026-02, AC-026-03 |
-| 実装 | `src/petatto_kanban/display/ui_scale.py`, `display/ui_scale_labels.py`, `display/ui_chrome.py`, `card_renderer.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py` |
+| 関連 AC | AC-026-01, AC-026-02, AC-026-03, AC-026-04 |
+| 実装 | `src/petatto_kanban/display/ui_scale.py`, `display/ui_scale_labels.py`, `display/card_layout.py`, `display/ui_metrics.py`, `display/ui_chrome.py`, `card_renderer.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py` |
 | UI 契約 | [UC-006 §表示タブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-009 §UI スケール](./08-ui-behavior-contract.md#uc-009-ui-スケール) |
 
 **説明**  
-設定ダイアログ **「表示」タブ** で UI 全体の表示サイズ（**小 / 標準 / 大**）を選択できる。カード・メニューパネル・期限パネル等のフォントとレイアウト寸法を一括でスケールする。
+設定ダイアログ **「表示」タブ** で UI 全体の表示サイズ（**小 / 標準 / 大 / 極大**）を選択できる。カード・メニューパネル・期限パネル等のフォントとレイアウト寸法を一括でスケールする。
 
 **制約**
-- 選択肢: **小**（`small`）/ **標準**（`medium`）/ **大**（`large`）。既定値は **標準**
+- 選択肢: **小**（`small`）/ **標準**（`medium`）/ **大**（`large`）/ **極大**（`xlarge`、標準の 1.25 倍）。既定値は **標準**
 - `settings.json` の `ui_size` に永続化し、次回起動時に復元
 - OK 確定後、表示モードの切替を伴わない場合でも **即時再描画**（カード・メニューパネルを再構築）
 - カードの `x` / `y` 座標（`board.json`）は **変更しない**（見た目のサイズのみ変化）
@@ -514,6 +515,31 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - 不明・欠損・不正な `ui_font` は **Segoe UI** として読み込む
 - tkinter フォント名への対応は [UC-010](./08-ui-behavior-contract.md#uc-010-ui-フォント) に従う
 - OS にフォントが存在しない場合は **Segoe UI** にフォールバック（起動時・適用時）
+
+---
+
+### FR-028: UI カラーテーマ設定
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Must |
+| ステータス | implemented |
+| 関連 US | US-018 |
+| 関連 AC | AC-028-01, AC-028-02, AC-028-03 |
+| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_tabs.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
+| UI 契約 | [UC-006 §テーマタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-011 §UI カラーテーマ](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ) |
+
+**説明**  
+設定ダイアログ **「テーマ」タブ** でアプリ全体の **カラーテーマ**（背景色・文字色のプリセット）を選択できる。カード枠・タイトル・メニューパネル・期限編集パネルの枠・設定ダイアログ等に反映する。**期限の意味色**（当日の黄・超過の赤）と **進捗バーの塗り色** はテーマの影響を受けない（可読性・状態識別のため固定）。
+
+**制約**
+- 選択肢（M1）: **10 種** — `default` / `dark` / `sandy` / `forest` / `fancy` / `ocean` / `sunset` / `slate` / `rose` / `midnight`（[UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ) のパレット表）
+- `settings.json` の `ui_theme` に永続化。既定値は **default**（現行配色）
+- OK 確定後、表示モード・ディスプレイ・UI サイズ・フォントを変えずに **即時再描画**（FR-026 / FR-027 と同様）
+- カードの `x` / `y` 座標は **変更しない**
+- 不明・欠損・不正な `ui_theme` は **default** として読み込む
+- 各テーマの背景色・文字色は **コントラスト比 4.5:1 以上**（通常テキスト）を目標に選定する（[UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ)）
+- オーバーレイ透過色（`TRANSPARENT_COLOR`）・Win32 透過処理はテーマ対象外
 
 ---
 

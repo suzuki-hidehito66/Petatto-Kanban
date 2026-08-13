@@ -1,10 +1,9 @@
-"""メニューパネル・期限パネルホストの再構築（UI サイズ変更対応）."""
+"""メニューパネル・期限パネルホストの再構築（UI サイズ・テーマ変更対応）."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from petatto_kanban.card_renderer import CARD_BG
 from petatto_kanban.display.ui_metrics import UiMetrics
 from petatto_kanban.due_date_picker import DueDatePickerHost
 from petatto_kanban.menu_panel import MenuPanel
@@ -14,10 +13,11 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from petatto_kanban.display.monitors import Monitor
+    from petatto_kanban.display.ui_theme import UiThemePalette
 
 
 class UiChrome:
-    """スケール変更時に再構築が必要な UI 部品を管理する."""
+    """スケール・テーマ変更時に再構築が必要な UI 部品を管理する."""
 
     def __init__(
         self,
@@ -25,6 +25,7 @@ class UiChrome:
         menu_parent: tk.Misc,
         *,
         metrics: UiMetrics,
+        palette: UiThemePalette,
         on_close: Callable[[], None],
         on_settings: Callable[[], None],
         on_add_card: Callable[[], None],
@@ -36,6 +37,7 @@ class UiChrome:
         self._root = root
         self._menu_parent = menu_parent
         self._metrics = metrics
+        self._palette = palette
         self._menu_callbacks = (
             on_close,
             on_settings,
@@ -52,23 +54,34 @@ class UiChrome:
     def metrics(self) -> UiMetrics:
         return self._metrics
 
-    def apply_metrics(self, metrics: UiMetrics) -> None:
-        """UI サイズ変更後にメトリクスを更新し、部品を再構築する."""
+    @property
+    def palette(self) -> UiThemePalette:
+        return self._palette
+
+    def apply_appearance(self, metrics: UiMetrics, palette: UiThemePalette) -> None:
+        """UI サイズ・テーマ変更後にメトリクスとパレットを更新し、部品を再構築する."""
         saved_position = self.menu_panel.position
         self.due_date_picker.close()
         self.menu_panel.widget.destroy()
         self._metrics = metrics
+        self._palette = palette
         self.due_date_picker = self._create_due_date_picker()
         self.menu_panel = self._create_menu_panel()
         self.menu_panel.place_at(*saved_position)
+
+    def apply_metrics(self, metrics: UiMetrics) -> None:
+        """後方互換。パレットは維持して apply_appearance を呼ぶ."""
+        self.apply_appearance(metrics, self._palette)
 
     def clamp_menu_to_monitor(self, monitor: Monitor) -> None:
         self.menu_panel.clamp_to_monitor(monitor.width, monitor.height)
 
     def _create_due_date_picker(self) -> DueDatePickerHost:
+        palette = self._palette
         return DueDatePickerHost(
             self._root,
-            bg=CARD_BG,
+            bg=palette.due_picker_bg,
+            fg=palette.due_picker_fg,
             panel_width=self._metrics.due_picker_panel_width,
             month_font=self._metrics.due_picker_month_font,
             weekday_font=self._metrics.due_picker_day_font,
@@ -93,4 +106,5 @@ class UiChrome:
             on_activate=on_activate,
             on_deactivate=on_deactivate,
             metrics=self._metrics,
+            palette=self._palette,
         )

@@ -1,9 +1,14 @@
 """UI スケール（FR-026）のテスト."""
 
-from petatto_kanban.display.ui_metrics import medium_metrics, metrics_for_ui_size
+from petatto_kanban.display.card_layout import GOLDEN_RATIO
+from petatto_kanban.display.ui_font import UiFont
+from petatto_kanban.display.ui_metrics import medium_metrics, metrics_for_display
 from petatto_kanban.display.ui_scale import (
+    BASE_CARD_FRAME_PAD,
+    BASE_CARD_MIN_HEIGHT,
     BASE_CARD_MIN_WIDTH,
     BASE_MENU_CIRCLE_SIZE,
+    BASE_PROGRESS_BAR_HEIGHT,
     UiSize,
     parse_ui_size,
 )
@@ -17,6 +22,7 @@ def test_parse_ui_size_defaults_to_medium() -> None:
 def test_parse_ui_size_accepts_presets() -> None:
     assert parse_ui_size("small") == UiSize.SMALL
     assert parse_ui_size("large") == UiSize.LARGE
+    assert parse_ui_size("xlarge") == UiSize.XLARGE
 
 
 def test_medium_metrics_matches_baseline() -> None:
@@ -24,17 +30,50 @@ def test_medium_metrics_matches_baseline() -> None:
     assert metrics.ui_size == UiSize.MEDIUM
     assert metrics.scale == 1.0
     assert metrics.card_min_width == BASE_CARD_MIN_WIDTH
+    assert metrics.card_min_height == BASE_CARD_MIN_HEIGHT
     assert metrics.menu_circle_size == BASE_MENU_CIRCLE_SIZE
+
+
+def test_medium_metrics_card_placement() -> None:
+    metrics = medium_metrics()
+    assert metrics.card_label_wrap == 155
+    assert metrics.card_placement_width == 177
+    assert metrics.card_placement_height == 110
+
+
+def test_card_min_dimensions_use_golden_ratio_landscape() -> None:
+    assert BASE_CARD_MIN_WIDTH > BASE_CARD_MIN_HEIGHT
+    ratio = BASE_CARD_MIN_WIDTH / BASE_CARD_MIN_HEIGHT
+    assert abs(ratio - GOLDEN_RATIO) < 0.01
+
+
+def test_card_label_metrics_match_standard_font10_baseline() -> None:
+    metrics = medium_metrics()
+    assert metrics.title_font[1] == 10
+    assert metrics.due_font[1] == 10
+    assert metrics.progress_font[1] == 10
+    assert metrics.progress_bar_height == BASE_PROGRESS_BAR_HEIGHT == 16
+    assert metrics.card_frame_pad == BASE_CARD_FRAME_PAD == 6
 
 
 def test_large_metrics_scales_up() -> None:
     medium = medium_metrics()
-    large = metrics_for_ui_size(UiSize.LARGE)
+    large = metrics_for_display(UiSize.LARGE, UiFont.SEGOE_UI)
     assert large.card_min_width > medium.card_min_width
     assert large.menu_circle_size > medium.menu_circle_size
     assert large.title_font[1] >= medium.title_font[1]
 
 
+def test_xlarge_metrics_scales_above_large() -> None:
+    from petatto_kanban.display.ui_scale import UI_SIZE_SCALE
+
+    large = metrics_for_display(UiSize.LARGE, UiFont.SEGOE_UI)
+    xlarge = metrics_for_display(UiSize.XLARGE, UiFont.SEGOE_UI)
+    assert UI_SIZE_SCALE[UiSize.XLARGE] == 1.25
+    assert xlarge.card_min_width > large.card_min_width
+    assert xlarge.title_font[1] >= large.title_font[1]
+
+
 def test_small_metrics_scales_down_but_font_has_minimum() -> None:
-    small = metrics_for_ui_size(UiSize.SMALL)
+    small = metrics_for_display(UiSize.SMALL, UiFont.SEGOE_UI)
     assert small.title_font[1] >= 8
