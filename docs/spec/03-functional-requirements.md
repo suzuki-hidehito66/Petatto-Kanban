@@ -105,14 +105,16 @@
 | ステータス | implemented |
 | 関連 US | US-002 |
 | 関連 AC | AC-003-01, AC-003-02 |
-| 実装 | `src/petatto_kanban/app.py`, `menu_panel.py` |
+| 実装 | `src/petatto_kanban/app.py`, `menu_panel.py`, `new_card_placement.py` |
 
 **説明**  
 メニューパネルホバー時の **＋** ボタンをクリックして離す（`<ButtonRelease-1>`）と、即座に新しいカードを1枚追加する。
 
 **制約**
-- 初期タイトルは既定値 `新しいタスク`
-- 新規カードはメニューパネル付近（パネル直下）に配置
+- 初期タイトルは既定値 `新しいタスク`（`DEFAULT_NEW_CARD_TITLE`）
+- 新規カードはメニューパネル直下・右端揃えに配置（`new_card_placement.compute_new_card_position()`）
+- 連続追加時は左方向に最大 4 枚、5 枚目以降は下方向へ行を追加（各 32px オフセット）
+- 配置基準は `MenuPanel.bounds()` が返す現在のパネル矩形（展開/収納・ドラッグ移動後の位置を反映）
 - 追加直後は FR-004 のインライン編集状態で開始し、タイトル入力にフォーカス
 - 入力ダイアログは表示しない
 

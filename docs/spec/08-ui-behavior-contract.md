@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |------|------|
 | ステータス | Active |
-| 実装 | `src/petatto_kanban/app.py`, `menu_panel.py` |
+| 実装 | `src/petatto_kanban/app.py`, `menu_panel.py`, `new_card_placement.py` |
 
 ---
 
@@ -139,14 +139,33 @@
 |------|-----|
 | 関連 FR | FR-003 |
 | 関連 AC | AC-003-01, AC-003-02 |
+| 実装 | `src/petatto_kanban/app.py`, `new_card_placement.py`, `menu_panel.py` |
 
 | 属性 | 値 |
 |------|-----|
 | トリガー | メニューパネルホバー時の **＋** ボタンをクリックして離す（`<ButtonRelease-1>`） |
-| 初期タイトル | `新しいタスク`（`DEFAULT_NEW_CARD_TITLE`） |
-| 配置 | `_card_position_near_menu_panel()` — メニューパネル直下付近（連続追加時はオフセット） |
+| 初期タイトル | `新しいタスク`（`DEFAULT_NEW_CARD_TITLE` — `new_card_placement.py`） |
 | 保存 | 追加直後に `board.json` へ永続化 |
 | タイトル編集 | 追加直後に UC-005 のインライン編集を自動開始（全選択・フォーカス） |
+
+### 配置（メニューパネル直下・右端揃え）
+
+座標は `new_card_placement.compute_new_card_position()` で算出する。入力は `MenuPanel.bounds()`（`menu_panel_layout.MenuPanelRect`）とカード幅。
+
+| 定数 | 値 | 説明 |
+|------|-----|------|
+| `DEFAULT_NEW_CARD_GAP_Y` | 8 | パネル下端からカード上端までの余白（px） |
+| `DEFAULT_NEW_CARD_STACK_OFFSET` | 32 | 連続追加時のずらし量（px） |
+| `DEFAULT_NEW_CARD_STACK_COLUMNS` | 4 | 1 行あたりの最大枚数（超過時は次の行へ） |
+| カード幅 | `CARD_MIN_WIDTH`（220） | 新規作成時の配置基準幅 |
+
+| 項目 | 式 |
+|------|-----|
+| 1 枚目の X | `panel.right - card_width`（パネル右端とカード右端を揃える） |
+| 1 枚目の Y | `panel.bottom + gap_y`（パネル直下） |
+| N 枚目（0 始まり） | 列 `N % 4` だけ左へ `32px`、行 `N // 4` だけ下へ `32px` |
+
+**注意:** `panel` は展開/収納状態のパネル幅・高さを反映する。メニューパネルをドラッグ移動した後も、常に現在位置を基準に配置する。
 
 ---
 
@@ -239,3 +258,5 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.0.6 | 2026-08-12 | 展開・収納時は `anchor=NE` で `<` 右端固定（ホバー解除フラッシュ解消） |
 | 2.0.7 | 2026-08-12 | 展開パネルと `×` / `<` 円の間隔をゼロに |
 | 2.1.0 | 2026-08-13 | UC-002 を現行実装に同期。`menu_panel.py` リファクタ・テスト追加 |
+| 2.1.1 | 2026-08-13 | UC-004 新規カード配置をメニューパネル直下・右端揃えに変更 |
+| 2.1.2 | 2026-08-13 | UC-004 配置契約を詳細化。`MenuPanelRect` / `new_card_placement` へリファクタ |

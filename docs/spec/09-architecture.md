@@ -65,6 +65,9 @@ petatto-kanban/
 │   ├── card_ui.py                # カードウィジェット参照・クリック判定
 │   ├── due_date.py               # 期限表示・状態
 │   ├── due_date_picker.py        # フロートカレンダー UI / ホスト
+│   ├── menu_panel.py             # メニューパネル UI
+│   ├── menu_panel_layout.py      # メニューパネル座標・ヒット判定
+│   ├── new_card_placement.py     # 新規カード初期配置（tkinter 非依存）
 │   ├── progress.py               # 進捗率ユーティリティ
 │   ├── display/                  # 表示モード・モニター（M1: オーバーレイ）
 │   ├── models.py                 # ドメインモデル
@@ -84,9 +87,10 @@ petatto-kanban/
 |------------|------|------|
 | `models.py` | ドメインエンティティ、不変条件 | 標準ライブラリのみ |
 | `storage.py` | JSON シリアライズ / デシリアライズ | `models` |
-| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel` |
+| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement` |
 | `menu_panel.py` | メニューパネル UI（円形・NE アンカー・ホバー展開） | tkinter, `menu_panel_layout` |
-| `menu_panel_layout.py` | メニューパネル座標・ヒット判定 | 標準ライブラリのみ |
+| `menu_panel_layout.py` | メニューパネル座標・ヒット判定、`MenuPanelRect` | 標準ライブラリのみ |
+| `new_card_placement.py` | 新規カード初期配置座標（UC-004 / FR-003） | `menu_panel_layout` |
 | `card_ui.py` | カード UI 参照、二回離しクリック判定 | tkinter |
 | `due_date_picker.py` | フロート期限パネル配置・外側クリック | `due_date`, `card_ui` |
 

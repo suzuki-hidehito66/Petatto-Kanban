@@ -4,6 +4,7 @@ from petatto_kanban.menu_panel_layout import (
     MENU_ACTION_LABELS,
     MENU_CIRCLE_CENTER,
     MENU_CIRCLE_SIZE,
+    MenuPanelRect,
     action_canvas_width,
     action_center_x,
     action_index_at,
@@ -32,3 +33,10 @@ def test_action_index_at_returns_none_outside_buttons() -> None:
 
 def test_circle_radius_uses_full_circle_with_zero_pad() -> None:
     assert circle_radius() == MENU_CIRCLE_SIZE // 2
+
+
+def test_menu_panel_rect_exposes_right_and_bottom() -> None:
+    panel = MenuPanelRect(x=10, y=20, width=80, height=36)
+    assert panel.right == 90
+    assert panel.bottom == 56
+

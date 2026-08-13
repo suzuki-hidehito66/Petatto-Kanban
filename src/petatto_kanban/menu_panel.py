@@ -10,6 +10,7 @@ from petatto_kanban.menu_panel_layout import (
     MENU_ACTION_LABELS,
     MENU_CIRCLE_CENTER,
     MENU_CIRCLE_SIZE,
+    MenuPanelRect,
     action_canvas_width,
     action_center_x,
     action_index_at,
@@ -189,6 +190,16 @@ class MenuPanel:
     @property
     def position(self) -> tuple[int, int]:
         return self._place_x, self._place_y
+
+    def bounds(self) -> MenuPanelRect:
+        """配置計算用のパネル矩形（展開/収納状態を反映）."""
+        self.widget.update_idletasks()
+        return MenuPanelRect(
+            x=self._place_x,
+            y=self._place_y,
+            width=self._widget_width(),
+            height=self._widget_height(),
+        )
 
     def _set_actions_expanded(self, expanded: bool) -> None:
         if self._actions_expanded == expanded:

@@ -21,6 +21,7 @@ from petatto_kanban.due_date import due_date_panel_style, format_due_date
 from petatto_kanban.due_date_picker import DueDatePickerHost
 from petatto_kanban.menu_panel import MenuPanel
 from petatto_kanban.models import Card
+from petatto_kanban.new_card_placement import DEFAULT_NEW_CARD_TITLE, compute_new_card_position
 from petatto_kanban.progress import PROGRESS_STEP, clamp_progress, progress_color
 from petatto_kanban.storage import load_board, save_board
 
@@ -34,10 +35,6 @@ DUE_PANEL_BD = 1
 DUE_PICKER_PANEL_WIDTH = 240
 PROGRESS_TRACK_BG = "#e8e8e8"
 PROGRESS_BAR_HEIGHT = 18
-NEW_CARD_NEAR_MENU_PANEL_OFFSET_X = 0
-NEW_CARD_NEAR_MENU_PANEL_OFFSET_Y = 8
-NEW_CARD_STACK_OFFSET = 32
-DEFAULT_NEW_CARD_TITLE = "新しいタスク"
 CARD_LABEL_WRAP = 200
 
 
@@ -632,24 +629,15 @@ class KanbanApp:
             self._cancel_due_date_picker()
             self._due_panel_clicks.reset()
 
-    def _card_position_near_menu_panel(self, stack_index: int) -> tuple[int, int]:
-        """メニューパネル付近に新規カードを置く座標を返す."""
-        self.root.update_idletasks()
-        self.menu_panel.widget.update_idletasks()
-        panel_x, panel_y = self.menu_panel.position
-        panel_height = self.menu_panel.widget.winfo_height()
-        base_x = panel_x + NEW_CARD_NEAR_MENU_PANEL_OFFSET_X
-        base_y = panel_y + panel_height + NEW_CARD_NEAR_MENU_PANEL_OFFSET_Y
-        return (
-            base_x + (stack_index % 4) * NEW_CARD_STACK_OFFSET,
-            base_y + (stack_index // 4) * NEW_CARD_STACK_OFFSET,
-        )
-
     def _add_card(self) -> None:
         self._due_date_picker.cancel_if_any()
         self._commit_inline_title_edit_if_any(refresh_after=False)
-        stack_index = len(self.board.cards)
-        card_x, card_y = self._card_position_near_menu_panel(stack_index)
+        self.root.update_idletasks()
+        card_x, card_y = compute_new_card_position(
+            panel=self.menu_panel.bounds(),
+            card_width=CARD_MIN_WIDTH,
+            stack_index=len(self.board.cards),
+        )
         card = Card(title=DEFAULT_NEW_CARD_TITLE, x=card_x, y=card_y)
         self.board.cards.append(card)
         save_board(self.board)

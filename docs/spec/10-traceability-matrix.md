@@ -67,7 +67,7 @@
 | UC-002 | FR-003, FR-023 | `menu_panel.py`, `menu_panel_layout.py`, `app.py` | `test_menu_panel.py` + 手動 | implemented |
 | UC-006 | FR-021, FR-024 | `app.py` | 手動 | implemented |
 | UC-003 | FR-002, FR-003〜005, FR-010, FR-014, FR-025 | `app.py`, `card_ui.py` | 手動 | implemented |
-| UC-004 | FR-003 | `app.py` | 手動 | implemented |
+| UC-004 | FR-003 | `app.py`, `menu_panel.py`, `menu_panel_layout.py`, `new_card_placement.py` | `test_new_card_placement.py`, `test_menu_panel.py` + 手動 | implemented |
 | UC-005 | FR-004 | `app.py` | 手動 | implemented |
 | UC-008 | FR-014 | `app.py`, `due_date_picker.py`, `card_ui.py` | 手動 | implemented |
 | UC-DM-003 | FR-020 | `display/overlay.py`, `app.py` | 手動 | implemented |

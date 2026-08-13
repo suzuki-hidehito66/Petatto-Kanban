@@ -2,10 +2,30 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 MENU_CIRCLE_SIZE = 36
 MENU_CIRCLE_CENTER = MENU_CIRCLE_SIZE // 2
 MENU_CIRCLE_PAD = 0
 MENU_ACTION_LABELS = ("＋", "⚙", "×")
+
+
+@dataclass(frozen=True)
+class MenuPanelRect:
+    """メニューパネルの画面上の矩形（左上原点・px）."""
+
+    x: int
+    y: int
+    width: int
+    height: int
+
+    @property
+    def right(self) -> int:
+        return self.x + self.width
+
+    @property
+    def bottom(self) -> int:
+        return self.y + self.height
 
 
 def action_canvas_width() -> int:
