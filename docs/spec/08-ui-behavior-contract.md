@@ -220,7 +220,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026 |
+| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027 |
 | 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `app.py` |
 | 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01 |
 
@@ -228,12 +228,12 @@
 
 | タブ | ID（実装定数） | 関連 FR | 項目 |
 |------|----------------|---------|------|
-| **表示** | `SETTINGS_TAB_DISPLAY` | FR-019, FR-020, FR-021, FR-022, FR-026 | 表示モード、表示ディスプレイ、**UI サイズ** |
+| **表示** | `SETTINGS_TAB_DISPLAY` | FR-019, FR-020, FR-021, FR-022, FR-026, FR-027 | 表示モード、表示ディスプレイ、UI サイズ、**フォント** |
 | **システム** | `SETTINGS_TAB_SYSTEM` | FR-024, FR-023, FR-005 | 確認オプション、**全カード削除** |
 
 - UI は `ttk.Notebook` でタブ切り替え
-- `settings_dialog_tabs.DISPLAY_TAB_FIELDS` に `ui_size` を追加（実装時）
-- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit`, `ui_size` を保存（タブに関係なく一括）
+- `settings_dialog_tabs.DISPLAY_TAB_FIELDS` に `ui_size`, `ui_font` を含む
+- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit`, `ui_size`, `ui_font` を保存（タブに関係なく一括）
 - キャンセル時は変更を破棄
 
 ### 表示タブ
@@ -243,6 +243,7 @@
 | **表示モード** | コンボボックス（`readonly`）: `オーバーレイ` / `デスクトップ` |
 | **表示ディスプレイ** | コンボボックス（OS 認識モニター一覧、`readonly`） |
 | **UI サイズ** | コンボボックス（`readonly`）: `小` / `標準` / `大`（FR-026）。既定 **標準** |
+| **フォント** | コンボボックス（`readonly`）: Segoe UI / メイリオ / 游ゴシック / MS ゴシック（FR-027）。既定 **Segoe UI** |
 
 ### システムタブ
 
@@ -259,6 +260,7 @@
 | モード変更時 | 指定ディスプレイ上でオーバーレイまたはデスクトップ表示に即時切替。カード・メニューパネルは保持 |
 | ディスプレイ変更時 | 現在の表示モードのまま全画面を再配置し、カードを再描画 |
 | UI サイズ変更時 | 表示モード・ディスプレイを変えずにカード・メニューパネルを再描画。カード座標は保持 |
+| フォント変更時 | UI サイズ変更時と同様に即時再描画。カード座標は保持 |
 
 ---
 
@@ -268,23 +270,25 @@
 |------|-----|
 | 関連 FR | FR-026 |
 | 関連 AC | AC-026-01, AC-026-02, AC-026-03 |
-| 実装（予定） | `src/petatto_kanban/display/ui_scale.py`, `display/ui_scale_labels.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py` |
+| 実装 | `src/petatto_kanban/display/ui_scale.py`, `display/ui_font.py`, `display/ui_metrics.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py`, `card_renderer.py`, `display/ui_chrome.py` |
 
-`ui_size`（`settings.json`）に応じて、以下の **基準値（標準 = scale 1.0）** にスケール係数を乗算する。各値は `round(基準 * scale)`（フォント pt は最小 8）とする。
+`ui_size`（FR-026）と `ui_font`（FR-027）を組み合わせて `UiMetrics` を生成する。**サイズ** は `ui_size` のスケール係数、**ファミリー名** は `ui_font` から決定する。
+
+`ui_size` に応じて、以下の **基準値（標準 = scale 1.0）** にスケール係数を乗算する。各値は `round(基準 * scale)`（フォント pt は最小 8）とする。フォントタプルの第 1 要素（ファミリー）は [UC-010](./08-ui-behavior-contract.md#uc-010-ui-フォント) に従う。
 
 | 定数 / 要素 | 基準値（medium） | 適用箇所 |
 |-------------|------------------|----------|
 | `CARD_MIN_WIDTH` | 220 px | カード枠（UC-003） |
 | `CARD_MIN_HEIGHT` | 120 px | カード枠（UC-003） |
 | `CARD_LABEL_WRAP` | 200 px | タイトル `wraplength` |
-| タイトルフォント | Segoe UI **10** bold | カードタイトル |
-| 期限ラベルフォント | Segoe UI **9** | カード期限表示 |
-| 進捗ラベルフォント | Segoe UI **9** bold | 進捗バー中央 `%` |
+| タイトルフォント pt | **10** bold | カードタイトル |
+| 期限ラベルフォント pt | **9** | カード期限表示 |
+| 進捗ラベルフォント pt | **9** bold | 進捗バー中央 `%` |
 | `PROGRESS_BAR_HEIGHT` | 18 px | 進捗バー |
 | `MENU_CIRCLE_SIZE` | 36 px | メニューパネル円ボタン（UC-002） |
-| メニュー円フォント | Segoe UI **14** bold | ＋ / ⚙ / × / `<` |
-| 期限パネル月ラベル | Segoe UI **9** bold | `due_date_picker` |
-| 期限パネル日ボタン | Segoe UI **8** | `due_date_picker` |
+| メニュー円フォント pt | **14** bold | ＋ / ⚙ / × / `<` |
+| 期限パネル月ラベル pt | **9** bold | `due_date_picker` |
+| 期限パネル日ボタン pt | **8** | `due_date_picker` |
 
 **スケール係数**
 
@@ -297,7 +301,35 @@
 **配置への影響**
 - UC-004 の新規カード配置幅はスケール後の `CARD_MIN_WIDTH + 2 * CARD_FRAME_BORDER` を用いる
 - メニューパネルのヒット判定・展開幅はスケール後の `MENU_CIRCLE_SIZE` に追従する
-- カードの保存座標（`x`, `y`）はスケール変更で **書き換えない**
+- カードの保存座標（`x`, `y`）はスケール・フォント変更で **書き換えない**
+
+---
+
+## UC-010: UI フォント
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-027 |
+| 関連 AC | AC-027-01, AC-027-02, AC-027-03 |
+| 実装 | `src/petatto_kanban/display/ui_font.py`, `display/ui_font_labels.py`, `display/ui_metrics.py`, `app.py`, `card_renderer.py`, `display/ui_chrome.py`, `menu_panel.py`, `due_date_picker.py` |
+
+`ui_font`（`settings.json`）に応じて、カード・メニュー・期限パネル等の **フォントファミリー** を切り替える。サイズ（pt）は UC-009 のスケールを用い、本 UC ではファミリー名のみを定義する。
+
+| ui_font（JSON） | 設定 UI ラベル | tkinter 第 1 要素 |
+|-----------------|----------------|-------------------|
+| `segoe_ui` | Segoe UI | `Segoe UI` |
+| `meiryo` | メイリオ | `Meiryo` |
+| `yu_gothic_ui` | 游ゴシック | `Yu Gothic UI` |
+| `ms_gothic` | MS ゴシック | `MS Gothic` |
+
+**適用範囲**
+- カード: タイトル、期限ラベル、進捗 `%`、インライン編集 `Entry`
+- メニューパネル: 円ボタン内テキスト（＋ / ⚙ / × / `<`）
+- 期限編集パネル: 月見出し・曜日行・日ボタン（`ttk.Button` のテーマ字体は対象外）
+
+**フォールバック**
+- 設定値が不正・欠損 → `segoe_ui`
+- 指定ファミリーが OS に存在しない → 実行時に `Segoe UI` を使用（`font.actual()` 等で検証）
 
 ---
 
@@ -353,3 +385,5 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.3.2 | 2026-08-13 | UC-006 システムタブ: 「全てのカードを削除」ボタン（FR-005） |
 | 2.3.3 | 2026-08-13 | UC-006 実装リファクタ（`settings_dialog_labels` / `settings_dialog_panels` / `settings_actions`） |
 | 2.4.0 | 2026-08-13 | UC-006 表示タブ: UI サイズ設定（FR-026）。UC-009 UI スケール契約を追加 |
+| 2.5.0 | 2026-08-13 | UC-006 表示タブ: フォント設定（FR-027）。UC-010 UI フォント契約を追加 |
+| 2.6.0 | 2026-08-13 | FR-027 実装。UC-009/UC-010 を `ui_metrics.py` で合成 |

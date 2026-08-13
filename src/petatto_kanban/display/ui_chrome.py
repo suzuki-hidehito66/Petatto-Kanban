@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from petatto_kanban.card_renderer import CARD_BG
-from petatto_kanban.display.ui_scale import UiMetrics
+from petatto_kanban.display.ui_metrics import UiMetrics
 from petatto_kanban.due_date_picker import DueDatePickerHost
 from petatto_kanban.menu_panel import MenuPanel
 

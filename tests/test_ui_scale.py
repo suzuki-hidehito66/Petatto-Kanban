@@ -1,11 +1,10 @@
 """UI スケール（FR-026）のテスト."""
 
+from petatto_kanban.display.ui_metrics import medium_metrics, metrics_for_ui_size
 from petatto_kanban.display.ui_scale import (
     BASE_CARD_MIN_WIDTH,
     BASE_MENU_CIRCLE_SIZE,
     UiSize,
-    medium_metrics,
-    metrics_for_ui_size,
     parse_ui_size,
 )
 

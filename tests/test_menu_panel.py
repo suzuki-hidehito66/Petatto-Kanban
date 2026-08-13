@@ -1,6 +1,6 @@
 """メニューパネル座標・ヒット判定のテスト."""
 
-from petatto_kanban.display.ui_scale import medium_metrics
+from petatto_kanban.display.ui_metrics import medium_metrics
 from petatto_kanban.menu_panel_layout import (
     MENU_ACTION_LABELS,
     MenuPanelRect,

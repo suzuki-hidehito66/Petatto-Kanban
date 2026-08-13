@@ -36,7 +36,7 @@ from petatto_kanban.display.settings_dialog import (
 from petatto_kanban.display.settings_dialog_labels import MSG_SETTINGS_SAVED
 from petatto_kanban.display.transparent import TRANSPARENT_COLOR
 from petatto_kanban.display.ui_chrome import UiChrome
-from petatto_kanban.display.ui_scale import metrics_for_ui_size
+from petatto_kanban.display.ui_metrics import metrics_for_display
 from petatto_kanban.models import Card
 from petatto_kanban.new_card_placement import (
     DEFAULT_NEW_CARD_TITLE,
@@ -56,7 +56,10 @@ class KanbanApp:
         self.root = root
         self.board = load_board()
         self.display_settings = load_display_settings()
-        self._ui_metrics = metrics_for_ui_size(self.display_settings.ui_size)
+        self._ui_metrics = metrics_for_display(
+            self.display_settings.ui_size,
+            self.display_settings.ui_font,
+        )
         self._card_ui: dict[str, CardUiRefs] = {}
         self._card_progress_widgets: dict[str, tk.Canvas] = {}
         self._drag_state: dict[int, tuple[int, int]] = {}
@@ -104,9 +107,12 @@ class KanbanApp:
                 desktop=self.display_settings.mode == DisplayMode.DESKTOP,
             )
 
-    def _apply_ui_size(self) -> None:
-        """UI サイズ変更時にメトリクス・クローム・カード描画を更新する."""
-        self._ui_metrics = metrics_for_ui_size(self.display_settings.ui_size)
+    def _sync_ui_appearance(self) -> None:
+        """UI サイズ・フォント変更時にメトリクス・クローム・カード描画を更新する."""
+        self._ui_metrics = metrics_for_display(
+            self.display_settings.ui_size,
+            self.display_settings.ui_font,
+        )
         monitor = get_monitor(self.display_settings.monitor_index)
         self._chrome.apply_metrics(self._ui_metrics)
         self._chrome.clamp_menu_to_monitor(monitor)
@@ -640,6 +646,7 @@ class KanbanApp:
                 confirm_exit=self.display_settings.confirm_exit,
                 monitor_index=self.display_settings.monitor_index,
                 ui_size=self.display_settings.ui_size,
+                ui_font=self.display_settings.ui_font,
                 monitors=self._monitors,
             ),
             on_delete_all_cards=self._delete_all_cards,
@@ -654,11 +661,11 @@ class KanbanApp:
         changes = apply_dialog_result(self.display_settings, settings)
         save_display_settings(self.display_settings)
 
-        if changes.ui_size_changed:
-            self._apply_ui_size()
+        if changes.needs_ui_refresh:
+            self._sync_ui_appearance()
         if changes.needs_display_refresh:
             self._apply_display_mode()
-        if changes.ui_size_changed or changes.needs_display_refresh:
+        if changes.needs_ui_refresh or changes.needs_display_refresh:
             self.refresh()
 
     def _persist_and_refresh(self) -> None:

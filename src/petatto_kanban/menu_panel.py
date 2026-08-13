@@ -6,7 +6,7 @@ import tkinter as tk
 from collections.abc import Callable
 
 from petatto_kanban.display.transparent import TRANSPARENT_COLOR
-from petatto_kanban.display.ui_scale import UiMetrics, medium_metrics
+from petatto_kanban.display.ui_metrics import UiMetrics, medium_metrics
 from petatto_kanban.menu_panel_layout import (
     MENU_ACTION_LABELS,
     MENU_CIRCLE_PAD,

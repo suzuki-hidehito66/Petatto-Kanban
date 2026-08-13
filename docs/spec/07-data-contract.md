@@ -115,7 +115,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-021, FR-024, FR-023, FR-026 |
+| 関連 FR | FR-021, FR-024, FR-023, FR-026, FR-027 |
 | 保存先 | `%USERPROFILE%\.petatto-kanban\settings.json` |
 | マイルストーン | M1 |
 
@@ -131,6 +131,7 @@
 | `menu_panel_x` | number | - | メニューパネル左上 X（保存時の展開状態に依存。未設定時デフォルト） |
 | `menu_panel_y` | number | - | メニューパネル左上 Y |
 | `ui_size` | string | ○ | UI サイズプリセット: `"small"` \| `"medium"` \| `"large"`（FR-026） |
+| `ui_font` | string | ○ | UI フォントプリセット: `"segoe_ui"` \| `"meiryo"` \| `"yu_gothic_ui"` \| `"ms_gothic"`（FR-027） |
 
 ### 既定値
 
@@ -141,6 +142,18 @@
 | `confirm_delete` | `true` |
 | `confirm_exit` | `false` |
 | `ui_size` | `"medium"` |
+| `ui_font` | `"segoe_ui"` |
+
+### ui_font と tkinter フォント名
+
+| ui_font（JSON） | UI ラベル | tkinter ファミリー名 |
+|-----------------|-----------|----------------------|
+| `segoe_ui` | Segoe UI | `Segoe UI` |
+| `meiryo` | メイリオ | `Meiryo` |
+| `yu_gothic_ui` | 游ゴシック | `Yu Gothic UI` |
+| `ms_gothic` | MS ゴシック | `MS Gothic` |
+
+不正値・欠損時は `segoe_ui` / `Segoe UI` にフォールバックする。OS に指定ファミリーが無い場合も `Segoe UI` にフォールバックする。
 
 ### ui_size とスケール係数
 
@@ -161,7 +174,8 @@
   "window_geometry": "960x540+120+80",
   "confirm_delete": true,
   "confirm_exit": false,
-  "ui_size": "medium"
+  "ui_size": "medium",
+  "ui_font": "segoe_ui"
 }
 ```
 

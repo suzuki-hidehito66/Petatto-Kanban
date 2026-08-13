@@ -778,6 +778,66 @@ And スケール係数 1.0 が適用される
 
 ---
 
+## FR-027: UI フォント設定
+
+### AC-027-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-027 |
+| 関連 US | US-017 |
+| 関連 UC | UC-006, UC-010 |
+| ステータス | implemented |
+| 検証 | 自動 + 手動 |
+
+```gherkin
+Given 設定ダイアログが開いている
+And ユーザーが「表示」タブを表示している
+When ユーザーがフォントを「メイリオ」に変更して OK する
+Then settings.json の ui_font が "meiryo" になる
+And カードタイトル・メニューパネル・期限パネルが Meiryo で描画される
+And カードの x / y 座標は変更されない
+And UI サイズ（ui_size）のスケールは維持される
+```
+
+**テスト**: `test_ui_font.py`, `test_settings_dialog.py`, `test_settings_actions.py`
+
+### AC-027-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-027 |
+| 関連 US | US-017 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json に ui_font が "yu_gothic_ui" で保存されている
+When アプリを再起動する
+Then 起動直後から UI が Yu Gothic UI ファミリーで描画される
+```
+
+**テスト**: `test_save_and_load_ui_font`, `test_ui_font.py`
+
+### AC-027-03
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-027 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json の ui_font が不明な文字列または欠損している
+When 表示設定を読み込む
+Then ui_font は "segoe_ui" として扱われる
+And tkinter フォントファミリーは "Segoe UI" になる
+```
+
+**テスト**: `test_display_settings_from_dict_invalid_ui_font`, `test_ui_font.py`
+
+---
+
 ## M2 以降（プレースホルダー）
 
 | ID | 関連 FR | ステータス |

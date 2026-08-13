@@ -19,6 +19,7 @@ def test_default_display_settings_is_overlay_mode() -> None:
     assert settings.confirm_delete is True
     assert settings.confirm_exit is False
     assert settings.ui_size.value == "medium"
+    assert settings.ui_font.value == "segoe_ui"
 
 
 def test_save_and_load_display_settings(tmp_path: Path) -> None:
@@ -94,6 +95,22 @@ def test_save_and_load_ui_size(tmp_path: Path) -> None:
 
     loaded = load_display_settings(path)
     assert loaded.ui_size == UiSize.LARGE
+
+
+def test_display_settings_from_dict_invalid_ui_font() -> None:
+    restored = display_settings_from_dict({"ui_font": "unknown"})
+    assert restored.ui_font.value == "segoe_ui"
+
+
+def test_save_and_load_ui_font(tmp_path: Path) -> None:
+    from petatto_kanban.display.ui_font import UiFont
+
+    settings = DisplaySettings(ui_font=UiFont.MEIRYO)
+    path = tmp_path / "settings.json"
+    save_display_settings(settings, path)
+
+    loaded = load_display_settings(path)
+    assert loaded.ui_font == UiFont.MEIRYO
 
 
 def test_monitor_index_for_name() -> None:
