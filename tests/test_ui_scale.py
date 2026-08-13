@@ -2,8 +2,10 @@
 
 from petatto_kanban.display.ui_metrics import medium_metrics, metrics_for_ui_size
 from petatto_kanban.display.ui_scale import (
+    BASE_CARD_MIN_HEIGHT,
     BASE_CARD_MIN_WIDTH,
     BASE_MENU_CIRCLE_SIZE,
+    GOLDEN_RATIO,
     UiSize,
     parse_ui_size,
 )
@@ -24,7 +26,14 @@ def test_medium_metrics_matches_baseline() -> None:
     assert metrics.ui_size == UiSize.MEDIUM
     assert metrics.scale == 1.0
     assert metrics.card_min_width == BASE_CARD_MIN_WIDTH
+    assert metrics.card_min_height == BASE_CARD_MIN_HEIGHT
     assert metrics.menu_circle_size == BASE_MENU_CIRCLE_SIZE
+
+
+def test_card_min_dimensions_use_golden_ratio_landscape() -> None:
+    assert BASE_CARD_MIN_WIDTH > BASE_CARD_MIN_HEIGHT
+    ratio = BASE_CARD_MIN_WIDTH / BASE_CARD_MIN_HEIGHT
+    assert abs(ratio - GOLDEN_RATIO) < 0.01
 
 
 def test_large_metrics_scales_up() -> None:

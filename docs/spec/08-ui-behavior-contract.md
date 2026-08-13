@@ -136,7 +136,7 @@
 
 **配置・サイズ**
 - `place(x, y)` — 座標は `board.json` に永続化
-- 最小サイズ・フォント・進捗バー高さ等は [UC-009](./08-ui-behavior-contract.md#uc-009-ui-スケール) のスケール後寸法を用いる（標準時: `CARD_MIN_WIDTH = 220`、`CARD_MIN_HEIGHT = 120`）
+- 最小サイズ・フォント・進捗バー高さ等は [UC-009](./08-ui-behavior-contract.md#uc-009-ui-スケール) のスケール後寸法を用いる（標準時: `CARD_MIN_WIDTH = 220`、`CARD_MIN_HEIGHT = 136`、横長黄金比 φ）
 - 実際の枠サイズは `max(最小サイズ, winfo_reqwidth/height)` で決定
 
 ---
@@ -287,8 +287,8 @@
 
 | 定数 / 要素 | 基準値（medium） | 適用箇所 |
 |-------------|------------------|----------|
-| `CARD_MIN_WIDTH` | 220 px | カード枠（UC-003） |
-| `CARD_MIN_HEIGHT` | 120 px | カード枠（UC-003） |
+| `CARD_MIN_WIDTH` | 220 px | カード枠（UC-003）。幅 / 高さ = φ（黄金比・横長） |
+| `CARD_MIN_HEIGHT` | 136 px | `round(CARD_MIN_WIDTH / φ)`（UC-003） |
 | `CARD_LABEL_WRAP` | 200 px | タイトル `wraplength` |
 | タイトルフォント pt | **10** bold | カードタイトル |
 | 期限ラベルフォント pt | **9** | カード期限表示 |
