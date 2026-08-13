@@ -6,10 +6,10 @@ from enum import StrEnum
 
 MIN_FONT_SIZE = 8
 
-# 横長カード: 幅 / 高さ = φ（黄金比）
+# 横長カード: 幅 130px 基準。高さは黄金比より広め（タイトル・期限・進捗の縦余白確保）
 GOLDEN_RATIO = (1 + 5**0.5) / 2
 BASE_CARD_MIN_WIDTH = 130
-BASE_CARD_MIN_HEIGHT = round(BASE_CARD_MIN_WIDTH / GOLDEN_RATIO)
+BASE_CARD_MIN_HEIGHT = 100
 BASE_CARD_LABEL_WRAP = BASE_CARD_MIN_WIDTH - 20
 BASE_CARD_FRAME_BORDER = 1
 
@@ -38,11 +38,11 @@ BASE_DUE_PICKER_DAY_FONT_SIZE = 8
 
 BASE_CARD_FRAME_PAD = _card_layout_size(8, min_value=4)
 BASE_CARD_TITLE_FRAME_PADX = _card_layout_size(6, min_value=2)
-BASE_CARD_TITLE_FRAME_PADY = _card_layout_size(4, min_value=1)
+BASE_CARD_TITLE_FRAME_PADY = _card_layout_size(4, min_value=3)
 BASE_CARD_DUE_PANEL_PADX = _card_layout_size(6, min_value=2)
-BASE_CARD_DUE_PANEL_PADY = _card_layout_size(3, min_value=1)
-BASE_CARD_DUE_SECTION_GAP = _card_layout_size(4, min_value=2)
-BASE_CARD_PROGRESS_SECTION_GAP = _card_layout_size(6, min_value=2)
+BASE_CARD_DUE_PANEL_PADY = _card_layout_size(3, min_value=3)
+BASE_CARD_DUE_SECTION_GAP = _card_layout_size(4, min_value=3)
+BASE_CARD_PROGRESS_SECTION_GAP = _card_layout_size(6, min_value=4)
 
 
 class UiSize(StrEnum):

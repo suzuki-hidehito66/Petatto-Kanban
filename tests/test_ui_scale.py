@@ -30,10 +30,11 @@ def test_medium_metrics_matches_baseline() -> None:
     assert metrics.menu_circle_size == BASE_MENU_CIRCLE_SIZE
 
 
-def test_card_min_dimensions_use_golden_ratio_landscape() -> None:
+def test_card_min_dimensions_are_landscape_with_comfortable_height() -> None:
     assert BASE_CARD_MIN_WIDTH > BASE_CARD_MIN_HEIGHT
-    ratio = BASE_CARD_MIN_WIDTH / BASE_CARD_MIN_HEIGHT
-    assert abs(ratio - GOLDEN_RATIO) < 0.01
+    assert BASE_CARD_MIN_HEIGHT >= 100
+    golden_height = round(BASE_CARD_MIN_WIDTH / GOLDEN_RATIO)
+    assert golden_height < BASE_CARD_MIN_HEIGHT
 
 
 def test_card_label_metrics_match_card_width_baseline() -> None:
