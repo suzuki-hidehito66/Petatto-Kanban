@@ -56,7 +56,7 @@
 
 | 定数 | 値 | 説明 |
 |------|-----|------|
-| `MENU_CIRCLE_SIZE` | 36 | 各円ボタンの一辺（px） |
+| `MENU_CIRCLE_SIZE` | 36 | 各円ボタンの一辺（px）。[UC-009](./08-ui-behavior-contract.md#uc-009-ui-スケール) でスケール |
 | `MENU_DEFAULT_MARGIN_X/Y` | 16 | 画面端からのデフォルト余白 |
 | `MENU_HOVER_HIDE_DELAY_MS` | 120 | ホバー解除後に収納するまでの遅延 |
 | `MENU_ACTION_LABELS` | ＋, ⚙, × | 展開ボタン（左→右） |
@@ -136,7 +136,7 @@
 
 **配置・サイズ**
 - `place(x, y)` — 座標は `board.json` に永続化
-- 最小サイズ `CARD_MIN_WIDTH = 220`、`CARD_MIN_HEIGHT = 120`（タイトル表示より大きいバッファを確保）
+- 最小サイズ・フォント・進捗バー高さ等は [UC-009](./08-ui-behavior-contract.md#uc-009-ui-スケール) のスケール後寸法を用いる（標準時: `CARD_MIN_WIDTH = 220`、`CARD_MIN_HEIGHT = 120`）
 - 実際の枠サイズは `max(最小サイズ, winfo_reqwidth/height)` で決定
 
 ---
@@ -220,7 +220,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024 |
+| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026 |
 | 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `app.py` |
 | 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01 |
 
@@ -228,11 +228,12 @@
 
 | タブ | ID（実装定数） | 関連 FR | 項目 |
 |------|----------------|---------|------|
-| **表示** | `SETTINGS_TAB_DISPLAY` | FR-019, FR-020, FR-021, FR-022 | 表示モード、表示ディスプレイ |
+| **表示** | `SETTINGS_TAB_DISPLAY` | FR-019, FR-020, FR-021, FR-022, FR-026 | 表示モード、表示ディスプレイ、**UI サイズ** |
 | **システム** | `SETTINGS_TAB_SYSTEM` | FR-024, FR-023, FR-005 | 確認オプション、**全カード削除** |
 
 - UI は `ttk.Notebook` でタブ切り替え
-- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit` を保存（タブに関係なく一括）
+- `settings_dialog_tabs.DISPLAY_TAB_FIELDS` に `ui_size` を追加（実装時）
+- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit`, `ui_size` を保存（タブに関係なく一括）
 - キャンセル時は変更を破棄
 
 ### 表示タブ
@@ -241,6 +242,7 @@
 |------|------|
 | **表示モード** | コンボボックス（`readonly`）: `オーバーレイ` / `デスクトップ` |
 | **表示ディスプレイ** | コンボボックス（OS 認識モニター一覧、`readonly`） |
+| **UI サイズ** | コンボボックス（`readonly`）: `小` / `標準` / `大`（FR-026）。既定 **標準** |
 
 ### システムタブ
 
@@ -256,6 +258,46 @@
 |------|------|
 | モード変更時 | 指定ディスプレイ上でオーバーレイまたはデスクトップ表示に即時切替。カード・メニューパネルは保持 |
 | ディスプレイ変更時 | 現在の表示モードのまま全画面を再配置し、カードを再描画 |
+| UI サイズ変更時 | 表示モード・ディスプレイを変えずにカード・メニューパネルを再描画。カード座標は保持 |
+
+---
+
+## UC-009: UI スケール
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-026 |
+| 関連 AC | AC-026-01, AC-026-02, AC-026-03 |
+| 実装（予定） | `src/petatto_kanban/display/ui_scale.py`, `display/ui_scale_labels.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py` |
+
+`ui_size`（`settings.json`）に応じて、以下の **基準値（標準 = scale 1.0）** にスケール係数を乗算する。各値は `round(基準 * scale)`（フォント pt は最小 8）とする。
+
+| 定数 / 要素 | 基準値（medium） | 適用箇所 |
+|-------------|------------------|----------|
+| `CARD_MIN_WIDTH` | 220 px | カード枠（UC-003） |
+| `CARD_MIN_HEIGHT` | 120 px | カード枠（UC-003） |
+| `CARD_LABEL_WRAP` | 200 px | タイトル `wraplength` |
+| タイトルフォント | Segoe UI **10** bold | カードタイトル |
+| 期限ラベルフォント | Segoe UI **9** | カード期限表示 |
+| 進捗ラベルフォント | Segoe UI **9** bold | 進捗バー中央 `%` |
+| `PROGRESS_BAR_HEIGHT` | 18 px | 進捗バー |
+| `MENU_CIRCLE_SIZE` | 36 px | メニューパネル円ボタン（UC-002） |
+| メニュー円フォント | Segoe UI **14** bold | ＋ / ⚙ / × / `<` |
+| 期限パネル月ラベル | Segoe UI **9** bold | `due_date_picker` |
+| 期限パネル日ボタン | Segoe UI **8** | `due_date_picker` |
+
+**スケール係数**
+
+| ui_size | scale |
+|---------|-------|
+| `small` | 0.85 |
+| `medium` | 1.0 |
+| `large` | 1.15 |
+
+**配置への影響**
+- UC-004 の新規カード配置幅はスケール後の `CARD_MIN_WIDTH + 2 * CARD_FRAME_BORDER` を用いる
+- メニューパネルのヒット判定・展開幅はスケール後の `MENU_CIRCLE_SIZE` に追従する
+- カードの保存座標（`x`, `y`）はスケール変更で **書き換えない**
 
 ---
 
@@ -310,3 +352,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.3.1 | 2026-08-13 | UC-006 システムタブ: アプリ終了時の確認オプション（`confirm_exit`） |
 | 2.3.2 | 2026-08-13 | UC-006 システムタブ: 「全てのカードを削除」ボタン（FR-005） |
 | 2.3.3 | 2026-08-13 | UC-006 実装リファクタ（`settings_dialog_labels` / `settings_dialog_panels` / `settings_actions`） |
+| 2.4.0 | 2026-08-13 | UC-006 表示タブ: UI サイズ設定（FR-026）。UC-009 UI スケール契約を追加 |

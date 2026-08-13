@@ -13,6 +13,7 @@ from petatto_kanban.display.settings_actions import (
     delete_all_cards_with_confirm,
 )
 from petatto_kanban.display.settings_dialog import SettingsDialogResult
+from petatto_kanban.display.ui_scale import UiSize
 from petatto_kanban.models import Board, Card
 from petatto_kanban.storage import load_board
 
@@ -47,6 +48,7 @@ def test_apply_dialog_result_updates_settings_and_detects_changes() -> None:
         confirm_delete=False,
         confirm_exit=True,
         monitor_index=1,
+        ui_size=UiSize.LARGE,
     )
 
     changes = apply_dialog_result(settings, result)
@@ -58,6 +60,7 @@ def test_apply_dialog_result_updates_settings_and_detects_changes() -> None:
     assert settings.monitor_index == 1
     assert settings.confirm_delete is False
     assert settings.confirm_exit is True
+    assert settings.ui_size == UiSize.LARGE
 
 
 def test_apply_dialog_result_no_display_refresh_when_only_flags_change() -> None:
@@ -67,13 +70,34 @@ def test_apply_dialog_result_no_display_refresh_when_only_flags_change() -> None
         confirm_delete=False,
         confirm_exit=True,
         monitor_index=0,
+        ui_size=UiSize.MEDIUM,
     )
 
     changes = apply_dialog_result(settings, result)
 
     assert changes.mode_changed is False
     assert changes.monitor_changed is False
+    assert changes.ui_size_changed is False
     assert changes.needs_display_refresh is False
+    assert changes.needs_ui_refresh is False
+
+
+def test_apply_dialog_result_detects_ui_size_change() -> None:
+    settings = DisplaySettings(mode=DisplayMode.OVERLAY, monitor_index=0)
+    result = SettingsDialogResult(
+        mode=DisplayMode.OVERLAY,
+        confirm_delete=True,
+        confirm_exit=False,
+        monitor_index=0,
+        ui_size=UiSize.SMALL,
+    )
+
+    changes = apply_dialog_result(settings, result)
+
+    assert changes.ui_size_changed is True
+    assert changes.needs_ui_refresh is True
+    assert changes.needs_display_refresh is False
+    assert settings.ui_size == UiSize.SMALL
 
 
 def test_confirm_exit_skips_dialog_when_disabled() -> None:

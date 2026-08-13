@@ -6,76 +6,23 @@ import tkinter as tk
 from collections.abc import Callable
 
 from petatto_kanban.display.transparent import TRANSPARENT_COLOR
+from petatto_kanban.display.ui_scale import UiMetrics, medium_metrics
 from petatto_kanban.menu_panel_layout import (
     MENU_ACTION_LABELS,
-    MENU_CIRCLE_CENTER,
-    MENU_CIRCLE_SIZE,
+    MENU_CIRCLE_PAD,
     MenuPanelRect,
     action_canvas_width,
     action_center_x,
     action_index_at,
+    circle_radius,
 )
 
 MENU_CIRCLE_OUTLINE = "#888888"
 MENU_CIRCLE_FILL = "#ffffff"
 MENU_CIRCLE_FG = "#333333"
-MENU_CIRCLE_PAD = 0
-MENU_CIRCLE_FONT = ("Segoe UI", 14, "bold")
 MENU_DEFAULT_MARGIN_X = 16
 MENU_DEFAULT_MARGIN_Y = 16
 MENU_HOVER_HIDE_DELAY_MS = 120
-
-
-def _circle_radius(*, pad: int = MENU_CIRCLE_PAD) -> int:
-    return MENU_CIRCLE_CENTER - pad
-
-
-def _draw_circle(
-    canvas: tk.Canvas,
-    center_x: int,
-    center_y: int,
-    *,
-    text: str,
-    font: tuple[str, int, str] = MENU_CIRCLE_FONT,
-    pad: int = MENU_CIRCLE_PAD,
-) -> None:
-    radius = _circle_radius(pad=pad)
-    canvas.create_oval(
-        center_x - radius,
-        center_y - radius,
-        center_x + radius,
-        center_y + radius,
-        outline=MENU_CIRCLE_OUTLINE,
-        width=1,
-        fill=MENU_CIRCLE_FILL,
-    )
-    canvas.create_text(
-        center_x,
-        center_y,
-        text=text,
-        font=font,
-        fill=MENU_CIRCLE_FG,
-    )
-
-
-def _create_circle_canvas(
-    parent: tk.Misc,
-    *,
-    text: str,
-    bg: str,
-    cursor: str,
-) -> tk.Canvas:
-    canvas = tk.Canvas(
-        parent,
-        width=MENU_CIRCLE_SIZE,
-        height=MENU_CIRCLE_SIZE,
-        bg=bg,
-        highlightthickness=0,
-        bd=0,
-        cursor=cursor,
-    )
-    _draw_circle(canvas, MENU_CIRCLE_CENTER, MENU_CIRCLE_CENTER, text=text)
-    return canvas
 
 
 class MenuPanel:
@@ -91,8 +38,10 @@ class MenuPanel:
         on_position_changed: Callable[[int, int], None] | None = None,
         on_activate: Callable[[], None] | None = None,
         on_deactivate: Callable[[], None] | None = None,
+        metrics: UiMetrics | None = None,
         bg: str = TRANSPARENT_COLOR,
     ) -> None:
+        self._metrics = metrics or medium_metrics()
         self._on_position_changed = on_position_changed
         self._on_activate = on_activate
         self._on_deactivate = on_deactivate
@@ -113,24 +62,24 @@ class MenuPanel:
 
         self._actions = tk.Canvas(
             self._row,
-            width=action_canvas_width(),
-            height=MENU_CIRCLE_SIZE,
+            width=action_canvas_width(self._metrics),
+            height=self._metrics.menu_circle_size,
             bg=bg,
             highlightthickness=0,
             bd=0,
             cursor="hand2",
         )
         for index, label in enumerate(MENU_ACTION_LABELS):
-            _draw_circle(
+            self._draw_circle(
                 self._actions,
-                action_center_x(index),
-                MENU_CIRCLE_CENTER,
+                action_center_x(index, self._metrics),
+                self._metrics.menu_circle_center,
                 text=label,
             )
         self._actions.bind("<Button-1>", self._on_action_press)
         self._actions.bind("<ButtonRelease-1>", self._on_action_release)
 
-        self._circle = _create_circle_canvas(
+        self._circle = self._create_circle_canvas(
             self._row,
             text="<",
             bg=bg,
@@ -143,6 +92,58 @@ class MenuPanel:
         self._circle.bind("<B1-Motion>", self._on_drag_motion)
         self._circle.bind("<ButtonRelease-1>", self._on_drag_release)
 
+    def _draw_circle(
+        self,
+        canvas: tk.Canvas,
+        center_x: int,
+        center_y: int,
+        *,
+        text: str,
+        pad: int = MENU_CIRCLE_PAD,
+    ) -> None:
+        radius = circle_radius(self._metrics, pad=pad)
+        canvas.create_oval(
+            center_x - radius,
+            center_y - radius,
+            center_x + radius,
+            center_y + radius,
+            outline=MENU_CIRCLE_OUTLINE,
+            width=1,
+            fill=MENU_CIRCLE_FILL,
+        )
+        canvas.create_text(
+            center_x,
+            center_y,
+            text=text,
+            font=self._metrics.menu_circle_font,
+            fill=MENU_CIRCLE_FG,
+        )
+
+    def _create_circle_canvas(
+        self,
+        parent: tk.Misc,
+        *,
+        text: str,
+        bg: str,
+        cursor: str,
+    ) -> tk.Canvas:
+        canvas = tk.Canvas(
+            parent,
+            width=self._metrics.menu_circle_size,
+            height=self._metrics.menu_circle_size,
+            bg=bg,
+            highlightthickness=0,
+            bd=0,
+            cursor=cursor,
+        )
+        self._draw_circle(
+            canvas,
+            self._metrics.menu_circle_center,
+            self._metrics.menu_circle_center,
+            text=text,
+        )
+        return canvas
+
     def _bind_hover(self, widget: tk.Misc) -> None:
         widget.bind("<Enter>", self._on_enter, add="+")
         widget.bind("<Leave>", self._on_leave, add="+")
@@ -151,8 +152,8 @@ class MenuPanel:
 
     def _content_width(self) -> int:
         if self._actions_expanded:
-            return action_canvas_width() + MENU_CIRCLE_SIZE
-        return MENU_CIRCLE_SIZE
+            return action_canvas_width(self._metrics) + self._metrics.menu_circle_size
+        return self._metrics.menu_circle_size
 
     def _widget_width(self) -> int:
         self.widget.update_idletasks()
@@ -166,7 +167,7 @@ class MenuPanel:
         height = self.widget.winfo_height()
         if height > 1:
             return height
-        return MENU_CIRCLE_SIZE
+        return self._metrics.menu_circle_size
 
     def _sync_place_from_widget(self) -> None:
         self.widget.update_idletasks()
@@ -234,10 +235,10 @@ class MenuPanel:
 
     def _on_action_press(self, event: tk.Event) -> None:
         self._notify_activate()
-        self._action_press_index = action_index_at(event.x, event.y)
+        self._action_press_index = action_index_at(event.x, event.y, self._metrics)
 
     def _on_action_release(self, event: tk.Event) -> None:
-        release_index = action_index_at(event.x, event.y)
+        release_index = action_index_at(event.x, event.y, self._metrics)
         if (
             self._action_press_index is not None
             and release_index == self._action_press_index

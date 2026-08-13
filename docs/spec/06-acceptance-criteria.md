@@ -297,7 +297,7 @@ Then 画面が board.json の内容で更新される
 | 属性 | 値 |
 |------|-----|
 | 関連 NFR | NFR-001 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 手動（M1） |
 
 ```gherkin
@@ -326,7 +326,7 @@ And 認証・HTTP クライアント等のネットワークコードが存在�
 | 属性 | 値 |
 |------|-----|
 | 関連 NFR | NFR-008 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 手動（M1） |
 
 ```gherkin
@@ -341,7 +341,7 @@ And 外部サービスへの接続を要求されない
 | 属性 | 値 |
 |------|-----|
 | 関連 NFR | NFR-011 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 手動 + CI |
 
 ```gherkin
@@ -716,6 +716,65 @@ And 次回のカード削除で確認ダイアログが表示されない
 ```
 
 **テスト**: `test_save_and_load_display_settings`, `test_display_settings_roundtrip_dict`, `test_settings_dialog.py`
+
+---
+
+## FR-026: UI サイズ設定
+
+### AC-026-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-026 |
+| 関連 US | US-016 |
+| 関連 UC | UC-006, UC-009 |
+| ステータス | implemented |
+| 検証 | 自動 + 手動 |
+
+```gherkin
+Given 設定ダイアログが開いている
+And ユーザーが「表示」タブを表示している
+When ユーザーが UI サイズを「大」に変更して OK する
+Then settings.json の ui_size が "large" になる
+And カードのフォント・最小サイズ・メニューパネル円ボタンが拡大表示される
+And カードの x / y 座標は変更されない
+```
+
+**テスト**: `test_ui_scale.py`, `test_settings_dialog.py`, `test_display_settings.py`
+
+### AC-026-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-026 |
+| 関連 US | US-016 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json に ui_size が "small" で保存されている
+When アプリを再起動する
+Then 起動直後から UI が「小」サイズで描画される
+```
+
+**テスト**: `test_save_and_load_ui_size`, `test_ui_scale.py`, `test_display_settings.py`
+
+### AC-026-03
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-026 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json の ui_size が不明な文字列または欠損している
+When 表示設定を読み込む
+Then ui_size は "medium"（標準）として扱われる
+And スケール係数 1.0 が適用される
+```
+
+**テスト**: `test_display_settings_from_dict_invalid_ui_size`, `test_ui_scale.py`
 
 ---
 

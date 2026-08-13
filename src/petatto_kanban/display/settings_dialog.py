@@ -19,6 +19,8 @@ from petatto_kanban.display.settings_dialog_tabs import (
     SETTINGS_TAB_DISPLAY,
     SETTINGS_TAB_SYSTEM,
 )
+from petatto_kanban.display.ui_scale import UiSize
+from petatto_kanban.display.ui_scale_labels import ui_size_from_label
 
 if TYPE_CHECKING:
     import tkinter as tk
@@ -33,6 +35,7 @@ class SettingsDialogResult:
     confirm_delete: bool
     confirm_exit: bool
     monitor_index: int
+    ui_size: UiSize
 
 
 @dataclass(frozen=True)
@@ -41,6 +44,7 @@ class SettingsFormValues:
 
     mode_label: str
     monitor_name: str
+    ui_size_label: str
     confirm_delete: bool
     confirm_exit: bool
 
@@ -53,6 +57,7 @@ class SettingsDialogInput:
     confirm_delete: bool
     confirm_exit: bool
     monitor_index: int
+    ui_size: UiSize
     monitors: list[Monitor]
 
 
@@ -62,6 +67,7 @@ def result_from_form_values(
     monitors: list[Monitor],
     default_mode: DisplayMode,
     default_monitor_index: int,
+    default_ui_size: UiSize,
 ) -> SettingsDialogResult:
     """フォーム値から SettingsDialogResult を組み立てる."""
     return SettingsDialogResult(
@@ -73,6 +79,7 @@ def result_from_form_values(
             values.monitor_name,
             default_monitor_index,
         ),
+        ui_size=ui_size_from_label(values.ui_size_label, default_ui_size),
     )
 
 
@@ -106,6 +113,7 @@ class SettingsDialog(simpledialog.Dialog):
             display_tab,
             mode=self._input.mode,
             monitor_index=self._input.monitor_index,
+            ui_size=self._input.ui_size,
             monitors=self._input.monitors,
         )
         self._system_tab = build_system_tab(
@@ -124,10 +132,12 @@ class SettingsDialog(simpledialog.Dialog):
             SettingsFormValues(
                 mode_label=self._display_tab.mode_var.get(),
                 monitor_name=self._display_tab.monitor_var.get(),
+                ui_size_label=self._display_tab.ui_size_var.get(),
                 confirm_delete=self._system_tab.confirm_delete_var.get(),
                 confirm_exit=self._system_tab.confirm_exit_var.get(),
             ),
             monitors=self._input.monitors,
             default_mode=self._input.mode,
             default_monitor_index=self._input.monitor_index,
+            default_ui_size=self._input.ui_size,
         )

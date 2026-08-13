@@ -25,6 +25,8 @@ class DueDatePicker(tk.Frame):
         on_apply: Callable[[date | None], None],
         on_cancel: Callable[[], None],
         bg: str,
+        month_font: tuple[str, int, str] | tuple[str, int] = ("Segoe UI", 9, "bold"),
+        weekday_font: tuple[str, int] | tuple[str, int, str] = ("Segoe UI", 8),
     ) -> None:
         super().__init__(parent, bg=bg, bd=1, relief=tk.RIDGE, padx=4, pady=4)
         self._on_apply = on_apply
@@ -38,7 +40,7 @@ class DueDatePicker(tk.Frame):
         header = tk.Frame(self, bg=bg)
         header.pack(fill=tk.X, pady=(0, 4))
         ttk.Button(header, text="◀", width=3, command=self._prev_month).pack(side=tk.LEFT)
-        self._month_label = tk.Label(header, bg=bg, font=("Segoe UI", 9, "bold"))
+        self._month_label = tk.Label(header, bg=bg, font=month_font)
         self._month_label.pack(side=tk.LEFT, expand=True)
         ttk.Button(header, text="▶", width=3, command=self._next_month).pack(side=tk.RIGHT)
 
@@ -50,7 +52,7 @@ class DueDatePicker(tk.Frame):
                 text=label,
                 bg=bg,
                 width=3,
-                font=("Segoe UI", 8),
+                font=weekday_font,
             ).pack(side=tk.LEFT, expand=True)
 
         self._days_frame = tk.Frame(self, bg=bg)
@@ -138,11 +140,15 @@ class DueDatePickerHost:
         *,
         bg: str,
         panel_width: int,
+        month_font: tuple[str, int, str] | tuple[str, int] = ("Segoe UI", 9, "bold"),
+        weekday_font: tuple[str, int] | tuple[str, int, str] = ("Segoe UI", 8),
         on_outside_click: Callable[[], None] | None = None,
     ) -> None:
         self._root = root
         self._bg = bg
         self._panel_width = panel_width
+        self._month_font = month_font
+        self._weekday_font = weekday_font
         self._on_outside_click = on_outside_click
         self._host: tk.Frame | None = None
         self._picker: DueDatePicker | None = None
@@ -207,6 +213,8 @@ class DueDatePickerHost:
             on_apply=apply,
             on_cancel=cancel,
             bg=self._bg,
+            month_font=self._month_font,
+            weekday_font=self._weekday_font,
         )
         picker.pack(fill=tk.BOTH, expand=True)
         self._host = host

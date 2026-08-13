@@ -18,6 +18,7 @@ def test_default_display_settings_is_overlay_mode() -> None:
     assert settings.mode == DisplayMode.OVERLAY
     assert settings.confirm_delete is True
     assert settings.confirm_exit is False
+    assert settings.ui_size.value == "medium"
 
 
 def test_save_and_load_display_settings(tmp_path: Path) -> None:
@@ -77,6 +78,22 @@ def test_display_settings_omits_unset_menu_panel_position() -> None:
     data = display_settings_to_dict(DisplaySettings())
     assert "menu_panel_x" not in data
     assert "menu_panel_y" not in data
+
+
+def test_display_settings_from_dict_invalid_ui_size() -> None:
+    restored = display_settings_from_dict({"ui_size": "unknown"})
+    assert restored.ui_size.value == "medium"
+
+
+def test_save_and_load_ui_size(tmp_path: Path) -> None:
+    from petatto_kanban.display.ui_scale import UiSize
+
+    settings = DisplaySettings(ui_size=UiSize.LARGE)
+    path = tmp_path / "settings.json"
+    save_display_settings(settings, path)
+
+    loaded = load_display_settings(path)
+    assert loaded.ui_size == UiSize.LARGE
 
 
 def test_monitor_index_for_name() -> None:
