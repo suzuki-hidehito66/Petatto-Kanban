@@ -18,9 +18,12 @@ class MenuPanelRect:
     y: int
     width: int
     height: int
+    right_edge: int | None = None
 
     @property
     def right(self) -> int:
+        if self.right_edge is not None:
+            return self.right_edge
         return self.x + self.width
 
     @property

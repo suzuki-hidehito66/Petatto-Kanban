@@ -155,17 +155,16 @@
 | 定数 | 値 | 説明 |
 |------|-----|------|
 | `DEFAULT_NEW_CARD_GAP_Y` | 8 | パネル下端からカード上端までの余白（px） |
-| `DEFAULT_NEW_CARD_STACK_OFFSET` | 32 | 連続追加時のずらし量（px） |
-| `DEFAULT_NEW_CARD_STACK_COLUMNS` | 4 | 1 行あたりの最大枚数（超過時は次の行へ） |
-| カード幅 | `CARD_MIN_WIDTH`（220） | 新規作成時の配置基準幅 |
+| `DEFAULT_NEW_CARD_STACK_OFFSET_X/Y` | 12 | 連続追加ごとに左・下へずらす量（px） |
+| カード幅 | `CARD_MIN_WIDTH + 2 * CARD_FRAME_BORDER`（222） | 枠線込みの配置基準幅 |
 
 | 項目 | 式 |
 |------|-----|
-| 1 枚目の X | `panel.right - card_width`（パネル右端とカード右端を揃える） |
+| 1 枚目の X | `panel.right - card_width`（`panel.right` は `MenuPanel.bounds().right_edge` = NE アンカー） |
 | 1 枚目の Y | `panel.bottom + gap_y`（パネル直下） |
-| N 枚目（0 始まり） | 列 `N % 4` だけ左へ `32px`、行 `N // 4` だけ下へ `32px` |
+| N 枚目（0 始まり） | 左へ `N * 12px`、下へ `N * 12px` |
 
-**注意:** `panel` は展開/収納状態のパネル幅・高さを反映する。メニューパネルをドラッグ移動した後も、常に現在位置を基準に配置する。
+**注意:** `panel.right` は展開/収納に関わらず `<` 円の右端（NE アンカー）を使う。幅の取得が未確定のときも `_content_width()` で展開状態を反映する。
 
 ---
 
@@ -260,3 +259,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.1.0 | 2026-08-13 | UC-002 を現行実装に同期。`menu_panel.py` リファクタ・テスト追加 |
 | 2.1.1 | 2026-08-13 | UC-004 新規カード配置をメニューパネル直下・右端揃えに変更 |
 | 2.1.2 | 2026-08-13 | UC-004 配置契約を詳細化。`MenuPanelRect` / `new_card_placement` へリファクタ |
+| 2.1.3 | 2026-08-13 | UC-004 右端揃えを NE アンカー基準に修正。連続追加は左下 12px ずつ |
