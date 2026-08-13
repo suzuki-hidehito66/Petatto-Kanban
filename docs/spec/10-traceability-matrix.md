@@ -64,7 +64,7 @@
 | DC-002 | FR-002, FR-007 | `models.py` | `test_create_default_board_is_empty` | verified |
 | DC-003 | FR-021, FR-024 | `display/settings.py` | `test_display_settings.py` | implemented |
 | UC-001 | FR-001, FR-020 | `app.py`, `display/overlay.py` | 手動 | implemented |
-| UC-002 | FR-003, FR-023 | `menu_panel.py`, `app.py` | 手動 | implemented |
+| UC-002 | FR-003, FR-023 | `menu_panel.py`, `menu_panel_layout.py`, `app.py` | `test_menu_panel.py` + 手動 | implemented |
 | UC-006 | FR-021, FR-024 | `app.py` | 手動 | implemented |
 | UC-003 | FR-002, FR-003〜005, FR-010, FR-014, FR-025 | `app.py`, `card_ui.py` | 手動 | implemented |
 | UC-004 | FR-003 | `app.py` | 手動 | implemented |

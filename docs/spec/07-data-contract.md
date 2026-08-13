@@ -127,8 +127,8 @@
 | `monitor_index` | number | - | 表示先ディスプレイ（0 始まり） |
 | `window_geometry` | string | - | ウィンドウモード復帰用 `"WxH+X+Y"` |
 | `confirm_delete` | boolean | ○ | カード削除時に確認ダイアログを表示するか |
-| `menu_panel_x` | number | - | メニューパネル左上 X（未設定時はデフォルト位置） |
-| `menu_panel_y` | number | - | メニューパネル左上 Y（未設定時はデフォルト位置） |
+| `menu_panel_x` | number | - | メニューパネル左上 X（保存時の展開状態に依存。未設定時デフォルト） |
+| `menu_panel_y` | number | - | メニューパネル左上 Y |
 
 ### 既定値
 
