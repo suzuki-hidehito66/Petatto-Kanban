@@ -85,6 +85,8 @@ petatto-kanban/
 │   │   ├── settings_actions.py   # 設定適用・終了確認・全カード削除
 │   │   ├── ui_scale.py           # UI サイズプリセット・スケール寸法（FR-026）
 │   │   ├── ui_scale_labels.py    # UI サイズ UI ラベル
+│   │   ├── ui_font.py              # UI フォントプリセット（FR-027、実装予定）
+│   │   ├── ui_font_labels.py       # UI フォント UI ラベル（実装予定）
 │   │   ├── ui_chrome.py          # メニュー・期限パネルホスト再構築
 │   ├── card_renderer.py          # カード UI 描画（UiMetrics）
 │   │   ├── settings.py           # settings.json

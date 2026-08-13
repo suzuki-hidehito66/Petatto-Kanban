@@ -43,6 +43,7 @@
 | [FR-018](#fr-018-ウィンドウモード) | ウィンドウモード | Should | deferred | M2 |
 | [FR-022](#fr-022-表示モード切替) | 表示モード切替 | Should | implemented | M1 拡張 / M2 |
 | [FR-026](#fr-026-uiサイズ設定) | UI サイズ設定 | Must | implemented | M1 拡張 |
+| [FR-027](#fr-027-uiフォント設定) | UI フォント設定 | Must | specified | M1 拡張 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -488,6 +489,31 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - カードの `x` / `y` 座標（`board.json`）は **変更しない**（見た目のサイズのみ変化）
 - 不明・欠損・不正な `ui_size` は **標準** として読み込む
 - スケール係数と基準寸法は [UC-009](./08-ui-behavior-contract.md#uc-009-ui-スケール) に従う
+
+---
+
+### FR-027: UI フォント設定
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Must |
+| ステータス | specified |
+| 関連 US | US-017 |
+| 関連 AC | AC-027-01, AC-027-02, AC-027-03 |
+| 実装（予定） | `src/petatto_kanban/display/ui_font.py`, `display/ui_font_labels.py`, `display/ui_scale.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `app.py` |
+| UI 契約 | [UC-006 §表示タブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-010 §UI フォント](./08-ui-behavior-contract.md#uc-010-ui-フォント) |
+
+**説明**  
+設定ダイアログ **「表示」タブ** でアプリ全体の **フォントファミリー** を選択できる。カード・メニューパネル・期限パネル等のテキスト描画に共通適用する。**フォントサイズ** は FR-026（UI サイズ）が担当し、本要件はファミリー変更のみを扱う。
+
+**制約**
+- 選択肢（M1）: **Segoe UI** / **メイリオ** / **游ゴシック** / **MS ゴシック**（Windows 11 標準搭載を前提）
+- `settings.json` の `ui_font` に永続化。既定値は **Segoe UI**（`segoe_ui`）
+- OK 確定後、表示モード・ディスプレイ・UI サイズを変えずに **即時再描画**（FR-026 と同様にカード・メニューパネルを再構築）
+- カードの `x` / `y` 座標は **変更しない**
+- 不明・欠損・不正な `ui_font` は **Segoe UI** として読み込む
+- tkinter フォント名への対応は [UC-010](./08-ui-behavior-contract.md#uc-010-ui-フォント) に従う
+- OS にフォントが存在しない場合は **Segoe UI** にフォールバック（起動時・適用時）
 
 ---
 
