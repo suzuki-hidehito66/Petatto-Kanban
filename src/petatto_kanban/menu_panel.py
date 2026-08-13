@@ -105,6 +105,7 @@ class MenuPanel:
         self._bg = bg
         self._place_x = 0
         self._place_y = 0
+        self._anchor_right_x = 0
         self._drag_origin: tuple[int, int] | None = None
         self._drag_moved = False
         self._hide_after_id: str | None = None
@@ -138,10 +139,6 @@ class MenuPanel:
         self._circle.bind("<Button-1>", self._on_drag_press)
         self._circle.bind("<B1-Motion>", self._on_drag_motion)
         self._circle.bind("<ButtonRelease-1>", self._on_drag_release)
-
-    def _actions_expansion_width(self) -> int:
-        """展開時に `<` 円の左側へ追加される幅."""
-        return _action_canvas_width() + MENU_ACTIONS_GAP
 
     def _bind_hover(self, widget: tk.Misc) -> None:
         widget.bind("<Enter>", self._on_enter, add="+")
@@ -181,34 +178,6 @@ class MenuPanel:
             self._action_handlers[release_index]()
         self._action_press_index = None
 
-    def place_at(self, x: int, y: int) -> None:
-        """左上基準で配置する（`<` 円はウィジェット右端）."""
-        self._place_x = x
-        self._place_y = y
-        self.widget.place(x=x, y=y)
-
-    def place_default(self, monitor_width: int, monitor_height: int) -> None:
-        """画面右上（デフォルト位置）に配置する."""
-        self.widget.update_idletasks()
-        width = self._widget_width()
-        x = max(0, monitor_width - MENU_DEFAULT_MARGIN_X - width)
-        y = MENU_DEFAULT_MARGIN_Y
-        self.place_at(x, y)
-        _ = monitor_height
-
-    def clamp_to_monitor(self, monitor_width: int, monitor_height: int) -> None:
-        """モニター内に収まるよう座標を調整する."""
-        self.widget.update_idletasks()
-        width = self._widget_width()
-        height = self._widget_height()
-        x = min(max(0, self._place_x), max(0, monitor_width - width))
-        y = min(max(0, self._place_y), max(0, monitor_height - height))
-        self.place_at(x, y)
-
-    @property
-    def position(self) -> tuple[int, int]:
-        return self._place_x, self._place_y
-
     def _widget_width(self) -> int:
         width = self.widget.winfo_width()
         return width if width > 1 else self.widget.winfo_reqwidth()
@@ -217,21 +186,62 @@ class MenuPanel:
         height = self.widget.winfo_height()
         return height if height > 1 else self.widget.winfo_reqheight()
 
+    def _sync_place_from_widget(self) -> None:
+        self.widget.update_idletasks()
+        self._place_x = self.widget.winfo_x()
+        self._place_y = self.widget.winfo_y()
+        self._anchor_right_x = self._place_x + self._widget_width()
+
+    def _apply_place(self) -> None:
+        """`<` 円の右端を _anchor_right_x に固定して配置する."""
+        self.widget.place(x=self._anchor_right_x, y=self._place_y, anchor=tk.NE)
+
+    def place_at(self, x: int, y: int) -> None:
+        """左上座標で配置する（永続化・ドラッグ用）."""
+        self._place_x = x
+        self._place_y = y
+        self.widget.update_idletasks()
+        self._anchor_right_x = x + self._widget_width()
+        self._apply_place()
+        self._sync_place_from_widget()
+
+    def place_default(self, monitor_width: int, monitor_height: int) -> None:
+        """画面右上（デフォルト位置）に配置する."""
+        self._anchor_right_x = monitor_width - MENU_DEFAULT_MARGIN_X
+        self._place_y = MENU_DEFAULT_MARGIN_Y
+        self._apply_place()
+        self._sync_place_from_widget()
+        _ = monitor_height
+
+    def clamp_to_monitor(self, monitor_width: int, monitor_height: int) -> None:
+        """モニター内に収まるよう座標を調整する."""
+        self.widget.update_idletasks()
+        width = self._widget_width()
+        height = self._widget_height()
+        self._anchor_right_x = min(max(width, self._anchor_right_x), monitor_width)
+        self._place_y = min(max(0, self._place_y), max(0, monitor_height - height))
+        self._apply_place()
+        self._sync_place_from_widget()
+
+    @property
+    def position(self) -> tuple[int, int]:
+        return self._place_x, self._place_y
+
     def _show_actions(self) -> None:
         if self._actions_expanded:
             return
         self._actions_expanded = True
-        delta = self._actions_expansion_width()
-        self.place_at(self._place_x - delta, self._place_y)
         self._actions.pack(side=tk.RIGHT, padx=(0, MENU_ACTIONS_GAP))
+        self._apply_place()
+        self._sync_place_from_widget()
 
     def _hide_actions(self) -> None:
         if not self._actions_expanded:
             return
         self._actions_expanded = False
-        delta = self._actions_expansion_width()
         self._actions.pack_forget()
-        self.place_at(self._place_x + delta, self._place_y)
+        self._apply_place()
+        self._sync_place_from_widget()
 
     def _on_enter(self, _event: tk.Event) -> None:
         self._hover_depth += 1
