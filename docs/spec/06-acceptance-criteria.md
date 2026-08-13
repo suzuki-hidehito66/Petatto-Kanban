@@ -847,7 +847,7 @@ And tkinter フォントファミリーは "Segoe UI" になる
 | 関連 FR | FR-028 |
 | 関連 US | US-018 |
 | 関連 UC | UC-006, UC-011 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動 |
 
 ```gherkin
@@ -862,7 +862,7 @@ And 進捗バーの塗り色は 0%≈赤 / 50%≈黄 / 100%≈緑のままであ
 And カードの x / y 座標は変更されない
 ```
 
-**テスト**: `test_ui_theme.py`, `test_settings_dialog.py`（実装後）
+**テスト**: `test_ui_theme.py`, `test_settings_dialog.py`, `test_settings_actions.py`
 
 ### AC-028-02
 
@@ -870,7 +870,7 @@ And カードの x / y 座標は変更されない
 |------|-----|
 | 関連 FR | FR-028 |
 | 関連 US | US-018 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 |
 
 ```gherkin
@@ -879,14 +879,14 @@ When アプリを再起動する
 Then 起動直後から UI が forest テーマの配色で描画される
 ```
 
-**テスト**: `test_save_and_load_ui_theme`, `test_ui_theme.py`（実装後）
+**テスト**: `test_save_and_load_ui_theme`, `test_ui_theme.py`
 
 ### AC-028-03
 
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-028 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 |
 
 ```gherkin
@@ -896,7 +896,7 @@ Then ui_theme は "default" として扱われる
 And 配色は default テーマ（現行既定）になる
 ```
 
-**テスト**: `test_display_settings_from_dict_invalid_ui_theme`（実装後）
+**テスト**: `test_display_settings_from_dict_invalid_ui_theme`, `test_ui_theme.py`
 
 ---
 

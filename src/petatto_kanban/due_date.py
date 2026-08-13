@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from petatto_kanban.display.ui_theme import UiThemePalette
 
 DUE_DATE_NONE_LABEL = "期限なし"
 DUE_PANEL_OVERDUE_BG = "#ffcdd2"
@@ -36,13 +40,22 @@ def due_date_status(value: date | None, today: date | None = None) -> str:
     return "future"
 
 
-def due_date_panel_style(value: date | None, today: date | None = None) -> tuple[str, str]:
+def due_date_panel_style(
+    value: date | None,
+    today: date | None = None,
+    *,
+    palette: UiThemePalette | None = None,
+) -> tuple[str, str]:
     """期限パネルの背景色・文字色を返す."""
     status = due_date_status(value, today)
     if status == "overdue":
         return DUE_PANEL_OVERDUE_BG, DUE_PANEL_OVERDUE_FG
     if status == "today":
         return DUE_PANEL_TODAY_BG, DUE_PANEL_TODAY_FG
+    if palette is not None:
+        if status == "future":
+            return palette.due_future_bg, palette.due_future_fg
+        return palette.due_none_bg, palette.due_none_fg
     if status == "future":
         return DUE_PANEL_FUTURE_BG, DUE_PANEL_FUTURE_FG
     return DUE_PANEL_NONE_BG, DUE_PANEL_NONE_FG
@@ -53,12 +66,13 @@ def calendar_day_button_style(
     *,
     selected: date | None,
     default_bg: str,
+    default_fg: str = "#222222",
     today: date | None = None,
 ) -> tuple[str, str, str]:
     """カレンダー日付ボタンの背景色・文字色・ relief を返す."""
     reference = today or date.today()
     bg = default_bg
-    fg = "#222222"
+    fg = default_fg
     relief = "flat"
     if day == reference:
         bg = CALENDAR_TODAY_BUTTON_BG

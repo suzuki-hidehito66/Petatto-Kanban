@@ -7,6 +7,7 @@ from collections.abc import Callable
 
 from petatto_kanban.display.transparent import TRANSPARENT_COLOR
 from petatto_kanban.display.ui_metrics import UiMetrics, medium_metrics
+from petatto_kanban.display.ui_theme import UiTheme, UiThemePalette, palette_for_theme
 from petatto_kanban.menu_panel_layout import (
     MENU_ACTION_LABELS,
     MENU_CIRCLE_PAD,
@@ -17,12 +18,13 @@ from petatto_kanban.menu_panel_layout import (
     circle_radius,
 )
 
-MENU_CIRCLE_OUTLINE = "#888888"
-MENU_CIRCLE_FILL = "#ffffff"
-MENU_CIRCLE_FG = "#333333"
 MENU_DEFAULT_MARGIN_X = 16
 MENU_DEFAULT_MARGIN_Y = 16
 MENU_HOVER_HIDE_DELAY_MS = 120
+_DEFAULT_PALETTE = palette_for_theme(UiTheme.DEFAULT)
+MENU_CIRCLE_OUTLINE = _DEFAULT_PALETTE.menu_outline
+MENU_CIRCLE_FILL = _DEFAULT_PALETTE.menu_fill
+MENU_CIRCLE_FG = _DEFAULT_PALETTE.menu_fg
 
 
 class MenuPanel:
@@ -39,9 +41,11 @@ class MenuPanel:
         on_activate: Callable[[], None] | None = None,
         on_deactivate: Callable[[], None] | None = None,
         metrics: UiMetrics | None = None,
+        palette: UiThemePalette | None = None,
         bg: str = TRANSPARENT_COLOR,
     ) -> None:
         self._metrics = metrics or medium_metrics()
+        self._palette = palette or _DEFAULT_PALETTE
         self._on_position_changed = on_position_changed
         self._on_activate = on_activate
         self._on_deactivate = on_deactivate
@@ -102,21 +106,22 @@ class MenuPanel:
         pad: int = MENU_CIRCLE_PAD,
     ) -> None:
         radius = circle_radius(self._metrics, pad=pad)
+        palette = self._palette
         canvas.create_oval(
             center_x - radius,
             center_y - radius,
             center_x + radius,
             center_y + radius,
-            outline=MENU_CIRCLE_OUTLINE,
+            outline=palette.menu_outline,
             width=1,
-            fill=MENU_CIRCLE_FILL,
+            fill=palette.menu_fill,
         )
         canvas.create_text(
             center_x,
             center_y,
             text=text,
             font=self._metrics.menu_circle_font,
-            fill=MENU_CIRCLE_FG,
+            fill=palette.menu_fg,
         )
 
     def _create_circle_canvas(

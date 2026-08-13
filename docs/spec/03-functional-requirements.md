@@ -44,7 +44,7 @@
 | [FR-022](#fr-022-表示モード切替) | 表示モード切替 | Should | implemented | M1 拡張 / M2 |
 | [FR-026](#fr-026-uiサイズ設定) | UI サイズ設定 | Must | implemented | M1 拡張 |
 | [FR-027](#fr-027-uiフォント設定) | UI フォント設定 | Must | implemented | M1 拡張 |
-| [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | specified | M1 拡張 |
+| [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | implemented | M1 拡張 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -523,10 +523,10 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 属性 | 値 |
 |------|-----|
 | 優先度 | Must |
-| ステータス | specified |
+| ステータス | implemented |
 | 関連 US | US-018 |
 | 関連 AC | AC-028-01, AC-028-02, AC-028-03 |
-| 実装（予定） | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_tabs.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_tabs.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
 | UI 契約 | [UC-006 §テーマタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-011 §UI カラーテーマ](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ) |
 
 **説明**  

@@ -348,7 +348,7 @@
 |------|-----|
 | 関連 FR | FR-028 |
 | 関連 AC | AC-028-01, AC-028-02, AC-028-03 |
-| 実装（予定） | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
 
 `ui_theme`（`settings.json`）に応じて、UI 要素の **背景色・文字色** を切り替える。フォント（UC-010）・サイズ（UC-009）とは独立。
 
@@ -573,3 +573,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.5.0 | 2026-08-13 | UC-006 表示タブ: フォント設定（FR-027）。UC-010 UI フォント契約を追加 |
 | 2.6.0 | 2026-08-13 | FR-027 実装。UC-009/UC-010 を `ui_metrics.py` で合成 |
 | 2.7.0 | 2026-08-13 | UC-006 テーマタブ・UC-011 UI カラーテーマ契約（FR-028） |
+| 2.8.0 | 2026-08-13 | FR-028 実装（10 種カラーテーマ・期限/進捗の意味色は固定） |
