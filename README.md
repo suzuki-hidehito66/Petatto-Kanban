@@ -72,7 +72,7 @@ python -m PyInstaller petatto-kanban.spec --noconfirm
 
 | イベント | 動作 |
 |----------|------|
-| `main` 向け PR | Windows でテスト・Lint・exe ビルド、Artifact アップロード |
+| `main` 向け PR | Windows でテスト・Lint・exe ビルド |
 | PR を `main` にマージ | 上記に加え **GitHub Release** 作成（`v{バージョン}` タグ、`Petatto-Kanban.exe` 添付） |
 
 ダウンロード: [Releases](https://github.com/suzuki-hidehito66/Petatto-Kanban/releases)

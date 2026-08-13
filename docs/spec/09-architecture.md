@@ -205,7 +205,7 @@ petatto-kanban/
 | テスト | `python -m pytest` | — |
 | Lint | `python -m ruff check src tests` | — |
 | exe ビルド | `scripts\build_exe.bat` | `dist/Petatto-Kanban.exe` |
-| CI | GitHub Actions (`windows-latest`) | Artifact: `.exe` |
+| CI | GitHub Actions (`windows-latest`) | GitHub Release: `.exe` |
 
 ---
 
