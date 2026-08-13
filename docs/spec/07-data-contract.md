@@ -123,7 +123,7 @@
 
 | フィールド | JSON 型 | 必須 | 説明 |
 |------------|---------|------|------|
-| `mode` | string | ○ | `"window"` \| `"desktop"` \| `"overlay"` |
+| `mode` | string | ○ | `"overlay"` \| `"desktop"` \| `"window"` | M1 拡張: `overlay` / `desktop` を設定ダイアログで切替 |
 | `monitor_index` | number | - | 表示先ディスプレイ（0 始まり） |
 | `window_geometry` | string | - | ウィンドウモード復帰用 `"WxH+X+Y"` |
 | `confirm_delete` | boolean | ○ | カード削除時に確認ダイアログを表示するか |
