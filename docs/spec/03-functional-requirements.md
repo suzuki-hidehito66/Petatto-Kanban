@@ -112,8 +112,8 @@
 
 **制約**
 - 初期タイトルは既定値 `新しいタスク`（`DEFAULT_NEW_CARD_TITLE`）
-- 新規カードはメニューパネル直下・右端揃えに配置（`new_card_placement.compute_new_card_position()`）
-- 連続追加時は左方向に最大 4 枚、5 枚目以降は下方向へ行を追加（各 32px オフセット）
+- 新規カードはメニューパネル直下・右端揃えに配置（`panel.right` = NE アンカー、`new_card_placement.compute_new_card_position()`）
+- 連続追加時は 1 枚ごとに左 12px・下 12px ずつずらす
 - 配置基準は `MenuPanel.bounds()` が返す現在のパネル矩形（展開/収納・ドラッグ移動後の位置を反映）
 - 追加直後は FR-004 のインライン編集状態で開始し、タイトル入力にフォーカス
 - 入力ダイアログは表示しない

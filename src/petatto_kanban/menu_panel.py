@@ -145,13 +145,24 @@ class MenuPanel:
         for child in widget.winfo_children():
             self._bind_hover(child)
 
+    def _content_width(self) -> int:
+        if self._actions_expanded:
+            return action_canvas_width() + MENU_CIRCLE_SIZE
+        return MENU_CIRCLE_SIZE
+
     def _widget_width(self) -> int:
+        self.widget.update_idletasks()
         width = self.widget.winfo_width()
-        return width if width > 1 else self.widget.winfo_reqwidth()
+        if width > 1:
+            return width
+        return self._content_width()
 
     def _widget_height(self) -> int:
+        self.widget.update_idletasks()
         height = self.widget.winfo_height()
-        return height if height > 1 else self.widget.winfo_reqheight()
+        if height > 1:
+            return height
+        return MENU_CIRCLE_SIZE
 
     def _sync_place_from_widget(self) -> None:
         self.widget.update_idletasks()
@@ -193,12 +204,13 @@ class MenuPanel:
 
     def bounds(self) -> MenuPanelRect:
         """配置計算用のパネル矩形（展開/収納状態を反映）."""
-        self.widget.update_idletasks()
+        self._sync_place_from_widget()
         return MenuPanelRect(
             x=self._place_x,
             y=self._place_y,
             width=self._widget_width(),
             height=self._widget_height(),
+            right_edge=self._anchor_right_x,
         )
 
     def _set_actions_expanded(self, expanded: bool) -> None:

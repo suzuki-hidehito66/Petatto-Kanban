@@ -40,3 +40,9 @@ def test_menu_panel_rect_exposes_right_and_bottom() -> None:
     assert panel.right == 90
     assert panel.bottom == 56
 
+
+def test_menu_panel_rect_prefers_right_edge_anchor() -> None:
+    panel = MenuPanelRect(x=100, y=20, width=36, height=36, right_edge=500)
+    assert panel.right == 500
+    assert panel.right != panel.x + panel.width
+

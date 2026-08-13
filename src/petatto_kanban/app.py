@@ -31,6 +31,7 @@ CARD_FG = "#222222"
 CARD_TITLE_FRAME_BD = 1
 CARD_MIN_WIDTH = 220
 CARD_MIN_HEIGHT = 120
+CARD_FRAME_BORDER = 1
 DUE_PANEL_BD = 1
 DUE_PICKER_PANEL_WIDTH = 240
 PROGRESS_TRACK_BG = "#e8e8e8"
@@ -160,7 +161,7 @@ class KanbanApp:
         frame = tk.Frame(
             self.root,
             bg=CARD_BG,
-            bd=1,
+            bd=CARD_FRAME_BORDER,
             relief=tk.RIDGE,
             padx=8,
             pady=8,
@@ -635,7 +636,7 @@ class KanbanApp:
         self.root.update_idletasks()
         card_x, card_y = compute_new_card_position(
             panel=self.menu_panel.bounds(),
-            card_width=CARD_MIN_WIDTH,
+            card_width=CARD_MIN_WIDTH + 2 * CARD_FRAME_BORDER,
             stack_index=len(self.board.cards),
         )
         card = Card(title=DEFAULT_NEW_CARD_TITLE, x=card_x, y=card_y)
