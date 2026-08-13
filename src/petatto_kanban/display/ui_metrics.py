@@ -6,10 +6,17 @@ from dataclasses import dataclass
 
 from petatto_kanban.display.ui_font import UiFont, resolve_font_family, tkinter_family_name
 from petatto_kanban.display.ui_scale import (
+    BASE_CARD_DUE_PANEL_PADX,
+    BASE_CARD_DUE_PANEL_PADY,
+    BASE_CARD_DUE_SECTION_GAP,
     BASE_CARD_FRAME_BORDER,
+    BASE_CARD_FRAME_PAD,
     BASE_CARD_LABEL_WRAP,
     BASE_CARD_MIN_HEIGHT,
     BASE_CARD_MIN_WIDTH,
+    BASE_CARD_PROGRESS_SECTION_GAP,
+    BASE_CARD_TITLE_FRAME_PADX,
+    BASE_CARD_TITLE_FRAME_PADY,
     BASE_DUE_FONT_SIZE,
     BASE_DUE_PICKER_DAY_FONT_SIZE,
     BASE_DUE_PICKER_MONTH_FONT_SIZE,
@@ -51,6 +58,13 @@ class UiMetrics:
     card_min_height: int
     card_label_wrap: int
     card_frame_border: int
+    card_frame_pad: int
+    card_title_frame_padx: int
+    card_title_frame_pady: int
+    card_due_panel_padx: int
+    card_due_panel_pady: int
+    card_due_section_gap: int
+    card_progress_section_gap: int
     progress_bar_height: int
     menu_circle_size: int
     due_picker_panel_width: int
@@ -94,6 +108,13 @@ def metrics_for_display(
         card_min_height=_scale_int(BASE_CARD_MIN_HEIGHT, scale),
         card_label_wrap=_scale_int(BASE_CARD_LABEL_WRAP, scale),
         card_frame_border=BASE_CARD_FRAME_BORDER,
+        card_frame_pad=_scale_int(BASE_CARD_FRAME_PAD, scale),
+        card_title_frame_padx=_scale_int(BASE_CARD_TITLE_FRAME_PADX, scale),
+        card_title_frame_pady=_scale_int(BASE_CARD_TITLE_FRAME_PADY, scale),
+        card_due_panel_padx=_scale_int(BASE_CARD_DUE_PANEL_PADX, scale),
+        card_due_panel_pady=_scale_int(BASE_CARD_DUE_PANEL_PADY, scale),
+        card_due_section_gap=_scale_int(BASE_CARD_DUE_SECTION_GAP, scale),
+        card_progress_section_gap=_scale_int(BASE_CARD_PROGRESS_SECTION_GAP, scale),
         progress_bar_height=_scale_int(BASE_PROGRESS_BAR_HEIGHT, scale),
         menu_circle_size=_scale_int(BASE_MENU_CIRCLE_SIZE, scale),
         due_picker_panel_width=_scale_int(BASE_DUE_PICKER_PANEL_WIDTH, scale),
