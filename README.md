@@ -127,11 +127,14 @@ scripts\build_exe.bat
 | イベント | 動作 |
 |----------|------|
 | `main` 向け PR | Windows でテスト・Lint・exe ビルド |
+| `main` 向け PR（元ブランチ） | **`test` からのみ** マージ可（`enforce-test-to-main.yml`） |
 | `main` へマージ | GitHub Release 作成（`v{バージョン}` タグ、`Petatto-Kanban.exe` 添付） |
 
 ### GitHub Actions 権限（メンテナ向け）
 
-Release 作成にはリポジトリ Settings → Actions → **Read and write permissions** が必要です。403 になる場合は README 旧版の手順を参照するか、[Issue](https://github.com/suzuki-hidehito66/Petatto-Kanban/issues) で確認してください。
+Release 作成にはリポジトリ Settings → Actions → **Read and write permissions** が必要です。403 になる場合は [Issue](https://github.com/suzuki-hidehito66/Petatto-Kanban/issues) で確認してください。
+
+**`main` ブランチ保護（推奨）:** Branch protection で PR 必須に加え、必須ステータスチェックに `check-source-branch`（`Enforce test to main`）と `build`（`Build Windows EXE`）を登録してください。
 
 ---
 
