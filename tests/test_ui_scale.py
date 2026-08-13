@@ -2,9 +2,14 @@
 
 from petatto_kanban.display.ui_metrics import medium_metrics, metrics_for_ui_size
 from petatto_kanban.display.ui_scale import (
+    BASE_CARD_FRAME_PAD,
+    BASE_CARD_DUE_FONT_SIZE,
     BASE_CARD_MIN_HEIGHT,
     BASE_CARD_MIN_WIDTH,
+    BASE_CARD_PROGRESS_FONT_SIZE,
+    BASE_CARD_TITLE_FONT_SIZE,
     BASE_MENU_CIRCLE_SIZE,
+    BASE_PROGRESS_BAR_HEIGHT,
     GOLDEN_RATIO,
     UiSize,
     parse_ui_size,
@@ -30,28 +35,19 @@ def test_medium_metrics_matches_baseline() -> None:
     assert metrics.menu_circle_size == BASE_MENU_CIRCLE_SIZE
 
 
-def test_card_min_dimensions_are_compact_with_comfortable_height() -> None:
-    assert BASE_CARD_MIN_WIDTH >= 100
-    assert BASE_CARD_MIN_HEIGHT >= 100
-    golden_height = round(BASE_CARD_MIN_WIDTH / GOLDEN_RATIO)
-    assert golden_height < BASE_CARD_MIN_HEIGHT
+def test_card_min_dimensions_use_golden_ratio_landscape() -> None:
+    assert BASE_CARD_MIN_WIDTH > BASE_CARD_MIN_HEIGHT
+    ratio = BASE_CARD_MIN_WIDTH / BASE_CARD_MIN_HEIGHT
+    assert abs(ratio - GOLDEN_RATIO) < 0.01
 
 
-def test_card_label_metrics_match_card_width_baseline() -> None:
-    from petatto_kanban.display.ui_scale import (
-        BASE_CARD_FRAME_PAD,
-        BASE_DUE_FONT_SIZE,
-        BASE_PROGRESS_BAR_HEIGHT,
-        BASE_PROGRESS_FONT_SIZE,
-        BASE_TITLE_FONT_SIZE,
-    )
-
+def test_card_label_metrics_match_standard_font10_baseline() -> None:
     metrics = medium_metrics()
-    assert metrics.title_font[1] == BASE_TITLE_FONT_SIZE == 8
-    assert metrics.due_font[1] == BASE_DUE_FONT_SIZE == 8
-    assert metrics.progress_font[1] == BASE_PROGRESS_FONT_SIZE == 8
-    assert metrics.progress_bar_height == BASE_PROGRESS_BAR_HEIGHT == 10
-    assert metrics.card_frame_pad == BASE_CARD_FRAME_PAD == 4
+    assert metrics.title_font[1] == BASE_CARD_TITLE_FONT_SIZE == 10
+    assert metrics.due_font[1] == BASE_CARD_DUE_FONT_SIZE == 10
+    assert metrics.progress_font[1] == BASE_CARD_PROGRESS_FONT_SIZE == 10
+    assert metrics.progress_bar_height == BASE_PROGRESS_BAR_HEIGHT == 16
+    assert metrics.card_frame_pad == BASE_CARD_FRAME_PAD == 6
 
 
 def test_large_metrics_scales_up() -> None:
