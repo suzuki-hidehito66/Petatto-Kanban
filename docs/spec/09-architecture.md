@@ -83,6 +83,8 @@ petatto-kanban/
 │   │   ├── settings_dialog_labels.py  # 設定 UI 文言（tkinter 非依存）
 │   │   ├── settings_dialog_panels.py  # 各タブのウィジェット構築
 │   │   ├── settings_actions.py   # 設定適用・終了確認・全カード削除
+│   │   ├── ui_scale.py           # UI サイズプリセット・スケール寸法（FR-026、実装予定）
+│   │   ├── ui_scale_labels.py    # UI サイズ UI ラベル（実装予定）
 │   │   ├── settings.py           # settings.json
 │   │   └── monitors.py           # モニター列挙
 │   ├── models.py                 # ドメインモデル
@@ -113,6 +115,8 @@ petatto-kanban/
 | `display/settings_dialog_labels.py` | 設定ダイアログ UI 文言 | 標準ライブラリのみ |
 | `display/settings_dialog_panels.py` | 表示 / システムタブのウィジェット構築 | tkinter, `mode_labels`, `settings_dialog_labels`, `monitors` |
 | `display/settings_actions.py` | 設定適用・終了確認・全カード削除（`app.py` から利用） | `settings_dialog`, `settings_dialog_labels`, `storage` |
+| `display/ui_scale.py` | UI サイズプリセット・スケール係数・寸法計算（FR-026） | 標準ライブラリのみ（**specified**） |
+| `display/ui_scale_labels.py` | UI サイズコンボボックス用ラベル | 標準ライブラリのみ（**specified**） |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
 | `menu_panel.py` | メニューパネル UI（円形・NE アンカー・ホバー展開） | tkinter, `menu_panel_layout` |
 | `menu_panel_layout.py` | メニューパネル座標・ヒット判定、`MenuPanelRect` | 標準ライブラリのみ |

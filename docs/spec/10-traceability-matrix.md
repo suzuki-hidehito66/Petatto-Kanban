@@ -37,6 +37,7 @@
 | FR-018 | US-008 | AC-018-01 | （M2） | 手動 | deferred |
 | FR-019 | US-009 | AC-019-01, AC-019-02 | `display/desktop.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreground.py`, `display/modes.py` | `test_display_modes.py` + 手動 | implemented |
 | FR-022 | US-008, US-009, US-010 | AC-022-01, AC-022-02 | `display/settings_dialog.py`, `display/settings_dialog_panels.py`, `display/modes.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py` + 手動 | implemented |
+| FR-026 | US-016 | AC-026-01, AC-026-02, AC-026-03 | `display/ui_scale.py`, `display/ui_scale_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `app.py`, `menu_panel_layout.py` | `test_ui_scale.py`（予定） + 手動 | specified |
 
 ---
 
@@ -65,7 +66,8 @@
 | DC-003 | FR-021, FR-024 | `display/settings.py` | `test_display_settings.py` | implemented |
 | UC-001 | FR-001, FR-019, FR-020 | `app.py`, `display/modes.py`, `display/overlay.py`, `display/desktop.py` | 手動 | implemented |
 | UC-002 | FR-003, FR-019, FR-023 | `menu_panel.py`, `menu_panel_layout.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `app.py` | `test_menu_panel.py`, `test_display_modes.py` + 手動 | implemented |
-| UC-006 | FR-005, FR-019, FR-020, FR-021, FR-022, FR-023, FR-024 | `display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py`, `test_settings_actions.py`, `test_board_clear_cards` + 手動 | implemented |
+| UC-006 | FR-005, FR-019, FR-020, FR-021, FR-022, FR-023, FR-024, FR-026 | `display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `display/ui_scale.py`, `mode_labels.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py`, `test_settings_actions.py`, `test_board_clear_cards`, `test_ui_scale.py`（予定） + 手動 | implemented / FR-026: specified |
+| UC-009 | FR-026 | `display/ui_scale.py`, `display/ui_scale_labels.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py` | `test_ui_scale.py`（予定） + 手動 | specified |
 | UC-003 | FR-002, FR-003〜005, FR-010, FR-014, FR-025 | `app.py`, `card_ui.py` | 手動 | implemented |
 | UC-004 | FR-003 | `app.py`, `menu_panel.py`, `menu_panel_layout.py`, `new_card_placement.py` | `test_new_card_placement.py`, `test_menu_panel.py` + 手動 | implemented |
 | UC-005 | FR-004 | `app.py` | 手動 | implemented |

@@ -42,6 +42,7 @@
 | [FR-019](#fr-019-デスクトップモード) | デスクトップモード | Should | implemented | M1 拡張 |
 | [FR-018](#fr-018-ウィンドウモード) | ウィンドウモード | Should | deferred | M2 |
 | [FR-022](#fr-022-表示モード切替) | 表示モード切替 | Should | implemented | M1 拡張 / M2 |
+| [FR-026](#fr-026-uiサイズ設定) | UI サイズ設定 | Must | specified | M1 拡張 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -463,6 +464,30 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - 切替 UI は設定ダイアログ「表示」タブ（メニューパネル ⚙ から開く）
 - OK 確定で `settings.json` の `mode` を保存し、即時再描画
 - ボードデータ・カード座標は保持
+
+---
+
+### FR-026: UI サイズ設定
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Must |
+| ステータス | specified |
+| 関連 US | US-016 |
+| 関連 AC | AC-026-01, AC-026-02, AC-026-03 |
+| 実装（予定） | `src/petatto_kanban/display/ui_scale.py`, `display/ui_scale_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py` |
+| UI 契約 | [UC-006 §表示タブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-009 §UI スケール](./08-ui-behavior-contract.md#uc-009-ui-スケール) |
+
+**説明**  
+設定ダイアログ **「表示」タブ** で UI 全体の表示サイズ（**小 / 標準 / 大**）を選択できる。カード・メニューパネル・期限パネル等のフォントとレイアウト寸法を一括でスケールする。
+
+**制約**
+- 選択肢: **小**（`small`）/ **標準**（`medium`）/ **大**（`large`）。既定値は **標準**
+- `settings.json` の `ui_size` に永続化し、次回起動時に復元
+- OK 確定後、表示モードの切替を伴わない場合でも **即時再描画**（カード・メニューパネルを再構築）
+- カードの `x` / `y` 座標（`board.json`）は **変更しない**（見た目のサイズのみ変化）
+- 不明・欠損・不正な `ui_size` は **標準** として読み込む
+- スケール係数と基準寸法は [UC-009](./08-ui-behavior-contract.md#uc-009-ui-スケール) に従う
 
 ---
 

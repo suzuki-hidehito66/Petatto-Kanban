@@ -115,7 +115,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-021, FR-024, FR-023 |
+| 関連 FR | FR-021, FR-024, FR-023, FR-026 |
 | 保存先 | `%USERPROFILE%\.petatto-kanban\settings.json` |
 | マイルストーン | M1 |
 
@@ -130,6 +130,7 @@
 | `confirm_exit` | boolean | ○ | アプリ終了時に確認ダイアログを表示するか |
 | `menu_panel_x` | number | - | メニューパネル左上 X（保存時の展開状態に依存。未設定時デフォルト） |
 | `menu_panel_y` | number | - | メニューパネル左上 Y |
+| `ui_size` | string | ○ | UI サイズプリセット: `"small"` \| `"medium"` \| `"large"`（FR-026） |
 
 ### 既定値
 
@@ -139,6 +140,17 @@
 | `monitor_index` | `0`（プライマリ） |
 | `confirm_delete` | `true` |
 | `confirm_exit` | `false` |
+| `ui_size` | `"medium"` |
+
+### ui_size とスケール係数
+
+| ui_size（JSON） | UI ラベル | scale |
+|-----------------|-----------|-------|
+| `small` | 小 | 0.85 |
+| `medium` | 標準 | 1.0 |
+| `large` | 大 | 1.15 |
+
+不正値・欠損時は `medium` / `1.0` にフォールバックする。
 
 ### サンプル
 
@@ -148,7 +160,8 @@
   "monitor_index": 1,
   "window_geometry": "960x540+120+80",
   "confirm_delete": true,
-  "confirm_exit": false
+  "confirm_exit": false,
+  "ui_size": "medium"
 }
 ```
 
