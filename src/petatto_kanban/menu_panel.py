@@ -16,7 +16,6 @@ MENU_ACTION_CIRCLE_PAD = 0
 MENU_CIRCLE_FONT = ("Segoe UI", 14, "bold")
 MENU_DEFAULT_MARGIN_X = 16
 MENU_DEFAULT_MARGIN_Y = 16
-MENU_ACTIONS_GAP = 4
 MENU_ACTION_LABELS = ("＋", "⚙", "×")
 
 
@@ -83,6 +82,7 @@ def _create_circle_canvas(
         MENU_CIRCLE_SIZE // 2,
         text=text,
         font=font,
+        pad=MENU_ACTION_CIRCLE_PAD,
     )
     return canvas
 
@@ -231,7 +231,7 @@ class MenuPanel:
         if self._actions_expanded:
             return
         self._actions_expanded = True
-        self._actions.pack(side=tk.RIGHT, padx=(0, MENU_ACTIONS_GAP))
+        self._actions.pack(side=tk.RIGHT)
         self._apply_place()
         self._sync_place_from_widget()
 
