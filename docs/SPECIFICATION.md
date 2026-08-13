@@ -150,3 +150,4 @@ flowchart LR
 | 2.30.0 | 2026-08-13 | デスクトップモード実装（`display/modes.py`、設定ダイアログ切替） |
 | 2.31.0 | 2026-08-13 | 表示モード実装のリファクタ（`transparent` / `settings_dialog` / `mode_labels`） |
 | 2.32.0 | 2026-08-13 | デスクトップモードでメニューパネルのみ常時最前面（DM-DESKTOP-01 / `menu_panel_host`） |
+| 2.33.0 | 2026-08-13 | メニューアクティブ時にカード等を一時最前面（DM-DESKTOP-02） |

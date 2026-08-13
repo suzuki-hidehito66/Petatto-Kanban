@@ -82,3 +82,26 @@ def test_menu_panel_host_topmost_in_overlay_mode() -> None:
         host = MenuPanelHost(root)
     host.apply(_MONITOR, DisplayMode.OVERLAY)
     host_window.attributes.assert_any_call("-topmost", True)
+
+
+def test_bring_board_to_front_sets_topmost_on_windows() -> None:
+    root = MagicMock()
+    with patch("petatto_kanban.display.desktop.is_windows", return_value=True):
+        from petatto_kanban.display.desktop import bring_board_to_front
+
+        bring_board_to_front(root)
+    root.attributes.assert_called_with("-topmost", True)
+    root.lift.assert_called_once()
+
+
+def test_restore_desktop_board_z_order_clears_topmost_on_windows() -> None:
+    root = MagicMock()
+    with (
+        patch("petatto_kanban.display.desktop.is_windows", return_value=True),
+        patch("petatto_kanban.display.desktop.send_window_to_back") as send_back,
+    ):
+        from petatto_kanban.display.desktop import restore_desktop_board_z_order
+
+        restore_desktop_board_z_order(root)
+    root.attributes.assert_called_with("-topmost", False)
+    send_back.assert_called_once_with(root)

@@ -395,6 +395,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - 設定ダイアログ（UC-006）でオーバーレイモードと相互切替（FR-022）
 - `settings.json` の `mode: "desktop"` で永続化
 - 本体は `display/desktop.py`（Z オーダー `HWND_BOTTOM` 等）。メニューは `display/menu_panel_host.py`（独立 Toplevel + `-topmost`）
+- メニューアクティブ時は `bring_board_to_front()` で本体を一時最前面（DM-DESKTOP-02）
 - Windows 11 以降
 
 ---

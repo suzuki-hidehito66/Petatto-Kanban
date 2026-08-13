@@ -17,9 +17,14 @@ from petatto_kanban.display import (
     load_display_settings,
     save_display_settings,
 )
+from petatto_kanban.display.desktop import (
+    bring_board_to_front,
+    restore_desktop_board_z_order,
+)
 from petatto_kanban.display.menu_panel_host import MenuPanelHost
 from petatto_kanban.display.modes import apply_display_mode
 from petatto_kanban.display.monitors import Monitor, get_monitor
+from petatto_kanban.display.settings import DisplayMode
 from petatto_kanban.display.settings_dialog import SettingsDialog, SettingsDialogResult
 from petatto_kanban.display.transparent import TRANSPARENT_COLOR
 from petatto_kanban.due_date import due_date_panel_style, format_due_date
@@ -46,6 +51,7 @@ DUE_PICKER_PANEL_WIDTH = 240
 PROGRESS_TRACK_BG = "#e8e8e8"
 PROGRESS_BAR_HEIGHT = 18
 CARD_LABEL_WRAP = 200
+DESKTOP_BOARD_LOWER_DELAY_MS = 1500
 
 
 class KanbanApp:
@@ -70,6 +76,7 @@ class KanbanApp:
         self._due_panel_clicks = ClickReleaseTracker()
         self._title_clicks = ClickReleaseTracker()
         self._monitors = list_monitors()
+        self._desktop_board_lower_after_id: str | None = None
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         self.root.configure(bg=TRANSPARENT_COLOR)
@@ -80,9 +87,59 @@ class KanbanApp:
 
     def _apply_display_mode(self) -> None:
         monitor = get_monitor(self.display_settings.monitor_index)
+        self._cancel_desktop_board_lower()
         apply_display_mode(self.root, monitor, self.display_settings.mode)
         self._menu_panel_host.apply(monitor, self.display_settings.mode)
         self._place_menu_panel(monitor)
+
+    def _cancel_desktop_board_lower(self) -> None:
+        if self._desktop_board_lower_after_id is not None:
+            self.root.after_cancel(self._desktop_board_lower_after_id)
+            self._desktop_board_lower_after_id = None
+
+    def _schedule_desktop_board_lower(self) -> None:
+        if self.display_settings.mode != DisplayMode.DESKTOP:
+            return
+        self._cancel_desktop_board_lower()
+        self._desktop_board_lower_after_id = self.root.after(
+            DESKTOP_BOARD_LOWER_DELAY_MS,
+            self._lower_desktop_board_if_idle,
+        )
+
+    def _can_lower_desktop_board(self) -> bool:
+        if self._inline_edit_card_id is not None:
+            return False
+        if self._due_date_picker.is_open:
+            return False
+        try:
+            if self.root.grab_current() is not None:
+                return False
+        except tk.TclError:
+            pass
+        return True
+
+    def _activate_desktop_board_from_menu(self) -> None:
+        if self.display_settings.mode != DisplayMode.DESKTOP:
+            return
+        self._cancel_desktop_board_lower()
+        bring_board_to_front(self.root)
+        self._menu_panel_host.lift()
+
+    def _lower_desktop_board_if_idle(self) -> None:
+        self._desktop_board_lower_after_id = None
+        if not self._can_lower_desktop_board():
+            self._schedule_desktop_board_lower()
+            return
+        if self.display_settings.mode != DisplayMode.DESKTOP:
+            return
+        restore_desktop_board_z_order(self.root)
+        self._menu_panel_host.lift()
+
+    def _on_menu_panel_deactivate(self) -> None:
+        self._schedule_desktop_board_lower()
+
+    def _on_kanban_card_enter(self, _event: tk.Event) -> None:
+        self._cancel_desktop_board_lower()
 
     def _place_menu_panel(self, monitor: Monitor | None = None) -> None:
         monitor = monitor or get_monitor(self.display_settings.monitor_index)
@@ -122,6 +179,13 @@ class KanbanApp:
             on_settings=self._open_settings,
             on_add_card=self._add_card,
             on_position_changed=self._on_menu_panel_position_changed,
+            on_activate=self._activate_desktop_board_from_menu,
+            on_deactivate=self._on_menu_panel_deactivate,
+        )
+        self._menu_panel_host.window.bind(
+            "<FocusIn>",
+            lambda _event: self._activate_desktop_board_from_menu(),
+            add="+",
         )
 
     def _on_menu_panel_position_changed(self, x: int, y: int) -> None:
@@ -199,6 +263,7 @@ class KanbanApp:
         progress_canvas.pack(side=tk.BOTTOM, fill=tk.X, pady=(6, 0))
 
         self._finalize_card_frame(frame)
+        frame.bind("<Enter>", self._on_kanban_card_enter, add="+")
         ui = CardUiRefs(
             frame=frame,
             title_frame=title_frame,
@@ -304,7 +369,11 @@ class KanbanApp:
         return due_panel, due_label
 
     def _cancel_due_date_picker(self) -> None:
-        self._due_date_picker.cancel_if_any()
+        if (
+            self._due_date_picker.cancel_if_any()
+            and self.display_settings.mode == DisplayMode.DESKTOP
+        ):
+            self._schedule_desktop_board_lower()
 
     def _set_card_due_date(self, card: Card, value: date | None) -> None:
         if card.due_date == value:
@@ -412,6 +481,8 @@ class KanbanApp:
             save_board(self.board)
 
         self._clear_inline_edit_state()
+        if self.display_settings.mode == DisplayMode.DESKTOP:
+            self._schedule_desktop_board_lower()
         return True
 
     def _clear_inline_edit_state(self) -> None:
