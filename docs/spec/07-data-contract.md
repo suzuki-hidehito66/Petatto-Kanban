@@ -115,7 +115,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-021, FR-024, FR-023, FR-026, FR-027, FR-028, FR-029 |
+| 関連 FR | FR-021, FR-024, FR-023, FR-026, FR-027, FR-028, FR-029, FR-030 |
 | 保存先 | `%USERPROFILE%\.petatto-kanban\settings.json` |
 | マイルストーン | M1 |
 
@@ -134,6 +134,15 @@
 | `ui_font` | string | ○ | UI フォントプリセット: `"segoe_ui"` \| `"meiryo"` \| `"yu_gothic_ui"` \| `"ms_gothic"`（FR-027） |
 | `ui_theme` | string | ○ | UI カラーテーマ: `"default"` \| `"dark"` \| ...（FR-028） |
 | `launch_at_login` | boolean | ○ | Windows ログオン時に自動起動するか（FR-029） |
+| `shortcuts` | object | ○ | キーボードショートカット割り当て（FR-030） |
+
+#### shortcuts オブジェクト
+
+| フィールド | JSON 型 | 必須 | 説明 |
+|------------|---------|------|------|
+| `new_card` | string | ○ | 新規カード作成のコード。既定 `"Ctrl+Shift+N"` |
+
+**コードの正規形:** `Ctrl` / `Alt` / `Shift` をこの順で `+` 連結し、末尾にキー（`A`〜`Z` / `0`〜`9` / `F1`〜`F12`）。例: `"Ctrl+Shift+N"`。修飾キーが 1 つ以上必須。不正・欠損時は `"Ctrl+Shift+N"`。
 
 ### 既定値
 
@@ -147,6 +156,7 @@
 | `ui_font` | `"segoe_ui"` |
 | `ui_theme` | `"default"` |
 | `launch_at_login` | `false` |
+| `shortcuts.new_card` | `"Ctrl+Shift+N"` |
 
 ### ui_font と tkinter フォント名
 
@@ -198,7 +208,11 @@
   "confirm_exit": false,
   "ui_size": "medium",
   "ui_font": "segoe_ui",
-  "ui_theme": "default"
+  "ui_theme": "default",
+  "launch_at_login": false,
+  "shortcuts": {
+    "new_card": "Ctrl+Shift+N"
+  }
 }
 ```
 

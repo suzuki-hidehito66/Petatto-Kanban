@@ -22,6 +22,7 @@ def test_default_display_settings_is_overlay_mode() -> None:
     assert settings.ui_font.value == "segoe_ui"
     assert settings.ui_theme.value == "default"
     assert settings.launch_at_login is False
+    assert settings.shortcut_new_card == "Ctrl+Shift+N"
 
 
 def test_save_and_load_display_settings(tmp_path: Path) -> None:
@@ -138,6 +139,29 @@ def test_save_and_load_launch_at_login(tmp_path: Path) -> None:
 
     loaded = load_display_settings(path)
     assert loaded.launch_at_login is True
+
+
+def test_save_and_load_shortcut_new_card(tmp_path: Path) -> None:
+    settings = DisplaySettings(shortcut_new_card="Ctrl+Shift+K")
+    path = tmp_path / "settings.json"
+    save_display_settings(settings, path)
+
+    loaded = load_display_settings(path)
+    assert loaded.shortcut_new_card == "Ctrl+Shift+K"
+    data = display_settings_to_dict(settings)
+    assert data["shortcuts"]["new_card"] == "Ctrl+Shift+K"
+
+
+def test_display_settings_missing_shortcuts_falls_back_to_default() -> None:
+    restored = display_settings_from_dict({"mode": "overlay"})
+    assert restored.shortcut_new_card == "Ctrl+Shift+N"
+
+
+def test_display_settings_invalid_shortcut_falls_back_to_default() -> None:
+    restored = display_settings_from_dict({"shortcuts": {"new_card": "N"}})
+    assert restored.shortcut_new_card == "Ctrl+Shift+N"
+    restored_type = display_settings_from_dict({"shortcuts": "nope"})
+    assert restored_type.shortcut_new_card == "Ctrl+Shift+N"
 
 
 def test_monitor_index_for_name() -> None:

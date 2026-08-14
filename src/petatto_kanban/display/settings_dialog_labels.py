@@ -9,17 +9,22 @@ LABEL_DISPLAY_MONITOR = "表示ディスプレイ"
 LABEL_UI_SIZE = "UI サイズ"
 LABEL_UI_FONT = "フォント"
 LABEL_UI_THEME = "カラーテーマ"
+LABEL_SHORTCUT_NEW_CARD = "新規カード作成"
 
 CHECK_CONFIRM_DELETE = "カード削除時に確認ダイアログを表示する"
 CHECK_CONFIRM_EXIT = "アプリ終了時に確認ダイアログを表示する"
 CHECK_LAUNCH_AT_LOGIN = "Windows ログオン時に自動起動する"
 
 BUTTON_DELETE_ALL_CARDS = "全てのカードを削除"
+BUTTON_CHANGE_SHORTCUT = "変更"
+BUTTON_RESET_SHORTCUT = "既定に戻す"
 
 MSG_SETTINGS_SAVED = "設定を保存しました。"
 MSG_NO_CARDS_TO_DELETE = "削除するカードがありません。"
 MSG_CONFIRM_DELETE_ALL = "全てのカード（{count}枚）を削除しますか？\nこの操作は取り消せません。"
 MSG_CONFIRM_EXIT = "アプリを終了しますか？"
 MSG_AUTO_START_FAILED = "自動起動の設定を反映できませんでした。\n{error}"
+MSG_HOTKEY_FAILED = "ショートカットを登録できませんでした。\n{error}"
+MSG_SHORTCUT_CAPTURE = "キーを入力..."
 
 COMBOBOX_WIDTH = 28

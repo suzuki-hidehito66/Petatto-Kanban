@@ -145,13 +145,13 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-003 |
-| 関連 AC | AC-003-01, AC-003-02 |
+| 関連 FR | FR-003, FR-030 |
+| 関連 AC | AC-003-01, AC-003-02, AC-030-01 |
 | 実装 | `src/petatto_kanban/app.py`, `new_card_placement.py`, `menu_panel.py` |
 
 | 属性 | 値 |
 |------|-----|
-| トリガー | メニューパネルホバー時の **＋** ボタンをクリックして離す（`<ButtonRelease-1>`） |
+| トリガー | メニューパネルホバー時の **＋** ボタンをクリックして離す（`<ButtonRelease-1>`）、または [UC-012](#uc-012-キーボードショートカット) の新規カードショートカット |
 | 初期タイトル | `新しいタスク`（`DEFAULT_NEW_CARD_TITLE` — `new_card_placement.py`） |
 | 保存 | 追加直後に `board.json` へ永続化 |
 | タイトル編集 | 追加直後に UC-005 のインライン編集を自動開始（全選択・フォーカス） |
@@ -176,6 +176,30 @@
 | クランプ | `0 <= x <= monitor_width - card_width`、`0 <= y <= monitor_height - card_height` |
 
 **注意:** `panel.right` は展開/収納に関わらず `<` 円の右端（NE アンカー）を使う。幅の取得が未確定のときも `_content_width()` で展開状態を反映する。
+
+---
+
+## UC-012: キーボードショートカット
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-030, FR-003 |
+| 関連 AC | AC-030-01, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
+| 実装 | `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `app.py` |
+| 設定 UI | [UC-006 §操作タブ](#uc-006-設定ダイアログ) |
+
+| 項目 | 仕様 |
+|------|------|
+| 方式 | Windows グローバルホットキー（`RegisterHotKey`）。受信は Tk とは別スレッド（`hotkey_pump.py`）のメッセージ専用ウィンドウ（ネイティブ `DefWindowProc`）。アプリが起動していれば他ウィンドウ前面でも発火 |
+| 対象 OS | Windows 11 以降 |
+| 既定 | 新規カード作成 = `Ctrl+Shift+N` |
+| 動作 | 発火時は [UC-004](#uc-004-カード即時追加) と同一（配置・初期タイトル・インライン編集・保存） |
+| 編集中 | タイトルインライン編集中なら確定。期限パネルが開いていればキャンセル。その後にカード追加 |
+| 抑制 | 設定ダイアログ表示中は発火しない |
+| 再登録 | 設定 OK 成功後。失敗時はダイアログ全項目をロールバックし、旧コードのまま |
+| 解除 | アプリ終了時 |
+
+M1 で割り当て可能なアクションは **新規カード作成** のみ。他アクションは将来の操作タブ拡張とする。
 
 ---
 
@@ -220,9 +244,9 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027, FR-028, FR-029 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `app.py` |
-| 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01, AC-029-01, AC-029-02, AC-029-06 |
+| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027, FR-028, FR-029, FR-030 |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `app.py` |
+| 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01, AC-029-01, AC-029-02, AC-029-06, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
 
 ### タブ構成
 
@@ -230,12 +254,14 @@
 |------|----------------|---------|------|
 | **表示** | `SETTINGS_TAB_DISPLAY` | FR-019, FR-020, FR-021, FR-022, FR-026, FR-027 | 表示モード、表示ディスプレイ、UI サイズ、**フォント** |
 | **テーマ** | `SETTINGS_TAB_THEME` | FR-028 | **カラーテーマ** |
+| **操作** | `SETTINGS_TAB_ACTIONS` | FR-030 | **ショートカットキー** |
 | **システム** | `SETTINGS_TAB_SYSTEM` | FR-024, FR-023, FR-029, FR-005 | 確認オプション、**自動起動**、**全カード削除** |
 
 - UI は `ttk.Notebook` でタブ切り替え
 - `settings_dialog_tabs.DISPLAY_TAB_FIELDS` に `ui_size`, `ui_font` を含む
 - `settings_dialog_tabs.THEME_TAB_FIELDS` に `ui_theme` を含む
-- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit`, `launch_at_login`, `ui_size`, `ui_font`, `ui_theme` を保存（タブに関係なく一括）
+- `settings_dialog_tabs.ACTIONS_TAB_FIELDS` に `shortcut_new_card`（`shortcuts.new_card`）を含む
+- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit`, `launch_at_login`, `ui_size`, `ui_font`, `ui_theme`, `shortcuts` を保存（タブに関係なく一括）
 - キャンセル時は変更を破棄
 
 ### 表示タブ
@@ -252,6 +278,17 @@
 | 要素 | 仕様 |
 |------|------|
 | **カラーテーマ** | コンボボックス（`readonly`）: Default / ダーク / サンディ / フォレスト / ファンシー / オーシャン / サンセット / スレート / ローズ / ミッドナイト（FR-028）。既定 **Default** |
+
+### 操作タブ
+
+| 要素 | 仕様 |
+|------|------|
+| 行ラベル | 「新規カード作成」 |
+| 割り当て表示 | 現在のコード（既定 `Ctrl+Shift+N`）を読み取り専用で表示 |
+| **変更** | 押下後、次に入力したキーコンボを仮割り当て。Escape で変更キャンセル |
+| **既定に戻す** | `Ctrl+Shift+N` に戻す |
+| 入力規則 | 修飾（Ctrl / Alt / Shift）を 1 つ以上含む。単体キー・修飾のみは受け付けない |
+| 確定 | OK でホットキーを再登録し `shortcuts.new_card` を保存。失敗時はダイアログ全項目をロールバックし `settings.json` を保存しない（FR-029 と同様） |
 
 ### システムタブ
 
@@ -589,3 +626,9 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.9.0 | 2026-08-14 | UC-006 システムタブ: Windows ログオン時自動起動（FR-029） |
 | 2.9.1 | 2026-08-14 | UC-006: 自動起動失敗時は全項目ロールバック。起動コマンド解決を分離 |
 | 2.9.2 | 2026-08-14 | UC-006: 自動起動は Windows 11 以降のみ。非 Windows 無効化の記述を削除 |
+| 2.10.0 | 2026-08-14 | UC-006 操作タブ・UC-012 キーボードショートカット（FR-030、既定 Ctrl+Shift+N） |
+| 2.10.1 | 2026-08-14 | UC-006 操作タブ・UC-012 を実装（`system/hotkey.py` / RegisterHotKey） |
+| 2.10.2 | 2026-08-14 | UC-012: コード正規化を `shortcut.py` に分離。失敗時は全項目ロールバック |
+| 2.10.3 | 2026-08-14 | UC-012: WM_HOTKEY はメッセージ専用ウィンドウで受信（Tk WndProc 差し替えを廃止） |
+| 2.10.4 | 2026-08-14 | UC-012: Python WndProc を廃止。専用スレッド + `GetMessage` + Tk `poll()` |
+| 2.10.5 | 2026-08-14 | UC-012: Win32 ポンプを `hotkey_pump.py` に分離。セッションは `hotkey.py` |

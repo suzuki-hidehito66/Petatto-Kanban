@@ -19,7 +19,7 @@ flowchart TB
         subgraph App["petatto_kanban"]
             UI["app.py (tkinter GUI)"]
             Display["display/ (設定・表示モード)"]
-            System["system/ (自動起動)"]
+            System["system/ (OS連携)"]
             Models["models.py (Domain)"]
             Storage["storage.py (JSON I/O)"]
         end
@@ -105,7 +105,10 @@ petatto-kanban/
 │   ├── card_renderer.py          # カード UI 描画（UiMetrics）
 │   ├── system/
 │   │   ├── auto_start.py         # Windows Run キー（FR-029）
-│   │   └── launch_command.py     # ログオン時コマンド行の解決
+│   │   ├── launch_command.py     # ログオン時コマンド行の解決
+│   │   ├── shortcut.py           # ショートカットコード正規化（FR-030）
+│   │   ├── hotkey.py             # ホットキーセッション（poll / 失敗時ロールバック）
+│   │   └── hotkey_pump.py        # Win32 専用スレッドで WM_HOTKEY を受信
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -123,17 +126,17 @@ petatto-kanban/
 |------------|------|------|
 | `models.py` | ドメインエンティティ、不変条件 | 標準ライブラリのみ |
 | `storage.py` | JSON シリアライズ / デシリアライズ | `models` |
-| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement`, `system/auto_start` |
+| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement`, `system/auto_start`, `system/hotkey` |
 | `display/transparent.py` | 透過色・全画面シェル（オーバーレイ/デスクトップ共通） | 標準ライブラリ + tkinter |
 | `display/modes.py` | 表示モード適用のディスパッチ | `overlay`, `desktop`, `settings` |
 | `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） | tkinter, `transparent`, `settings` |
 | `display/desktop_board_controller.py` | DM-DESKTOP-02/03 本体 Z オーダー制御 | tkinter, `desktop`, `foreground`, `menu_panel_host` |
 | `display/foreground.py` | 前面ウィンドウのプロセス判定 | `transparent`, Windows API |
-| `display/settings_dialog.py` | UC-006 設定ダイアログ（`ttk.Notebook` シェル・確定値組み立て） | tkinter, `mode_labels`, `settings_dialog_tabs`, `settings_dialog_labels`, `settings_dialog_panels`, `settings`, `monitors` |
+| `display/settings_dialog.py` | UC-006 設定ダイアログ（`ttk.Notebook` シェル・確定値組み立て） | tkinter, `mode_labels`, `settings_dialog_tabs`, `settings_dialog_labels`, `settings_dialog_panels`, `settings`, `monitors`, `system/shortcut` |
 | `display/settings_dialog_tabs.py` | タブラベル・タブ別項目定義 | 標準ライブラリのみ |
 | `display/settings_dialog_labels.py` | 設定ダイアログ UI 文言 | 標準ライブラリのみ |
-| `display/settings_dialog_panels.py` | 表示 / システムタブのウィジェット構築 | tkinter, `mode_labels`, `settings_dialog_labels`, `monitors` |
-| `display/settings_actions.py` | 設定適用・終了確認・全カード削除・自動起動反映と失敗時ロールバック（`app.py` から利用） | `settings`, `settings_dialog`, `settings_dialog_labels`, `storage`, `system/auto_start` |
+| `display/settings_dialog_panels.py` | 表示 / テーマ / 操作 / システムタブのウィジェット構築 | tkinter, `mode_labels`, `settings_dialog_labels`, `monitors`, `system/shortcut` |
+| `display/settings_actions.py` | 設定適用・終了確認・全カード削除・自動起動/ホットキー反映と失敗時ロールバック（`app.py` から利用） | `settings`, `settings_dialog`, `settings_dialog_labels`, `storage`, `system/auto_start`, `system/shortcut` |
 | `display/ui_scale.py` | UI サイズプリセット・スケール係数（FR-026） | 標準ライブラリのみ |
 | `display/ui_scale_labels.py` | UI サイズコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/card_layout.py` | カード基準寸法・黄金比・スケール（UC-003 / UC-009） | 標準ライブラリのみ |
@@ -144,6 +147,9 @@ petatto-kanban/
 | `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ |
 | `system/auto_start.py` | Windows Run キーの登録・削除（FR-029） | 標準ライブラリ（`winreg`）、`launch_command` |
 | `system/launch_command.py` | ログオン時コマンド行の解決（frozen / pythonw） | 標準ライブラリのみ |
+| `system/shortcut.py` | ショートカットコードの解析・正規化（FR-030） | 標準ライブラリのみ |
+| `system/hotkey.py` | グローバルホットキーのセッション（FR-030）。割り当て・`poll()`・失敗時ロールバック | `shortcut`, `hotkey_pump` |
+| `system/hotkey_pump.py` | Win32 メッセージポンプ。専用スレッドのメッセージ専用ウィンドウで `GetMessage`（Python WndProc なし） | 標準ライブラリ（`ctypes` / `threading`） |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
@@ -225,6 +231,18 @@ petatto-kanban/
 | 理由 | 管理者権限不要、アンインストール時は設定 OFF で削除可能、デスクトップアプリの一般的な方式 |
 | トレードオフ | グループ ポリシーで Run キーが制限される環境では無効。タスク スケジューラより遅延起動の制御は弱い |
 | 関連 | FR-029, NFR-008 |
+
+### ADR-007: 新規カードショートカットはグローバルホットキー
+
+| 項目 | 内容 |
+|------|------|
+| ステータス | Accepted |
+| 日付 | 2026-08-14 |
+| コンテキスト | 既定 UI はオーバーレイ（クリック透過）。tkinter のウィンドウバインドでは他アプリ前面時にキーを受け取れない |
+| 決定 | Win32 `RegisterHotKey` による **グローバルホットキー** とする。受信は Tk ウィンドウの subclass でも Python ctypes WndProc でもなく、**専用スレッド** のメッセージ専用ウィンドウ（ネイティブ `DefWindowProc`）+ `GetMessage`。Tk は `after` でキューを読む。既定は Ctrl+Shift+N。割り当ては設定「操作」タブで変更。コード正規化は `shortcut.py`、セッションは `hotkey.py`、Win32 ポンプは `hotkey_pump.py` に分離 |
+| 理由 | メニューパネルを開かず、他作業中にカードを切れる。オーバーレイの操作モデルと一致する。Python ctypes WndProc を Tk のメッセージポンプから呼ぶと Python 3.14 で GIL fatal になるため、受信は専用スレッドに隔離する |
+| トレードオフ | 他アプリが同一ホットキーを先に登録していると失敗する。設定ダイアログ表示中は発火を抑制する |
+| 関連 | FR-030, UC-012, NFR-011 |
 
 ---
 
