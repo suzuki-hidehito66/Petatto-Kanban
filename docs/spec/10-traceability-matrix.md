@@ -43,7 +43,7 @@
 | FR-029 | US-019 | AC-029-01, AC-029-02, AC-029-03, AC-029-05, AC-029-06（AC-029-04 cancelled） | `system/auto_start.py`, `system/launch_command.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` | `test_auto_start.py`, `test_launch_command.py`, `test_display_settings.py`, `test_settings_dialog.py`, `test_settings_actions.py` + 手動 | implemented |
 | FR-030 | US-020 | AC-030-01〜05 | `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` | `test_shortcut.py`, `test_hotkey.py`, `test_display_settings.py`, `test_settings_dialog.py`, `test_settings_actions.py` + 手動 | implemented |
 | FR-031 | US-021 | AC-031-01, AC-031-02, AC-031-03 | （未実装）`system/error_log.py` | （未実装）`test_error_log.py` | specified |
-| FR-032 | US-021 | AC-032-01〜05 | （未実装）`system/github_issue.py` | （未実装）`test_github_issue.py` | specified |
+| FR-032 | US-021 | AC-032-01〜07 | （未実装）`system/github_issue.py`, `display/settings_dialog_panels.py` | （未実装）`test_github_issue.py`, `test_settings_dialog.py` | specified |
 
 ---
 

@@ -644,17 +644,20 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 優先度 | Should |
 | ステータス | specified |
 | 関連 US | US-021 |
-| 関連 AC | AC-032-01, AC-032-02, AC-032-03, AC-032-04, AC-032-05 |
-| 実装 | （未実装）`system/github_issue.py`（または同等）。`system/error_log.py` からベストエフォートで呼び出す |
+| 関連 AC | AC-032-01, AC-032-02, AC-032-03, AC-032-04, AC-032-05, AC-032-06, AC-032-07 |
+| 実装 | （未実装）`system/github_issue.py`（または同等）。`system/error_log.py` からベストエフォートで呼び出す。設定 UI は `display/settings_dialog_panels.py` のシステムタブ |
 | UI 契約 | [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 | データ契約 | [DC-003 `report_errors_to_github`](./07-data-contract.md#dc-003-表示設定スキーマ), [DC-004](./07-data-contract.md#dc-004-エラーログ) |
 
 **説明**  
-ローカルにエラーを記録したあと、**利用者が明示的に有効にした場合だけ**、同じ診断情報で公開リポジトリへ GitHub Issue を自動作成する。コア機能ではない。失敗してもアプリは止まらない。
+設定ダイアログ **「システム」タブ** で、エラー時に GitHub Issue を自動起票するかを ON/OFF できる。ON のときだけ、ローカルに記録した未捕捉例外を公開リポジトリへ起票する。コア機能ではない。失敗してもアプリは止まらない。
 
 **制約**
 - **既定 OFF**（`settings.json` の `report_errors_to_github` = `false`）。OFF のときは HTTP を一切行わない（NFR-008）
-- ON にする操作は設定ダイアログ **「システム」タブ** のチェックボックスのみ
+- 起票の可否を切り替える UI は設定ダイアログ **「システム」タブ** のチェックボックスのみ（メニューパネルや他タブには置かない）
+- チェック状態は `settings.json` の `report_errors_to_github` に永続化する。ダイアログを開いたときは保存値を表示する
+- OK 確定直後から有効（再起動不要）。OFF にしたあとの未捕捉例外では HTTP しない
+- キャンセル時はチェック変更を破棄する（他の設定項目と同じ）
 - 起票先（固定）: `https://github.com/suzuki-hidehito66/Petatto-Kanban` の Issues。GitHub REST API（`POST /repos/{owner}/{repo}/issues`）
 - 認証: 利用者自身の Personal Access Token。保存場所は **`%USERPROFILE%\.petatto-kanban\github_token`**（1 行のトークン文字列）または環境変数 `PETATTO_GITHUB_TOKEN`（ファイルより環境変数を優先）。**`settings.json`・git・ログファイルには書かない**
 - トークン権限の目安: Fine-grained なら当該リポジトリの Issues Read and write。Classic なら `public_repo`

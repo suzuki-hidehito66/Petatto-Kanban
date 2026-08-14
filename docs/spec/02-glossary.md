@@ -25,7 +25,7 @@
 | 自動起動 | Launch at login | Windows ログオン時にアプリを起動する設定。`settings.json` の `launch_at_login` と HKCU Run キーで管理（FR-029） |
 | ショートカットキー | Keyboard shortcut | キーボード操作で機能を実行する割り当て。既定の新規カード作成は **Ctrl+Shift+N**（FR-030） |
 | エラーログ | Error log | `%USERPROFILE%\.petatto-kanban\logs\` に出す診断ファイル。未捕捉例外などを記録する（FR-031） |
-| GitHub Issue 任意起票 | Optional GitHub issue report | 設定 ON かつローカルトークンがあるときだけ、エラーを公開リポジトリの Issue にする（FR-032）。既定 OFF |
+| GitHub Issue 任意起票 | Optional GitHub issue report | 設定「システム」タブで ON/OFF。ON かつローカルトークンがあるときだけ、エラーを公開リポジトリの Issue にする（FR-032）。既定 OFF |
 
 ## SDD 用語
 

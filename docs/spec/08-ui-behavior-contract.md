@@ -248,7 +248,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 |------|-----|
 | 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027, FR-028, FR-029, FR-030, FR-032 |
 | 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `app.py`（FR-032 のトークン警告は実装時に `settings_actions` へ追加） |
-| 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01, AC-029-01, AC-029-02, AC-029-06, AC-030-02, AC-030-03, AC-030-04, AC-030-05, AC-032-05 |
+| 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01, AC-029-01, AC-029-02, AC-029-06, AC-030-02, AC-030-03, AC-030-04, AC-030-05, AC-032-05, AC-032-06, AC-032-07 |
 
 ### タブ構成
 
@@ -263,6 +263,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 - `settings_dialog_tabs.DISPLAY_TAB_FIELDS` に `ui_size`, `ui_font` を含む
 - `settings_dialog_tabs.THEME_TAB_FIELDS` に `ui_theme` を含む
 - `settings_dialog_tabs.ACTIONS_TAB_FIELDS` に `shortcut_new_card`（`shortcuts.new_card`）を含む
+- `settings_dialog_tabs.SYSTEM_TAB_FIELDS` に `confirm_delete`, `confirm_exit`, `launch_at_login`, `report_errors_to_github` を含む
 - OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit`, `launch_at_login`, `ui_size`, `ui_font`, `ui_theme`, `shortcuts`, `report_errors_to_github` を保存（タブに関係なく一括）
 - キャンセル時は変更を破棄
 
@@ -299,8 +300,10 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | チェックボックス | 「カード削除時に確認ダイアログを表示する」 |
 | チェックボックス | 「アプリ終了時に確認ダイアログを表示する」（`confirm_exit`、既定 `false`） |
 | チェックボックス | 「Windows ログオン時に自動起動する」（`launch_at_login`、既定 `false`、FR-029）。対象 OS は **Windows 11 以降** |
-| チェックボックス | 「エラー時に GitHub Issue を自動起票する」（`report_errors_to_github`、既定 `false`、FR-032） |
-| エラー報告の補足 | トークンは設定画面に入力しない。`%USERPROFILE%\.petatto-kanban\github_token` または環境変数 `PETATTO_GITHUB_TOKEN`。ON かつトークン無しで OK したときは警告 1 回 |
+| チェックボックス | 「エラー時に GitHub Issue を自動起票する」（`report_errors_to_github`、既定 `false`、FR-032）。**起票するかどうかはこのチェックだけで切り替える** |
+| エラー報告の初期表示 | ダイアログ表示時は `settings.json` の `report_errors_to_github` を反映する |
+| エラー報告の確定 | OK で `report_errors_to_github` を保存し、**再起動せず**直後から ON/OFF を適用する。キャンセル時は破棄 |
+| エラー報告の補足 | トークン入力欄は置かない。`%USERPROFILE%\.petatto-kanban\github_token` または環境変数 `PETATTO_GITHUB_TOKEN`。ON かつトークン無しで OK したときは警告 1 回（設定値は保存する） |
 | 自動起動の確定 | OK 時に Run キーへ反映。失敗時はダイアログ全項目をロールバックし `settings.json` を保存しない。成功時のみ「設定を保存しました」 |
 | ボタン | **「全てのカードを削除」** — 押下で確認ダイアログ（枚数表示）→ 全カード削除・`board.json` 保存・即時再描画。`confirm_delete` 設定に関係なく **常に確認** |
 
@@ -313,6 +316,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | UI サイズ変更時 | 表示モード・ディスプレイを変えずにカード・メニューパネルを再描画。カード座標は保持 |
 | フォント変更時 | UI サイズ変更時と同様に即時再描画。カード座標は保持 |
 | テーマ変更時 | フォント変更時と同様に即時再描画。カード座標は保持。[UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ) の適用・除外範囲に従う |
+| GitHub 起票設定変更時 | OK 直後から `report_errors_to_github` を適用する。再描画は不要。OFF なら以降 HTTP しない |
 
 ---
 
@@ -639,3 +643,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.11.0 | 2026-08-14 | UC-003: タイトル改行時はカード高さを下限以上に伸ばし、幅は固定 |
 | 2.11.1 | 2026-08-14 | UC-003: 枠サイズ決定を `card_frame.py` に分離。基準寸法は `card_layout.py` |
 | 2.12.0 | 2026-08-14 | UC-006 システムタブ: GitHub Issue 任意起票（FR-032）。エラーログは FR-031 |
+| 2.12.1 | 2026-08-14 | UC-006 システムタブ: 起票可否の ON/OFF・即時適用・永続化を明記（FR-032） |

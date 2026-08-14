@@ -1293,6 +1293,50 @@ And コア設定の保存は成功する
 
 **テスト**: （未実装）`test_settings_dialog.py` / `test_settings_actions.py` + 手動
 
+### AC-032-06
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-032 |
+| 関連 UC | UC-006 |
+| ステータス | specified |
+| 検証 | 自動 + 手動 |
+
+```gherkin
+Given 設定ダイアログの「システム」タブが表示されている
+And report_errors_to_github が true である
+When ユーザーが「エラー時に GitHub Issue を自動起票する」のチェックを外して OK する
+Then settings.json の report_errors_to_github が false になる
+And 以降の未捕捉例外で HTTP リクエストは送られない
+And ローカルのエラーログは引き続き記録される
+```
+
+**テスト**: （未実装）`test_settings_dialog.py` / `test_github_issue.py` + 手動
+
+### AC-032-07
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-032 |
+| 関連 UC | UC-006 |
+| ステータス | specified |
+| 検証 | 自動 + 手動 |
+
+```gherkin
+Given settings.json の report_errors_to_github が true である
+When アプリを再起動し、設定ダイアログの「システム」タブを開く
+Then 「エラー時に GitHub Issue を自動起票する」が ON で表示される
+```
+
+```gherkin
+Given settings.json に report_errors_to_github が無い
+When 表示設定を読み込み、設定ダイアログの「システム」タブを開く
+Then 「エラー時に GitHub Issue を自動起票する」が OFF で表示される
+And report_errors_to_github は false として扱われる
+```
+
+**テスト**: （未実装）`test_display_settings.py` / `test_settings_dialog.py` + 手動
+
 ---
 
 ## M2 以降（プレースホルダー）

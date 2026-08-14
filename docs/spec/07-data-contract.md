@@ -135,7 +135,7 @@
 | `ui_theme` | string | ○ | UI カラーテーマ: `"default"` \| `"dark"` \| ...（FR-028） |
 | `launch_at_login` | boolean | ○ | Windows ログオン時に自動起動するか（FR-029） |
 | `shortcuts` | object | ○ | キーボードショートカット割り当て（FR-030） |
-| `report_errors_to_github` | boolean | ○ | 未捕捉例外を GitHub Issue に起票するか（FR-032）。既定 `false` |
+| `report_errors_to_github` | boolean | ○ | GitHub Issue を自動起票するか（FR-032）。設定「システム」タブで ON/OFF。既定 `false` |
 
 #### shortcuts オブジェクト
 
