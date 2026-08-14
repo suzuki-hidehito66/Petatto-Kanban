@@ -15,6 +15,7 @@ from petatto_kanban.display.settings_dialog_labels import (
     BUTTON_DELETE_ALL_CARDS,
     CHECK_CONFIRM_DELETE,
     CHECK_CONFIRM_EXIT,
+    CHECK_LAUNCH_AT_LOGIN,
     COMBOBOX_WIDTH,
     LABEL_DISPLAY_MODE,
     LABEL_DISPLAY_MONITOR,
@@ -59,6 +60,7 @@ class SystemTabState:
 
     confirm_delete_var: tk.BooleanVar
     confirm_exit_var: tk.BooleanVar
+    launch_at_login_var: tk.BooleanVar
 
 
 @dataclass
@@ -158,6 +160,8 @@ def build_system_tab(
     *,
     confirm_delete: bool,
     confirm_exit: bool,
+    launch_at_login: bool,
+    auto_start_supported: bool,
     on_delete_all_cards: Callable[[], None] | None,
 ) -> SystemTabState:
     """システムタブ（確認オプション・一括削除）を構築する."""
@@ -178,15 +182,27 @@ def build_system_tab(
         variable=confirm_exit_var,
     ).grid(row=1, column=0, sticky=tk.W, pady=(0, 8))
 
+    launch_at_login_var = tk.BooleanVar(value=launch_at_login)
+    launch_at_login_button = ttk.Checkbutton(
+        parent,
+        text=CHECK_LAUNCH_AT_LOGIN,
+        variable=launch_at_login_var,
+    )
+    launch_at_login_button.grid(row=2, column=0, sticky=tk.W, pady=(0, 8))
+    if not auto_start_supported:
+        launch_at_login_button.state(["disabled"])
+
+    delete_row = 3
     if on_delete_all_cards is not None:
         ttk.Button(
             parent,
             text=BUTTON_DELETE_ALL_CARDS,
             command=on_delete_all_cards,
-        ).grid(row=2, column=0, sticky=tk.W, pady=(8, 0))
+        ).grid(row=delete_row, column=0, sticky=tk.W, pady=(8, 0))
 
     parent.columnconfigure(0, weight=1)
     return SystemTabState(
         confirm_delete_var=confirm_delete_var,
         confirm_exit_var=confirm_exit_var,
+        launch_at_login_var=launch_at_login_var,
     )

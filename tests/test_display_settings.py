@@ -21,6 +21,7 @@ def test_default_display_settings_is_overlay_mode() -> None:
     assert settings.ui_size.value == "medium"
     assert settings.ui_font.value == "segoe_ui"
     assert settings.ui_theme.value == "default"
+    assert settings.launch_at_login is False
 
 
 def test_save_and_load_display_settings(tmp_path: Path) -> None:
@@ -128,6 +129,15 @@ def test_save_and_load_ui_theme(tmp_path: Path) -> None:
 
     loaded = load_display_settings(path)
     assert loaded.ui_theme == UiTheme.FOREST
+
+
+def test_save_and_load_launch_at_login(tmp_path: Path) -> None:
+    settings = DisplaySettings(launch_at_login=True)
+    path = tmp_path / "settings.json"
+    save_display_settings(settings, path)
+
+    loaded = load_display_settings(path)
+    assert loaded.launch_at_login is True
 
 
 def test_monitor_index_for_name() -> None:

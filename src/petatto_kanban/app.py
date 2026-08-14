@@ -25,6 +25,7 @@ from petatto_kanban.display.monitors import Monitor, get_monitor
 from petatto_kanban.display.settings import DisplayMode
 from petatto_kanban.display.settings_actions import (
     apply_dialog_result,
+    apply_launch_at_login,
     confirm_exit,
     delete_all_cards_with_confirm,
 )
@@ -46,6 +47,7 @@ from petatto_kanban.new_card_placement import (
 )
 from petatto_kanban.progress import PROGRESS_STEP, clamp_progress
 from petatto_kanban.storage import load_board, save_board
+from petatto_kanban.system.auto_start import sync_auto_start_from_settings
 
 APP_TITLE = "Petatto-Kanban"
 
@@ -80,6 +82,7 @@ class KanbanApp:
 
         self._build_menu_panel()
         self._sync_card_renderer()
+        sync_auto_start_from_settings(self.display_settings.launch_at_login)
         self._apply_display_mode()
         self.refresh()
 
@@ -649,6 +652,7 @@ class KanbanApp:
                 mode=self.display_settings.mode,
                 confirm_delete=self.display_settings.confirm_delete,
                 confirm_exit=self.display_settings.confirm_exit,
+                launch_at_login=self.display_settings.launch_at_login,
                 monitor_index=self.display_settings.monitor_index,
                 ui_size=self.display_settings.ui_size,
                 ui_font=self.display_settings.ui_font,
@@ -664,7 +668,16 @@ class KanbanApp:
         messagebox.showinfo(APP_TITLE, MSG_SETTINGS_SAVED, parent=self.root)
 
     def _apply_settings(self, settings: SettingsDialogResult) -> None:
+        previous_launch_at_login = self.display_settings.launch_at_login
         changes = apply_dialog_result(self.display_settings, settings)
+        if changes.launch_at_login_changed and not apply_launch_at_login(
+            self.display_settings,
+            messagebox=messagebox,
+            parent=self.root,
+            app_title=APP_TITLE,
+        ):
+            self.display_settings.launch_at_login = previous_launch_at_login
+            return
         save_display_settings(self.display_settings)
 
         if changes.needs_ui_refresh:

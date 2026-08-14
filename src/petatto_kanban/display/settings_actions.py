@@ -7,11 +7,13 @@ from typing import TYPE_CHECKING, Protocol
 
 from petatto_kanban.display.settings_dialog import SettingsDialogResult
 from petatto_kanban.display.settings_dialog_labels import (
+    MSG_AUTO_START_FAILED,
     MSG_CONFIRM_DELETE_ALL,
     MSG_CONFIRM_EXIT,
     MSG_NO_CARDS_TO_DELETE,
 )
 from petatto_kanban.storage import save_board
+from petatto_kanban.system.auto_start import sync_auto_start_from_settings
 
 if TYPE_CHECKING:
     import tkinter as tk
@@ -37,6 +39,7 @@ class SettingsApplyChanges:
     ui_size_changed: bool
     ui_font_changed: bool
     ui_theme_changed: bool
+    launch_at_login_changed: bool
 
     @property
     def needs_display_refresh(self) -> bool:
@@ -58,15 +61,44 @@ def apply_dialog_result(
         ui_size_changed=result.ui_size != display_settings.ui_size,
         ui_font_changed=result.ui_font != display_settings.ui_font,
         ui_theme_changed=result.ui_theme != display_settings.ui_theme,
+        launch_at_login_changed=result.launch_at_login != display_settings.launch_at_login,
     )
     display_settings.mode = result.mode
     display_settings.confirm_delete = result.confirm_delete
     display_settings.confirm_exit = result.confirm_exit
+    display_settings.launch_at_login = result.launch_at_login
     display_settings.monitor_index = result.monitor_index
     display_settings.ui_size = result.ui_size
     display_settings.ui_font = result.ui_font
     display_settings.ui_theme = result.ui_theme
     return changes
+
+
+def apply_launch_at_login(
+    display_settings: DisplaySettings,
+    *,
+    messagebox: MessageBoxHost,
+    parent: tk.Misc,
+    app_title: str,
+) -> bool:
+    """launch_at_login を OS に反映。失敗時はダイアログを表示し False。"""
+    try:
+        sync_auto_start_from_settings(display_settings.launch_at_login)
+    except OSError as error:
+        messagebox.showinfo(
+            app_title,
+            MSG_AUTO_START_FAILED.format(error=error),
+            parent=parent,
+        )
+        return False
+    except RuntimeError as error:
+        messagebox.showinfo(
+            app_title,
+            MSG_AUTO_START_FAILED.format(error=error),
+            parent=parent,
+        )
+        return False
+    return True
 
 
 def confirm_exit(

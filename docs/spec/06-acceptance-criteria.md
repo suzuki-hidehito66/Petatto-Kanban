@@ -917,6 +917,60 @@ And 配色は default テーマ（現行既定）になる
 
 ---
 
+## FR-029: Windows ログオン時自動起動
+
+### AC-029-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 + 手動（Windows） |
+
+```gherkin
+Given ユーザーが Windows 11 上で Petatto-Kanban を実行している
+When 設定ダイアログ「システム」タブで「Windows ログオン時に自動起動する」を ON にして OK する
+Then settings.json の launch_at_login が true になる
+And HKCU\Software\Microsoft\Windows\CurrentVersion\Run に Petatto-Kanban エントリが作成される
+```
+
+**テスト**: `test_auto_start.py`, `test_display_settings.py`, `test_settings_dialog.py` + 手動
+
+### AC-029-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 + 手動（Windows） |
+
+```gherkin
+Given launch_at_login が true でレジストリにエントリがある
+When ユーザーが同設定を OFF にして OK する
+Then settings.json の launch_at_login が false になる
+And Run キーから Petatto-Kanban エントリが削除される
+```
+
+**テスト**: `test_auto_start.py`, `test_settings_actions.py` + 手動
+
+### AC-029-03
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json に launch_at_login フィールドがない
+When 表示設定を読み込む
+Then launch_at_login は false として扱われる
+```
+
+**テスト**: `test_default_display_settings_is_overlay_mode`, `test_display_settings.py`
+
+---
+
 ## M2 以降（プレースホルダー）
 
 | ID | 関連 FR | ステータス |
