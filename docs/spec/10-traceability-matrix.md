@@ -19,7 +19,7 @@
 | FR | US | AC | 実装 | テスト | ステータス |
 |----|----|----|------|--------|------------|
 | FR-001 | US-001, US-010 | AC-001-01, AC-020-01 | `app.py`, `display/overlay.py` | 手動 | implemented |
-| FR-002 | US-001 | AC-002-01 | `models.py`, `app.py` | `test_create_default_board_is_empty` | verified |
+| FR-002 | US-001 | AC-002-01, AC-002-02 | `models.py`, `app.py`, `card_renderer.py`, `display/card_layout.py` | `test_create_default_board_is_empty`, `test_resolve_card_frame_size_*` + 手動 | implemented |
 | FR-003 | US-002 | AC-003-01, AC-003-02 | `app.py` | 手動 | implemented |
 | FR-004 | US-003 | AC-004-01, AC-004-02 | `app.py` | 手動 | implemented |
 | FR-005 | US-004 | AC-005-01, AC-005-02, AC-005-03 | `app.py`, `models.py`, `display/settings_actions.py`, `display/settings_dialog_panels.py` | `test_board_clear_cards`, `test_settings_actions.py` + 手動 | implemented |

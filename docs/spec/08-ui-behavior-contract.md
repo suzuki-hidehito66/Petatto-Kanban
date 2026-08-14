@@ -137,7 +137,7 @@
 **配置・サイズ**
 - `place(x, y)` — 座標は `board.json` に永続化
 - 最小サイズ・フォント・進捗バー高さ等は [UC-009](./08-ui-behavior-contract.md#uc-009-ui-スケール) のスケール後寸法を用いる（標準時: `CARD_MIN_WIDTH = 175`、`CARD_MIN_HEIGHT = 108`、横長黄金比 φ、フォント 10pt）
-- 実際の枠サイズ: 幅・高さとも `CARD_MIN_WIDTH` / `CARD_MIN_HEIGHT` に固定（`winfo_req*` では拡張しない）
+- 実際の枠サイズ: **幅**は `CARD_MIN_WIDTH` に固定（`winfo_reqwidth` では拡張しない）。**高さ**は `CARD_MIN_HEIGHT` を下限とし、タイトルの改行・`wraplength` 折り返しで内容が増えたときは縦方向のみ拡張する（期限・進捗を隠さない）
 
 ---
 
@@ -632,3 +632,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.10.3 | 2026-08-14 | UC-012: WM_HOTKEY はメッセージ専用ウィンドウで受信（Tk WndProc 差し替えを廃止） |
 | 2.10.4 | 2026-08-14 | UC-012: Python WndProc を廃止。専用スレッド + `GetMessage` + Tk `poll()` |
 | 2.10.5 | 2026-08-14 | UC-012: Win32 ポンプを `hotkey_pump.py` に分離。セッションは `hotkey.py` |
+| 2.11.0 | 2026-08-14 | UC-003: タイトル改行時はカード高さを下限以上に伸ばし、幅は固定 |

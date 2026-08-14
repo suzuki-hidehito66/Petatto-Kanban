@@ -55,6 +55,27 @@ And cards は空配列である
 
 ---
 
+### AC-002-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-002 |
+| 関連 US | US-001 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given カードの最小幅が 175px、最小高さが 108px である
+When タイトルの改行により必要な高さが 160px になる
+Then カード幅は 175px のままである
+And カード高さは 160px である
+And 期限パネルと進捗バーはカード内に表示される
+```
+
+**テスト**: `test_resolve_card_frame_size_grows_height_only_for_wrapped_title` + 手動
+
+---
+
 ## FR-003: カード作成
 
 ### AC-003-01

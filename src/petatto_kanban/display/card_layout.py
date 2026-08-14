@@ -81,6 +81,16 @@ def scale_int(base: int, scale: float) -> int:
     return round(base * scale)
 
 
+def resolve_card_frame_size(
+    *,
+    min_width: int,
+    min_height: int,
+    required_height: int,
+) -> tuple[int, int]:
+    """カード枠サイズ。幅は最小幅に固定し、高さは内容が収まるよう下限以上に伸ばす."""
+    return min_width, max(min_height, required_height)
+
+
 def scale_card_layout(baseline: CardLayoutBaseline, scale: float) -> ScaledCardLayout:
     """基準レイアウトを ui_size 係数でスケールする。枠線 px はスケールしない。"""
     return ScaledCardLayout(
