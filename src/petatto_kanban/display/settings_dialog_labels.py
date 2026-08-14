@@ -12,6 +12,7 @@ LABEL_UI_THEME = "カラーテーマ"
 
 CHECK_CONFIRM_DELETE = "カード削除時に確認ダイアログを表示する"
 CHECK_CONFIRM_EXIT = "アプリ終了時に確認ダイアログを表示する"
+CHECK_LAUNCH_AT_LOGIN = "Windows ログオン時に自動起動する"
 
 BUTTON_DELETE_ALL_CARDS = "全てのカードを削除"
 
@@ -19,5 +20,6 @@ MSG_SETTINGS_SAVED = "設定を保存しました。"
 MSG_NO_CARDS_TO_DELETE = "削除するカードがありません。"
 MSG_CONFIRM_DELETE_ALL = "全てのカード（{count}枚）を削除しますか？\nこの操作は取り消せません。"
 MSG_CONFIRM_EXIT = "アプリを終了しますか？"
+MSG_AUTO_START_FAILED = "自動起動の設定を反映できませんでした。\n{error}"
 
 COMBOBOX_WIDTH = 28

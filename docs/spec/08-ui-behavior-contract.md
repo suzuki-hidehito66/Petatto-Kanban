@@ -220,9 +220,9 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027, FR-028 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `app.py` |
-| 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01 |
+| 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027, FR-028, FR-029 |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `app.py` |
+| 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01, AC-029-01, AC-029-02, AC-029-06 |
 
 ### タブ構成
 
@@ -230,12 +230,12 @@
 |------|----------------|---------|------|
 | **表示** | `SETTINGS_TAB_DISPLAY` | FR-019, FR-020, FR-021, FR-022, FR-026, FR-027 | 表示モード、表示ディスプレイ、UI サイズ、**フォント** |
 | **テーマ** | `SETTINGS_TAB_THEME` | FR-028 | **カラーテーマ** |
-| **システム** | `SETTINGS_TAB_SYSTEM` | FR-024, FR-023, FR-005 | 確認オプション、**全カード削除** |
+| **システム** | `SETTINGS_TAB_SYSTEM` | FR-024, FR-023, FR-029, FR-005 | 確認オプション、**自動起動**、**全カード削除** |
 
 - UI は `ttk.Notebook` でタブ切り替え
 - `settings_dialog_tabs.DISPLAY_TAB_FIELDS` に `ui_size`, `ui_font` を含む
 - `settings_dialog_tabs.THEME_TAB_FIELDS` に `ui_theme` を含む
-- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit`, `ui_size`, `ui_font`, `ui_theme` を保存（タブに関係なく一括）
+- OK で `settings.json` に `mode`, `monitor_index`, `confirm_delete`, `confirm_exit`, `launch_at_login`, `ui_size`, `ui_font`, `ui_theme` を保存（タブに関係なく一括）
 - キャンセル時は変更を破棄
 
 ### 表示タブ
@@ -259,6 +259,8 @@
 |------|------|
 | チェックボックス | 「カード削除時に確認ダイアログを表示する」 |
 | チェックボックス | 「アプリ終了時に確認ダイアログを表示する」（`confirm_exit`、既定 `false`） |
+| チェックボックス | 「Windows ログオン時に自動起動する」（`launch_at_login`、既定 `false`、FR-029）。対象 OS は **Windows 11 以降** |
+| 自動起動の確定 | OK 時に Run キーへ反映。失敗時はダイアログ全項目をロールバックし `settings.json` を保存しない。成功時のみ「設定を保存しました」 |
 | ボタン | **「全てのカードを削除」** — 押下で確認ダイアログ（枚数表示）→ 全カード削除・`board.json` 保存・即時再描画。`confirm_delete` 設定に関係なく **常に確認** |
 
 ### 共通
@@ -584,3 +586,6 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.6.0 | 2026-08-13 | FR-027 実装。UC-009/UC-010 を `ui_metrics.py` で合成 |
 | 2.7.0 | 2026-08-13 | UC-006 テーマタブ・UC-011 UI カラーテーマ契約（FR-028） |
 | 2.8.0 | 2026-08-13 | FR-028 実装（10 種カラーテーマ・期限/進捗の意味色は固定） |
+| 2.9.0 | 2026-08-14 | UC-006 システムタブ: Windows ログオン時自動起動（FR-029） |
+| 2.9.1 | 2026-08-14 | UC-006: 自動起動失敗時は全項目ロールバック。起動コマンド解決を分離 |
+| 2.9.2 | 2026-08-14 | UC-006: 自動起動は Windows 11 以降のみ。非 Windows 無効化の記述を削除 |

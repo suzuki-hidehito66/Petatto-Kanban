@@ -18,15 +18,23 @@ flowchart TB
         EXE["Petatto-Kanban.exe"]
         subgraph App["petatto_kanban"]
             UI["app.py (tkinter GUI)"]
+            Display["display/ (設定・表示モード)"]
+            System["system/ (自動起動)"]
             Models["models.py (Domain)"]
             Storage["storage.py (JSON I/O)"]
         end
-        JSON["~/.petatto-kanban/board.json"]
+        BoardJSON["~/.petatto-kanban/board.json"]
+        SettingsJSON["~/.petatto-kanban/settings.json"]
+        Registry["HKCU Run キー"]
     end
     EXE --> App
-    Storage --> JSON
+    Storage --> BoardJSON
+    Display --> SettingsJSON
+    System --> Registry
     UI --> Models
     UI --> Storage
+    UI --> Display
+    UI --> System
 ```
 
 ---
@@ -92,9 +100,12 @@ petatto-kanban/
 │   │   ├── ui_theme.py             # UI カラーテーマパレット（FR-028）
 │   │   ├── ui_theme_labels.py      # UI カラーテーマ UI ラベル
 │   │   ├── ui_chrome.py          # メニュー・期限パネルホスト再構築
-│   ├── card_renderer.py          # カード UI 描画（UiMetrics）
 │   │   ├── settings.py           # settings.json
 │   │   └── monitors.py           # モニター列挙
+│   ├── card_renderer.py          # カード UI 描画（UiMetrics）
+│   ├── system/
+│   │   ├── auto_start.py         # Windows Run キー（FR-029）
+│   │   └── launch_command.py     # ログオン時コマンド行の解決
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -112,7 +123,7 @@ petatto-kanban/
 |------------|------|------|
 | `models.py` | ドメインエンティティ、不変条件 | 標準ライブラリのみ |
 | `storage.py` | JSON シリアライズ / デシリアライズ | `models` |
-| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement` |
+| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement`, `system/auto_start` |
 | `display/transparent.py` | 透過色・全画面シェル（オーバーレイ/デスクトップ共通） | 標準ライブラリ + tkinter |
 | `display/modes.py` | 表示モード適用のディスパッチ | `overlay`, `desktop`, `settings` |
 | `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） | tkinter, `transparent`, `settings` |
@@ -122,7 +133,7 @@ petatto-kanban/
 | `display/settings_dialog_tabs.py` | タブラベル・タブ別項目定義 | 標準ライブラリのみ |
 | `display/settings_dialog_labels.py` | 設定ダイアログ UI 文言 | 標準ライブラリのみ |
 | `display/settings_dialog_panels.py` | 表示 / システムタブのウィジェット構築 | tkinter, `mode_labels`, `settings_dialog_labels`, `monitors` |
-| `display/settings_actions.py` | 設定適用・終了確認・全カード削除（`app.py` から利用） | `settings_dialog`, `settings_dialog_labels`, `storage` |
+| `display/settings_actions.py` | 設定適用・終了確認・全カード削除・自動起動反映と失敗時ロールバック（`app.py` から利用） | `settings`, `settings_dialog`, `settings_dialog_labels`, `storage`, `system/auto_start` |
 | `display/ui_scale.py` | UI サイズプリセット・スケール係数（FR-026） | 標準ライブラリのみ |
 | `display/ui_scale_labels.py` | UI サイズコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/card_layout.py` | カード基準寸法・黄金比・スケール（UC-003 / UC-009） | 標準ライブラリのみ |
@@ -131,6 +142,8 @@ petatto-kanban/
 | `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_metrics`, `ui_theme`, `menu_panel`, `due_date_picker` |
 | `display/ui_font.py` | UI フォントプリセット・tkinter ファミリー解決（FR-027） | 標準ライブラリのみ |
 | `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ |
+| `system/auto_start.py` | Windows Run キーの登録・削除（FR-029） | 標準ライブラリ（`winreg`）、`launch_command` |
+| `system/launch_command.py` | ログオン時コマンド行の解決（frozen / pythonw） | 標準ライブラリのみ |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
@@ -201,6 +214,18 @@ petatto-kanban/
 | トレードオフ | Windows 10 ユーザーは非サポート |
 | 関連 | NFR-011 |
 
+### ADR-006: ログオン時自動起動は HKCU Run キー
+
+| 項目 | 内容 |
+|------|------|
+| ステータス | Accepted |
+| 日付 | 2026-08-14 |
+| コンテキスト | Windows ログオン後にアプリを自動起動したい（FR-029）。管理者権限やタスク スケジューラは避けたい |
+| 決定 | 現在ユーザーの `HKCU\...\Run` に値名 `Petatto-Kanban` を登録する。コマンド行解決は `launch_command.py` に分離 |
+| 理由 | 管理者権限不要、アンインストール時は設定 OFF で削除可能、デスクトップアプリの一般的な方式 |
+| トレードオフ | グループ ポリシーで Run キーが制限される環境では無効。タスク スケジューラより遅延起動の制御は弱い |
+| 関連 | FR-029, NFR-008 |
+
 ---
 
 ## 5. ビルド・配布
@@ -227,7 +252,7 @@ M3 着手時に ADR を追加する。
 
 ---
 
-## 4. 表示モード実装方針
+## 7. 表示モード実装方針
 
 | 属性 | 値 |
 |------|-----|
@@ -243,13 +268,16 @@ M3 着手時に ADR を追加する。
 | デスクトップ | 本体: 全画面 geometry、`-transparentcolor`、`HWND_BOTTOM`。メニュー: 独立 Toplevel + `-topmost` |
 | オーバーレイ | 全画面 geometry、Layered Window、`-topmost` / `WS_EX_TOPMOST`、クリック透過 |
 
-### モジュール分割（計画）
+### モジュール分割（現行）
 
 | モジュール | 責務 |
 |------------|------|
-| `display/modes.py` | モード定義・状態遷移 |
-| `display/win32.py` | Windows 固有の Z オーダー・透過・モニター列挙 |
-| `app.py` | モード切替 UI、既存カンバン描画 |
+| `display/modes.py` | モード適用のディスパッチ |
+| `display/overlay.py` / `desktop.py` | 各モードのシェル |
+| `display/transparent.py` | 透過色・全画面 |
+| `display/monitors.py` | モニター列挙 |
+| `display/desktop_board_controller.py` | デスクトップ時の Z オーダー |
+| `app.py` | モード切替 UI、カンバン描画 |
 
 ### 技術的制約
 

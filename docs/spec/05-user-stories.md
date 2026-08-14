@@ -26,6 +26,7 @@
 | [US-015](#us-015-カードの期限を設定する) | Must | implemented | M1 |
 | [US-016](#us-016-uiサイズを設定する) | Must | implemented | M1 拡張 |
 | [US-017](#us-017-uiフォントを設定する) | Must | specified | M1 拡張 |
+| [US-019](#us-019-windowsログオン時に自動起動する) | Should | implemented | M1 拡張 |
 | [US-005](#us-005-カードを別列へ移動する) | Should | deferred | M2 |
 | [US-008](#us-008-ウィンドウモードで使う) | Should | deferred | M2 |
 | [US-009](#us-009-デスクトップモードで使う) | Should | implemented | M1 拡張 |
@@ -291,3 +292,19 @@
 | ステータス | implemented |
 
 **操作:** 設定ダイアログ **「テーマ」タブ** の **カラーテーマ** コンボボックス → OK で保存・即時反映。
+
+---
+
+## US-019: Windows ログオン時に自動起動する
+
+**As a** 個人開発者  
+**I want to** PC 起動後に Petatto-Kanban が自動で立ち上がる  
+**So that** 毎回手動で exe を起動しなくてもすぐタスク管理を始められる
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| 関連 AC | AC-029-01, AC-029-02, AC-029-03, AC-029-05, AC-029-06 |
+| ステータス | implemented |
+
+**操作:** 設定ダイアログ **「システム」タブ** の **Windows ログオン時に自動起動する** チェック → OK で保存・レジストリ反映。

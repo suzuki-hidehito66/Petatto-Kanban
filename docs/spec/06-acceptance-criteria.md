@@ -917,6 +917,111 @@ And 配色は default テーマ（現行既定）になる
 
 ---
 
+## FR-029: Windows ログオン時自動起動
+
+### AC-029-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 + 手動（Windows） |
+
+```gherkin
+Given ユーザーが Windows 11 上で Petatto-Kanban を実行している
+When 設定ダイアログ「システム」タブで「Windows ログオン時に自動起動する」を ON にして OK する
+Then settings.json の launch_at_login が true になる
+And HKCU\Software\Microsoft\Windows\CurrentVersion\Run に Petatto-Kanban エントリが作成される
+```
+
+**テスト**: `test_auto_start.py`, `test_display_settings.py`, `test_settings_dialog.py` + 手動
+
+### AC-029-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 + 手動（Windows） |
+
+```gherkin
+Given launch_at_login が true でレジストリにエントリがある
+When ユーザーが同設定を OFF にして OK する
+Then settings.json の launch_at_login が false になる
+And Run キーから Petatto-Kanban エントリが削除される
+```
+
+**テスト**: `test_auto_start.py`, `test_settings_actions.py` + 手動
+
+### AC-029-03
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json に launch_at_login フィールドがない
+When 表示設定を読み込む
+Then launch_at_login は false として扱われる
+```
+
+**テスト**: `test_default_display_settings_is_overlay_mode`, `test_display_settings.py`
+
+### AC-029-04
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | cancelled |
+| 検証 | — |
+
+非 Windows（macOS / Linux）でのチェックボックス無効化。**対象 OS は Windows 11 以降のみ**（NFR-011 / C-6）のためスコープ外。
+
+### AC-029-05
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json の launch_at_login が true
+When アプリを起動する
+Then Run キーの Petatto-Kanban コマンド行が現在の実行パスで再書き込みされる
+```
+
+```gherkin
+Given settings.json の launch_at_login が false
+When アプリを起動する
+Then Run キーは変更されない
+```
+
+**テスト**: `test_sync_auto_start_from_settings_registers_when_enabled`, `test_sync_auto_start_from_settings_skips_when_disabled`
+
+### AC-029-06
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given ユーザーが設定ダイアログで表示モードと launch_at_login を同時に変更した
+When レジストリへの反映が失敗する
+Then エラーメッセージが表示される
+And メモリ上の DisplaySettings はダイアログ確定前の値に戻る
+And settings.json は更新されない
+And 「設定を保存しました」は表示されない
+```
+
+**テスト**: `test_persist_dialog_result_rolls_back_all_fields_on_auto_start_failure`
+
+---
+
 ## M2 以降（プレースホルダー）
 
 | ID | 関連 FR | ステータス |

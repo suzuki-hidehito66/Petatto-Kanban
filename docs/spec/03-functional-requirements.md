@@ -45,6 +45,7 @@
 | [FR-026](#fr-026-uiサイズ設定) | UI サイズ設定 | Must | implemented | M1 拡張 |
 | [FR-027](#fr-027-uiフォント設定) | UI フォント設定 | Must | implemented | M1 拡張 |
 | [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | implemented | M1 拡張 |
+| [FR-029](#fr-029-windowsログオン時自動起動) | Windows ログオン時自動起動 | Should | implemented | M1 拡張 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -540,6 +541,33 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - 不明・欠損・不正な `ui_theme` は **default** として読み込む
 - 各テーマの背景色・文字色は **コントラスト比 4.5:1 以上**（通常テキスト）を目標に選定する（[UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ)）
 - オーバーレイ透過色（`TRANSPARENT_COLOR`）・Win32 透過処理はテーマ対象外
+
+---
+
+### FR-029: Windows ログオン時自動起動
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Should |
+| ステータス | implemented |
+| 関連 US | US-019 |
+| 関連 AC | AC-029-01, AC-029-02, AC-029-03, AC-029-05, AC-029-06 |
+| 実装 | `src/petatto_kanban/system/auto_start.py`, `system/launch_command.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` |
+| UI 契約 | [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
+
+**説明**  
+設定ダイアログ **「システム」タブ** で、Windows ログオン時に Petatto-Kanban を自動起動するかを切り替えられる。
+
+**制約**
+- **対象 OS は Windows 11 以降のみ**（NFR-011）。macOS / Linux はスコープ外で、動作・UI・受け入れ基準を定義しない
+- `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` に登録する。キーが無ければ作成する
+- `settings.json` の `launch_at_login`（boolean）に永続化。既定値 **false**
+- OK 確定時にレジストリへ反映。反映失敗時はエラーメッセージを表示し、**ダイアログで変更した全項目をメモリ上もロールバック**して **`settings.json` は更新しない**（「設定を保存しました」は出さない）
+- アプリ起動時、`launch_at_login` が `true` のときだけコマンド行を **再書き込み**（`.exe` 更新後のパスずれ対策）。`false` のときはレジストリを変更しない（削除は設定ダイアログで OFF にしたときのみ）
+- PyInstaller ビルド（`sys.frozen`）では **`Petatto-Kanban.exe` の絶対パス** を登録
+- 開発起動では `python.exe` と同じディレクトリの `pythonw.exe`（存在時）+ `-m petatto_kanban` を登録。`pythonw.exe` が無ければ `sys.executable` を使う
+- レジストリ値名: **`Petatto-Kanban`**
+- 起動コマンド解決は `system/launch_command.py`、レジストリ I/O は `system/auto_start.py` に分離する
 
 ---
 
