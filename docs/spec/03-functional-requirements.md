@@ -599,6 +599,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - 修飾キーのみ、または修飾なしの単一キーは割り当て不可
 - 欠損・空・不正な `shortcuts.new_card` は既定 `Ctrl+Shift+N` にフォールバック
 - コード正規化は `system/shortcut.py`、`RegisterHotKey` は `system/hotkey.py` に分離する
+- `WM_HOTKEY` は **メッセージ専用ウィンドウ** で受信する（Tk の HWND / WndProc は差し替えない）
 - OK 確定時にホットキーを再登録。`RegisterHotKey` 失敗時はエラーを表示し、**ダイアログ全項目をロールバック**して `settings.json` は更新しない（FR-029 の失敗時と同様）
 - アプリ終了時にホットキーを解除する
 

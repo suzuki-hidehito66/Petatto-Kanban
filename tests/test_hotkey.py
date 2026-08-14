@@ -64,6 +64,6 @@ def test_new_card_hotkey_restores_previous_on_register_failure() -> None:
 
 def test_create_new_card_hotkey_uses_injected_registrar() -> None:
     registrar = FakeHotkeyRegistrar()
-    session = create_new_card_hotkey(1, lambda: None, registrar=registrar)
+    session = create_new_card_hotkey(lambda: None, registrar=registrar)
     session.set_shortcut("Alt+1")
     assert len(registrar.registered) == 1

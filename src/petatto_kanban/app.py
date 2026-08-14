@@ -624,9 +624,7 @@ class KanbanApp:
         self.refresh(begin_inline_edit_for=card.id)
 
     def _install_new_card_hotkey(self) -> None:
-        self.root.update_idletasks()
-        hwnd = int(self.root.winfo_id())
-        self._new_card_hotkey = create_new_card_hotkey(hwnd, self._on_new_card_hotkey)
+        self._new_card_hotkey = create_new_card_hotkey(self._on_new_card_hotkey)
         try:
             self._new_card_hotkey.set_shortcut(self.display_settings.shortcut_new_card)
         except (OSError, RuntimeError) as error:
