@@ -221,8 +221,8 @@
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027, FR-028, FR-029 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `app.py` |
-| 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01 |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `app.py` |
+| 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01, AC-029-01, AC-029-02, AC-029-04, AC-029-06 |
 
 ### タブ構成
 
@@ -260,6 +260,7 @@
 | チェックボックス | 「カード削除時に確認ダイアログを表示する」 |
 | チェックボックス | 「アプリ終了時に確認ダイアログを表示する」（`confirm_exit`、既定 `false`） |
 | チェックボックス | 「Windows ログオン時に自動起動する」（`launch_at_login`、既定 `false`、FR-029）。Windows 以外では **無効** |
+| 自動起動の確定 | OK 時に Run キーへ反映。失敗時はダイアログ全項目をロールバックし `settings.json` を保存しない。成功時のみ「設定を保存しました」 |
 | ボタン | **「全てのカードを削除」** — 押下で確認ダイアログ（枚数表示）→ 全カード削除・`board.json` 保存・即時再描画。`confirm_delete` 設定に関係なく **常に確認** |
 
 ### 共通
@@ -586,3 +587,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.7.0 | 2026-08-13 | UC-006 テーマタブ・UC-011 UI カラーテーマ契約（FR-028） |
 | 2.8.0 | 2026-08-13 | FR-028 実装（10 種カラーテーマ・期限/進捗の意味色は固定） |
 | 2.9.0 | 2026-08-14 | UC-006 システムタブ: Windows ログオン時自動起動（FR-029） |
+| 2.9.1 | 2026-08-14 | UC-006: 自動起動失敗時は全項目ロールバック。起動コマンド解決を分離 |

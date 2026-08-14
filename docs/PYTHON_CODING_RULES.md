@@ -4,8 +4,8 @@
 |------|------|
 | 対象 | 本リポジトリの Python ソースコード（`src/`, `tests/`） |
 | Python バージョン | 3.11 以上 |
-| 文書バージョン | 1.0.0 |
-| 最終更新日 | 2026-08-12 |
+| 文書バージョン | 1.1.0 |
+| 最終更新日 | 2026-08-14 |
 
 ---
 
@@ -26,10 +26,8 @@ src/petatto_kanban/
 ├── __init__.py       # パッケージ公開情報（__version__ 等）
 ├── __main__.py       # CLI / exe エントリポイント
 ├── app.py            # GUI アプリケーション
-├── display/          # 表示モード・モニター列挙（M1: デスクトップ）
-│   ├── desktop.py
-│   ├── monitors.py
-│   └── settings.py
+├── display/          # 表示モード・設定ダイアログ・UI メトリクス
+├── system/           # OS 連携（自動起動・起動コマンド解決）
 ├── models.py         # ドメインモデル（Board, Column, Card）
 └── storage.py        # データ永続化
 
@@ -43,8 +41,9 @@ scripts/              # ビルドスクリプト（Windows .exe）
 |------|--------|-----|
 | ドメインモデル | `models.py` | `Board`, `Card` |
 | 永続化・I/O | `storage.py` | JSON 読み書き |
-| UI（tkinter） | `app.py` | ウィンドウ、イベントハンドラ |
-| テスト | `tests/test_*.py` | モデル・ストレージの単体テスト |
+| UI（tkinter） | `app.py`, `display/` | ウィンドウ、設定ダイアログ、カード描画 |
+| OS 連携 | `system/` | 自動起動（winreg）、起動コマンド解決 |
+| テスト | `tests/test_*.py` | モデル・ストレージ・設定・自動起動の単体テスト |
 
 ---
 
@@ -212,3 +211,4 @@ def test_save_and_load_board(tmp_path: Path) -> None:
 | バージョン | 日付 | 変更内容 |
 |------------|------|----------|
 | 1.0.0 | 2026-08-12 | 初版作成（Python デスクトップアプリ + exe ビルド対応） |
+| 1.1.0 | 2026-08-14 | `display/`・`system/` 配置を現行実装に同期 |

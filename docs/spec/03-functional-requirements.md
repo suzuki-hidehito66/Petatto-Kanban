@@ -551,22 +551,23 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 優先度 | Should |
 | ステータス | implemented |
 | 関連 US | US-019 |
-| 関連 AC | AC-029-01, AC-029-02, AC-029-03 |
-| 実装 | `src/petatto_kanban/system/auto_start.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` |
+| 関連 AC | AC-029-01, AC-029-02, AC-029-03, AC-029-04, AC-029-05, AC-029-06 |
+| 実装 | `src/petatto_kanban/system/auto_start.py`, `system/launch_command.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` |
 | UI 契約 | [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
 
 **説明**  
 設定ダイアログ **「システム」タブ** で、Windows ログオン時に Petatto-Kanban を自動起動するかを切り替えられる。
 
 **制約**
-- **Windows 11+ のみ**（`HKCU\Software\Microsoft\Windows\CurrentVersion\Run` に登録）
+- **Windows 11+ のみ**（`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`。キーが無ければ作成する）
 - `settings.json` の `launch_at_login`（boolean）に永続化。既定値 **false**
-- OK 確定時にレジストリへ反映。反映失敗時はエラーメッセージを表示し **`settings.json` は更新しない**
-- アプリ起動時、`launch_at_login` が `true` ならレジストリエントリを **再同期**（`.exe` 更新後のパスずれ対策）
+- OK 確定時にレジストリへ反映。反映失敗時はエラーメッセージを表示し、**ダイアログで変更した全項目をメモリ上もロールバック**して **`settings.json` は更新しない**（「設定を保存しました」は出さない）
+- アプリ起動時、`launch_at_login` が `true` のときだけコマンド行を **再書き込み**（`.exe` 更新後のパスずれ対策）。`false` のときはレジストリを変更しない（削除は設定ダイアログで OFF にしたときのみ）
 - PyInstaller ビルド（`sys.frozen`）では **`Petatto-Kanban.exe` の絶対パス** を登録
-- 開発起動（`python -m petatto_kanban`）では `pythonw.exe`（存在時）+ `-m petatto_kanban` を登録
+- 開発起動では `python.exe` と同じディレクトリの `pythonw.exe`（存在時）+ `-m petatto_kanban` を登録。`pythonw.exe` が無ければ `sys.executable` を使う
 - レジストリ値名: **`Petatto-Kanban`**
-- Windows 以外の OS ではチェックボックスを **無効化**（設定 UI は表示、操作不可）
+- Windows 以外の OS ではチェックボックスを **無効化**（設定 UI は表示、操作不可）。`apply_auto_start_setting` は no-op
+- 起動コマンド解決は `system/launch_command.py`、レジストリ I/O は `system/auto_start.py` に分離する
 
 ---
 

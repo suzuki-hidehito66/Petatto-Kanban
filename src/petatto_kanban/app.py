@@ -24,10 +24,9 @@ from petatto_kanban.display.modes import apply_display_mode
 from petatto_kanban.display.monitors import Monitor, get_monitor
 from petatto_kanban.display.settings import DisplayMode
 from petatto_kanban.display.settings_actions import (
-    apply_dialog_result,
-    apply_launch_at_login,
     confirm_exit,
     delete_all_cards_with_confirm,
+    persist_dialog_result,
 )
 from petatto_kanban.display.settings_dialog import (
     SettingsDialog,
@@ -82,7 +81,8 @@ class KanbanApp:
 
         self._build_menu_panel()
         self._sync_card_renderer()
-        sync_auto_start_from_settings(self.display_settings.launch_at_login)
+        if self.display_settings.launch_at_login:
+            sync_auto_start_from_settings(True)
         self._apply_display_mode()
         self.refresh()
 
@@ -664,21 +664,20 @@ class KanbanApp:
         if dialog.result is None:
             return
 
-        self._apply_settings(dialog.result)
+        if not self._apply_settings(dialog.result):
+            return
         messagebox.showinfo(APP_TITLE, MSG_SETTINGS_SAVED, parent=self.root)
 
-    def _apply_settings(self, settings: SettingsDialogResult) -> None:
-        previous_launch_at_login = self.display_settings.launch_at_login
-        changes = apply_dialog_result(self.display_settings, settings)
-        if changes.launch_at_login_changed and not apply_launch_at_login(
+    def _apply_settings(self, settings: SettingsDialogResult) -> bool:
+        changes = persist_dialog_result(
             self.display_settings,
+            settings,
             messagebox=messagebox,
             parent=self.root,
             app_title=APP_TITLE,
-        ):
-            self.display_settings.launch_at_login = previous_launch_at_login
-            return
-        save_display_settings(self.display_settings)
+        )
+        if changes is None:
+            return False
 
         if changes.needs_ui_refresh:
             self._sync_ui_appearance()
@@ -686,6 +685,7 @@ class KanbanApp:
             self._apply_display_mode()
         if changes.needs_ui_refresh or changes.needs_display_refresh:
             self.refresh()
+        return True
 
     def _persist_and_refresh(self) -> None:
         save_board(self.board)
