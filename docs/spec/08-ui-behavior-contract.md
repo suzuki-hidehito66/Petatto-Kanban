@@ -109,6 +109,8 @@
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-002, FR-003, FR-004, FR-005, FR-010, FR-025, FR-014, FR-026, FR-028 |
+| 関連 AC | AC-002-01, AC-002-02 |
+| 実装 | `card_renderer.py`, `display/card_layout.py`, `display/card_frame.py`, `card_ui.py`, `app.py` |
 
 | 要素 | 操作 | 結果 |
 |------|------|------|
@@ -137,7 +139,7 @@
 **配置・サイズ**
 - `place(x, y)` — 座標は `board.json` に永続化
 - 最小サイズ・フォント・進捗バー高さ等は [UC-009](./08-ui-behavior-contract.md#uc-009-ui-スケール) のスケール後寸法を用いる（標準時: `CARD_MIN_WIDTH = 175`、`CARD_MIN_HEIGHT = 108`、横長黄金比 φ、フォント 10pt）
-- 実際の枠サイズ: 幅・高さとも `CARD_MIN_WIDTH` / `CARD_MIN_HEIGHT` に固定（`winfo_req*` では拡張しない）
+- 実際の枠サイズ: **幅**は `CARD_MIN_WIDTH` に固定（`winfo_reqwidth` では拡張しない）。**高さ**は `CARD_MIN_HEIGHT` を下限とし、タイトルの改行・`wraplength` 折り返しで内容が増えたときは縦方向のみ拡張する（期限・進捗を隠さない）
 
 ---
 
@@ -327,7 +329,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | 定数 / 要素 | 基準値（medium） | 適用箇所 |
 |-------------|------------------|----------|
 | `CARD_MIN_WIDTH` | 175 px | `round(CARD_MIN_HEIGHT × φ)`（UC-003） |
-| `CARD_MIN_HEIGHT` | 108 px | 10pt 3 行が収まる高さ（UC-003） |
+| `CARD_MIN_HEIGHT` | 108 px | 10pt 3 行が収まる**下限**高さ（UC-003）。タイトル改行時はこれ以上に伸ばす |
 | `CARD_LABEL_WRAP` | 155 px | タイトル・期限 `wraplength`（`CARD_MIN_WIDTH - 20`） |
 | タイトルフォント pt | **10** bold | カードタイトル（medium 基準） |
 | 期限ラベルフォント pt | **10** | カード期限表示 |
@@ -632,3 +634,8 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.10.3 | 2026-08-14 | UC-012: WM_HOTKEY はメッセージ専用ウィンドウで受信（Tk WndProc 差し替えを廃止） |
 | 2.10.4 | 2026-08-14 | UC-012: Python WndProc を廃止。専用スレッド + `GetMessage` + Tk `poll()` |
 | 2.10.5 | 2026-08-14 | UC-012: Win32 ポンプを `hotkey_pump.py` に分離。セッションは `hotkey.py` |
+| 2.11.0 | 2026-08-14 | UC-003: タイトル改行時はカード高さを下限以上に伸ばし、幅は固定 |
+| 2.11.1 | 2026-08-14 | UC-003: 枠サイズ決定を `card_frame.py` に分離。基準寸法は `card_layout.py` |
+| 2.12.0 | 2026-08-14 | UC-006 システムタブ: GitHub Issue 任意起票（FR-032）。エラーログは FR-031 |
+| 2.12.1 | 2026-08-14 | UC-006 システムタブ: 起票可否の ON/OFF・即時適用・永続化を明記（FR-032） |
+| 2.12.2 | 2026-08-14 | FR-032 cancelled。システムタブの GitHub 起票 UI を削除 |

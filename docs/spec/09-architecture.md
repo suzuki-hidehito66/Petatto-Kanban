@@ -10,7 +10,7 @@
 ## 1. システム概要
 
 **アーキテクチャ方針（M1）:** 単一ユーザーの独立したデスクトップアプリケーション。  
-クライアント（`.exe`）とローカル JSON ファイルのみで構成し、サーバー層は存在しない。
+クライアント（`.exe`）とローカルファイル（JSON・エラーログ）で構成し、サーバー層は存在しない。
 
 ```mermaid
 flowchart TB
@@ -25,12 +25,14 @@ flowchart TB
         end
         BoardJSON["~/.petatto-kanban/board.json"]
         SettingsJSON["~/.petatto-kanban/settings.json"]
+        ErrorLogs["~/.petatto-kanban/logs/"]
         Registry["HKCU Run キー"]
     end
     EXE --> App
     Storage --> BoardJSON
     Display --> SettingsJSON
     System --> Registry
+    System --> ErrorLogs
     UI --> Models
     UI --> Storage
     UI --> Display
@@ -94,6 +96,7 @@ petatto-kanban/
 │   │   ├── ui_scale.py           # UI サイズプリセット・スケール係数（FR-026）
 │   │   ├── ui_scale_labels.py    # UI サイズ UI ラベル
 │   │   ├── card_layout.py        # カード基準寸法・黄金比（UC-003 / UC-009）
+│   │   ├── card_frame.py         # カード枠サイズ（幅固定・高さは内容に合わせる）
 │   │   ├── ui_metrics.py         # UiMetrics 合成（FR-026 + FR-027）
 │   │   ├── ui_font.py              # UI フォントプリセット（FR-027）
 │   │   ├── ui_font_labels.py       # UI フォント UI ラベル
@@ -108,7 +111,10 @@ petatto-kanban/
 │   │   ├── launch_command.py     # ログオン時コマンド行の解決
 │   │   ├── shortcut.py           # ショートカットコード正規化（FR-030）
 │   │   ├── hotkey.py             # ホットキーセッション（poll / 失敗時ロールバック）
-│   │   └── hotkey_pump.py        # Win32 専用スレッドで WM_HOTKEY を受信
+│   │   ├── hotkey_pump.py        # Win32 専用スレッドで WM_HOTKEY を受信
+│   │   ├── error_log_paths.py    # ログディレクトリ・日次ファイル名・保持期限
+│   │   ├── error_log_redact.py   # ホームパスの伏せ字
+│   │   └── error_log.py          # エラーログ初期化・例外フック（FR-031）
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -126,7 +132,7 @@ petatto-kanban/
 |------------|------|------|
 | `models.py` | ドメインエンティティ、不変条件 | 標準ライブラリのみ |
 | `storage.py` | JSON シリアライズ / デシリアライズ | `models` |
-| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement`, `system/auto_start`, `system/hotkey` |
+| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement`, `system/auto_start`, `system/hotkey`, `system/error_log` |
 | `display/transparent.py` | 透過色・全画面シェル（オーバーレイ/デスクトップ共通） | 標準ライブラリ + tkinter |
 | `display/modes.py` | 表示モード適用のディスパッチ | `overlay`, `desktop`, `settings` |
 | `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） | tkinter, `transparent`, `settings` |
@@ -140,8 +146,9 @@ petatto-kanban/
 | `display/ui_scale.py` | UI サイズプリセット・スケール係数（FR-026） | 標準ライブラリのみ |
 | `display/ui_scale_labels.py` | UI サイズコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/card_layout.py` | カード基準寸法・黄金比・スケール（UC-003 / UC-009） | 標準ライブラリのみ |
+| `display/card_frame.py` | カード枠サイズ（幅固定、高さは内容に合わせて下限以上）（FR-002 / UC-003） | 標準ライブラリのみ |
 | `display/ui_metrics.py` | `UiMetrics` 生成（ui_size + ui_font + card_layout 合成） | `ui_scale`, `ui_font`, `card_layout` |
-| `card_renderer.py` | カード UI 描画（UiMetrics + UiThemePalette） | tkinter, `ui_metrics`, `ui_theme`, `due_date`, `progress` |
+| `card_renderer.py` | カード UI 描画（UiMetrics + UiThemePalette）。枠サイズは `card_frame` | tkinter, `ui_metrics`, `ui_theme`, `card_frame`, `due_date`, `progress` |
 | `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_metrics`, `ui_theme`, `menu_panel`, `due_date_picker` |
 | `display/ui_font.py` | UI フォントプリセット・tkinter ファミリー解決（FR-027） | 標準ライブラリのみ |
 | `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ |
@@ -149,7 +156,10 @@ petatto-kanban/
 | `system/launch_command.py` | ログオン時コマンド行の解決（frozen / pythonw） | 標準ライブラリのみ |
 | `system/shortcut.py` | ショートカットコードの解析・正規化（FR-030） | 標準ライブラリのみ |
 | `system/hotkey.py` | グローバルホットキーのセッション（FR-030）。割り当て・`poll()`・失敗時ロールバック | `shortcut`, `hotkey_pump` |
-| `system/hotkey_pump.py` | Win32 メッセージポンプ。専用スレッドのメッセージ専用ウィンドウで `GetMessage`（Python WndProc なし） | 標準ライブラリ（`ctypes` / `threading`） |
+| `system/hotkey_pump.py` | Win32 メッセージポンプ。専用スレッドのメッセージ専用ウィンドウで `GetMessage`（Python WndProc なし） | 標準ライブラリ（`ctypes` / `threading`）。未捕捉例外は `petatto_kanban` ロガーへ |
+| `system/error_log_paths.py` | ログディレクトリ・日次ファイル名・保持期限（FR-031） | 標準ライブラリのみ |
+| `system/error_log_redact.py` | ホームパスの伏せ字（FR-031） | 標準ライブラリのみ |
+| `system/error_log.py` | エラーログ初期化・日次ハンドラ・例外フック（FR-031） | `error_log_paths`, `error_log_redact`, `logging` |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
@@ -243,6 +253,18 @@ petatto-kanban/
 | 理由 | メニューパネルを開かず、他作業中にカードを切れる。オーバーレイの操作モデルと一致する。Python ctypes WndProc を Tk のメッセージポンプから呼ぶと Python 3.14 で GIL fatal になるため、受信は専用スレッドに隔離する |
 | トレードオフ | 他アプリが同一ホットキーを先に登録していると失敗する。設定ダイアログ表示中は発火を抑制する |
 | 関連 | FR-030, UC-012, NFR-011 |
+
+### ADR-008: エラーはローカルログのみ（GitHub 自動起票はしない）
+
+| 項目 | 内容 |
+|------|------|
+| ステータス | Accepted |
+| 日付 | 2026-08-14 |
+| コンテキスト | クラッシュ原因の収集が必要。GitHub REST API で Issue を作るにはトークンが必要で、Issues を全員に許可しても同じ。NFR-008 / C-5 はオフライン独立アプリを要求する |
+| 決定 | エラーは常に `%USERPROFILE%\.petatto-kanban\logs\` へ `logging` で出す（FR-031）。アプリからの GitHub Issue 自動起票は行わない（FR-032 cancelled） |
+| 理由 | 診断はオフラインで完結する。PAT を利用者に求めたり exe に埋め込んだりしない |
+| トレードオフ | メンテナへは利用者がログを手動で渡す必要がある |
+| 関連 | FR-031, FR-032, NFR-008, DC-004 |
 
 ---
 

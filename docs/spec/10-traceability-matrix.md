@@ -19,7 +19,7 @@
 | FR | US | AC | 実装 | テスト | ステータス |
 |----|----|----|------|--------|------------|
 | FR-001 | US-001, US-010 | AC-001-01, AC-020-01 | `app.py`, `display/overlay.py` | 手動 | implemented |
-| FR-002 | US-001 | AC-002-01 | `models.py`, `app.py` | `test_create_default_board_is_empty` | verified |
+| FR-002 | US-001 | AC-002-01, AC-002-02 | `models.py`, `app.py`, `card_renderer.py`, `display/card_layout.py`, `display/card_frame.py` | `test_create_default_board_is_empty`, `test_card_frame.py` + 手動 | implemented |
 | FR-003 | US-002 | AC-003-01, AC-003-02 | `app.py` | 手動 | implemented |
 | FR-004 | US-003 | AC-004-01, AC-004-02 | `app.py` | 手動 | implemented |
 | FR-005 | US-004 | AC-005-01, AC-005-02, AC-005-03 | `app.py`, `models.py`, `display/settings_actions.py`, `display/settings_dialog_panels.py` | `test_board_clear_cards`, `test_settings_actions.py` + 手動 | implemented |
@@ -42,6 +42,8 @@
 | FR-028 | US-018 | AC-028-01, AC-028-02, AC-028-03 | `display/ui_theme.py`, `display/ui_theme_labels.py`, `settings.py`, `app.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py` | `test_ui_theme.py`, `test_settings_dialog.py`, `test_display_settings.py`, `test_settings_actions.py` + 手動 | implemented |
 | FR-029 | US-019 | AC-029-01, AC-029-02, AC-029-03, AC-029-05, AC-029-06（AC-029-04 cancelled） | `system/auto_start.py`, `system/launch_command.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` | `test_auto_start.py`, `test_launch_command.py`, `test_display_settings.py`, `test_settings_dialog.py`, `test_settings_actions.py` + 手動 | implemented |
 | FR-030 | US-020 | AC-030-01〜05 | `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` | `test_shortcut.py`, `test_hotkey.py`, `test_display_settings.py`, `test_settings_dialog.py`, `test_settings_actions.py` + 手動 | implemented |
+| FR-031 | US-021 | AC-031-01, AC-031-02, AC-031-03 | `system/error_log.py`, `system/error_log_paths.py`, `system/error_log_redact.py`, `app.py`, `system/hotkey_pump.py` | `test_error_log.py` + 手動 | implemented |
+| FR-032 | — | — | なし | — | cancelled |
 
 ---
 
@@ -68,6 +70,7 @@
 | DC-001 | FR-007 | `storage.py` | `test_*` | verified |
 | DC-002 | FR-002, FR-007 | `models.py` | `test_create_default_board_is_empty` | verified |
 | DC-003 | FR-021, FR-024, FR-026, FR-027, FR-028, FR-029, FR-030 | `display/settings.py` | `test_display_settings.py` | implemented |
+| DC-004 | FR-031 | `system/error_log.py`, `system/error_log_paths.py`, `system/error_log_redact.py` | `test_error_log.py` | implemented |
 | UC-001 | FR-001, FR-019, FR-020 | `app.py`, `display/modes.py`, `display/overlay.py`, `display/desktop.py` | 手動 | implemented |
 | UC-002 | FR-003, FR-019, FR-023 | `menu_panel.py`, `menu_panel_layout.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `app.py` | `test_menu_panel.py`, `test_display_modes.py` + 手動 | implemented |
 | UC-006 | FR-005, FR-019, FR-020, FR-021, FR-022, FR-023, FR-024, FR-026, FR-027, FR-028, FR-029, FR-030 | `display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `display/ui_scale.py`, `display/ui_font.py`, `display/ui_theme.py`, `system/auto_start.py`, `system/launch_command.py`, `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `mode_labels.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py`, `test_settings_actions.py`, `test_auto_start.py`, `test_launch_command.py`, `test_shortcut.py`, `test_hotkey.py`, `test_ui_scale.py`, `test_ui_font.py`, `test_ui_theme.py` + 手動 | implemented |
@@ -75,7 +78,7 @@
 | UC-011 | FR-028 | `display/ui_theme.py`, `display/ui_theme_labels.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `display/ui_chrome.py`, `app.py` | `test_ui_theme.py` + 手動 | implemented |
 | UC-009 | FR-026, FR-027 | `display/ui_scale.py`, `display/card_layout.py`, `display/ui_font.py`, `display/ui_metrics.py`, `display/ui_chrome.py`, `card_renderer.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py` | `test_ui_scale.py`, `test_card_layout.py`, `test_ui_font.py` + 手動 | implemented |
 | UC-010 | FR-027 | `display/ui_font.py`, `display/ui_font_labels.py`, `display/ui_metrics.py`, `app.py`, `card_renderer.py`, `display/ui_chrome.py`, `menu_panel.py`, `due_date_picker.py` | `test_ui_font.py` + 手動 | implemented |
-| UC-003 | FR-002, FR-003〜005, FR-010, FR-014, FR-025, FR-026, FR-028 | `app.py`, `card_renderer.py`, `card_ui.py`, `display/card_layout.py`, `display/ui_metrics.py` | `test_card_layout.py` + 手動 | implemented |
+| UC-003 | FR-002, FR-003〜005, FR-010, FR-014, FR-025, FR-026, FR-028 | `app.py`, `card_renderer.py`, `card_ui.py`, `display/card_layout.py`, `display/card_frame.py`, `display/ui_metrics.py` | `test_card_layout.py`, `test_card_frame.py` + 手動 | implemented |
 | UC-004 | FR-003, FR-030 | `app.py`, `menu_panel.py`, `menu_panel_layout.py`, `new_card_placement.py` | `test_new_card_placement.py`, `test_menu_panel.py` + 手動 | implemented |
 | UC-005 | FR-004 | `app.py` | 手動 | implemented |
 | UC-008 | FR-014 | `app.py`, `due_date_picker.py`, `card_ui.py` | 手動 | implemented |

@@ -14,7 +14,7 @@
 > **単一ユーザーの独立したデスクトップアプリケーション（`.exe`）**
 
 - ネットワーク API・ユーザー認証・マルチユーザー機能は M1 に含めない
-- データは利用者の PC 内にのみ保存する
+- データは利用者の PC 内にのみ保存する（エラーログもローカル、[FR-031](#fr-031-ローカルエラーログ)）
 
 参照: [01-vision-and-scope.md §2](./01-vision-and-scope.md#2-初期スコープm1-mvpの定義)
 
@@ -47,6 +47,8 @@
 | [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | implemented | M1 拡張 |
 | [FR-029](#fr-029-windowsログオン時自動起動) | Windows ログオン時自動起動 | Should | implemented | M1 拡張 |
 | [FR-030](#fr-030-キーボードショートカットで新規カード作成) | キーボードショートカットで新規カード作成 | Should | implemented | M1 拡張 |
+| [FR-031](#fr-031-ローカルエラーログ) | ローカルエラーログ | Must | implemented | M1 拡張 |
+| [FR-032](#fr-032-github-issue-任意起票) | GitHub Issue 任意起票 | Should | cancelled | — |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -86,8 +88,8 @@
 | 優先度 | Must |
 | ステータス | implemented |
 | 関連 US | US-001 |
-| 関連 AC | AC-002-01 |
-| 実装 | `src/petatto_kanban/models.py`, `app.py` |
+| 関連 AC | AC-002-01, AC-002-02 |
+| 実装 | `src/petatto_kanban/models.py`, `app.py`, `card_renderer.py`, `display/card_layout.py`, `display/card_frame.py` |
 
 **説明**  
 保存済みの座標 `(x, y)` にカードを配置して表示する。列レイアウトは M1 では使用しない。
@@ -99,6 +101,8 @@
 - 進捗率（0〜100%）をバーで表示し、左から進捗に応じた色で塗りつぶす（FR-025）
 - 期限パネルを表示（FR-014）。期限なし / 日付表示、状態に応じた背景色
 - カード枠はタイトル表示領域より大きくなるよう、最小サイズ（幅 175px・高さ 108px、横長黄金比 φ、medium 時フォント 10pt）を下限とする
+- **幅は最小幅に固定**する。タイトルに改行・折り返しがあるときは **高さのみ**内容に合わせて拡張し、期限パネルと進捗バーが隠れないようにする
+- 基準寸法・黄金比は `display/card_layout.py`、枠サイズ決定は `display/card_frame.py` に分離する
 
 ---
 
@@ -602,6 +606,52 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - `WM_HOTKEY` は **専用スレッド** のメッセージ専用ウィンドウで受信する。WndProc はネイティブ `DefWindowProcW` のみとし、Python ctypes コールバックは使わない。Tk スレッドは `after` でキューを `poll()` する
 - OK 確定時にホットキーを再登録。`RegisterHotKey` 失敗時はエラーを表示し、**ダイアログ全項目をロールバック**して `settings.json` は更新しない（FR-029 の失敗時と同様）
 - アプリ終了時にホットキーを解除する
+
+---
+
+### FR-031: ローカルエラーログ
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Must |
+| ステータス | implemented |
+| 関連 US | US-021 |
+| 関連 AC | AC-031-01, AC-031-02, AC-031-03 |
+| 実装 | `system/error_log.py`, `system/error_log_paths.py`, `system/error_log_redact.py`、起動時に `app.py` から初期化 |
+| データ契約 | [DC-004](./07-data-contract.md#dc-004-エラーログ) |
+
+**説明**  
+アプリ起動中に発生したエラー（未捕捉例外・Tk コールバック例外・`logging` の ERROR 以上）を、ユーザー PC 上のログディレクトリへ書き出す。診断・再現に使う。既定で有効（オプトアウトしない）。
+
+**制約**
+- 保存先: `%USERPROFILE%\.petatto-kanban\logs\`（ディレクトリが無ければ作成する）
+- ファイル名: `petatto-kanban-YYYY-MM-DD.log`（ローカル日付、1 日 1 ファイル）
+- エンコーディング UTF-8。追記モード。保持は直近 14 日分。それより古いファイルは起動時に削除してよい
+- 標準ライブラリの `logging` のみ（NFR-005）。`print` デバッグは使わない
+- 捕捉対象: `sys.excepthook`、tkinter `report_callback_exception`、専用スレッド（ホットキーポンプ等）の未捕捉例外、アプリ内 `logger.error` / `logger.exception`
+- 1 レコードに含める: 時刻（ISO 8601）、ログレベル、ロガー名、メッセージ、スタックトレース（ある場合）、アプリバージョン、Python バージョン、OS 概要
+- **カードタイトル・ボード内容・認証情報・環境変数の秘密は書かない**。ユーザーホームパスは `~` に置換してよい
+- ログ書き込み失敗（ディスク満杯・権限など）でも **アプリは継続**する。ユーザー向けダイアログは出さない
+- ログ I/O は UI を止めない。書き込み失敗はプロセス内で繰り返して騒がない
+- 本要件はオフライン完結。ネットワークは使わない
+- パス・保持期限は `system/error_log_paths.py`、伏せ字は `system/error_log_redact.py`、初期化とフックは `system/error_log.py` に分離する
+
+---
+
+### FR-032: GitHub Issue 任意起票
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Should |
+| ステータス | cancelled |
+| 関連 US | — |
+| 関連 AC | — |
+| 実装 | なし |
+
+**説明**  
+アプリから GitHub Issue を自動起票する機能。**採用しない。**
+
+GitHub REST API で Issue を作成するには認証トークンが必要で、リポジトリで Issues を全員に許可していても同じである。利用者に PAT を求めたり、exe にトークンを埋め込んだりはしない。診断は [FR-031](#fr-031-ローカルエラーログ) のローカルログのみとする。
 
 ---
 

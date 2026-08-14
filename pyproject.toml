@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "petatto-kanban"
-version = "0.1.5"
+version = "0.1.6"
 description = "ペタッとカンバン — 直感的なカンバン方式タスク管理デスクトップアプリ"
 readme = "README.md"
 license = { text = "MIT" }

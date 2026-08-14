@@ -227,3 +227,42 @@
 | `wip_limit` | Column | M3 |
 
 スキーマ変更時は `schema_version` をインクリメントし、マイグレーション方針を追記する。
+
+---
+
+## DC-004: エラーログ
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-031 |
+| ディレクトリ | `%USERPROFILE%\.petatto-kanban\logs\` |
+| エンコーディング | UTF-8 |
+| 実装 | `system/error_log.py`, `system/error_log_paths.py`, `system/error_log_redact.py` |
+
+### ログファイル
+
+| 項目 | 仕様 |
+|------|------|
+| ファイル名 | `petatto-kanban-YYYY-MM-DD.log`（ローカル日付） |
+| ローテーション | 日次。起動時に 14 日より古いファイルを削除してよい |
+| 書き込み | 追記。1 行または複数行のスタックトレース付きレコード |
+| 最低フィールド | 時刻（ISO 8601）、レベル、ロガー名、メッセージ。例外時はトレースバック |
+
+**不変条件**
+
+| # | 条件 |
+|---|------|
+| INV-L1 | ディレクトリ不存在時は作成する。作成失敗時はアプリを落とさない |
+| INV-L2 | 認証情報・環境変数の秘密はログに出さない |
+| INV-L3 | カードタイトル・ボード JSON 本文はログに出さない |
+| INV-L4 | ユーザーホームディレクトリは `~` に置換してよい |
+
+### アプリデータディレクトリ（参考）
+
+```
+%USERPROFILE%\.petatto-kanban\
+├── board.json
+├── settings.json
+└── logs\
+    └── petatto-kanban-YYYY-MM-DD.log
+```
