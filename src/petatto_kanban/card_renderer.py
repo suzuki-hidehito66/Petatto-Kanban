@@ -6,6 +6,7 @@ import tkinter as tk
 from typing import TYPE_CHECKING
 
 from petatto_kanban.card_ui import CardUiRefs
+from petatto_kanban.display.card_frame import resolve_card_frame_size
 from petatto_kanban.display.ui_metrics import UiMetrics
 from petatto_kanban.due_date import due_date_panel_style, format_due_date
 from petatto_kanban.models import Card
@@ -139,12 +140,12 @@ class CardRenderer:
     def _finalize_frame(self, frame: tk.Frame) -> None:
         metrics = self._metrics
         frame.update_idletasks()
-        # 幅は card_min_width に固定。fill=X 子要素があると winfo_reqwidth が
-        # 親キャンバス幅まで膨らみ、カードが不必要に横長になるため。
-        frame.config(
-            width=metrics.card_min_width,
-            height=metrics.card_min_height,
+        size = resolve_card_frame_size(
+            min_width=metrics.card_min_width,
+            min_height=metrics.card_min_height,
+            required_height=int(frame.winfo_reqheight()),
         )
+        frame.config(width=size.width, height=size.height)
         frame.pack_propagate(False)
 
     def _create_progress_canvas(self, parent: tk.Frame, card: Card) -> tk.Canvas:

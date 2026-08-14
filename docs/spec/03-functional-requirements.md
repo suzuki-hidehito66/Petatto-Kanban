@@ -88,8 +88,8 @@
 | 優先度 | Must |
 | ステータス | implemented |
 | 関連 US | US-001 |
-| 関連 AC | AC-002-01 |
-| 実装 | `src/petatto_kanban/models.py`, `app.py` |
+| 関連 AC | AC-002-01, AC-002-02 |
+| 実装 | `src/petatto_kanban/models.py`, `app.py`, `card_renderer.py`, `display/card_layout.py`, `display/card_frame.py` |
 
 **説明**  
 保存済みの座標 `(x, y)` にカードを配置して表示する。列レイアウトは M1 では使用しない。
@@ -101,6 +101,8 @@
 - 進捗率（0〜100%）をバーで表示し、左から進捗に応じた色で塗りつぶす（FR-025）
 - 期限パネルを表示（FR-014）。期限なし / 日付表示、状態に応じた背景色
 - カード枠はタイトル表示領域より大きくなるよう、最小サイズ（幅 175px・高さ 108px、横長黄金比 φ、medium 時フォント 10pt）を下限とする
+- **幅は最小幅に固定**する。タイトルに改行・折り返しがあるときは **高さのみ**内容に合わせて拡張し、期限パネルと進捗バーが隠れないようにする
+- 基準寸法・黄金比は `display/card_layout.py`、枠サイズ決定は `display/card_frame.py` に分離する
 
 ---
 

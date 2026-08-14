@@ -98,6 +98,7 @@ petatto-kanban/
 │   │   ├── ui_scale.py           # UI サイズプリセット・スケール係数（FR-026）
 │   │   ├── ui_scale_labels.py    # UI サイズ UI ラベル
 │   │   ├── card_layout.py        # カード基準寸法・黄金比（UC-003 / UC-009）
+│   │   ├── card_frame.py         # カード枠サイズ（幅固定・高さは内容に合わせる）
 │   │   ├── ui_metrics.py         # UiMetrics 合成（FR-026 + FR-027）
 │   │   ├── ui_font.py              # UI フォントプリセット（FR-027）
 │   │   ├── ui_font_labels.py       # UI フォント UI ラベル
@@ -146,8 +147,9 @@ petatto-kanban/
 | `display/ui_scale.py` | UI サイズプリセット・スケール係数（FR-026） | 標準ライブラリのみ |
 | `display/ui_scale_labels.py` | UI サイズコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/card_layout.py` | カード基準寸法・黄金比・スケール（UC-003 / UC-009） | 標準ライブラリのみ |
+| `display/card_frame.py` | カード枠サイズ（幅固定、高さは内容に合わせて下限以上）（FR-002 / UC-003） | 標準ライブラリのみ |
 | `display/ui_metrics.py` | `UiMetrics` 生成（ui_size + ui_font + card_layout 合成） | `ui_scale`, `ui_font`, `card_layout` |
-| `card_renderer.py` | カード UI 描画（UiMetrics + UiThemePalette） | tkinter, `ui_metrics`, `ui_theme`, `due_date`, `progress` |
+| `card_renderer.py` | カード UI 描画（UiMetrics + UiThemePalette）。枠サイズは `card_frame` | tkinter, `ui_metrics`, `ui_theme`, `card_frame`, `due_date`, `progress` |
 | `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_metrics`, `ui_theme`, `menu_panel`, `due_date_picker` |
 | `display/ui_font.py` | UI フォントプリセット・tkinter ファミリー解決（FR-027） | 標準ライブラリのみ |
 | `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ |
