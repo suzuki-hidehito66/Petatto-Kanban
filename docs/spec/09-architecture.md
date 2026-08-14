@@ -107,7 +107,7 @@ petatto-kanban/
 │   │   ├── auto_start.py         # Windows Run キー（FR-029）
 │   │   ├── launch_command.py     # ログオン時コマンド行の解決
 │   │   ├── shortcut.py           # ショートカットコード正規化（FR-030）
-│   │   └── hotkey.py             # グローバルホットキー登録（FR-030）
+│   │   └── hotkey.py             # グローバルホットキー登録（メッセージ専用ウィンドウ）
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -147,7 +147,7 @@ petatto-kanban/
 | `system/auto_start.py` | Windows Run キーの登録・削除（FR-029） | 標準ライブラリ（`winreg`）、`launch_command` |
 | `system/launch_command.py` | ログオン時コマンド行の解決（frozen / pythonw） | 標準ライブラリのみ |
 | `system/shortcut.py` | ショートカットコードの解析・正規化（FR-030） | 標準ライブラリのみ |
-| `system/hotkey.py` | グローバルホットキーの登録/解除（FR-030） | 標準ライブラリ（`ctypes` / `win32`）、`shortcut` |
+| `system/hotkey.py` | グローバルホットキーの登録/解除（FR-030）。Tk HWND は触らずメッセージ専用ウィンドウで `WM_HOTKEY` を受信 | 標準ライブラリ（`ctypes` / `win32`）、`shortcut` |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
@@ -237,7 +237,7 @@ petatto-kanban/
 | ステータス | Accepted |
 | 日付 | 2026-08-14 |
 | コンテキスト | 既定 UI はオーバーレイ（クリック透過）。tkinter のウィンドウバインドでは他アプリ前面時にキーを受け取れない |
-| 決定 | Win32 `RegisterHotKey` による **グローバルホットキー** とする。既定は Ctrl+Shift+N。割り当ては設定「操作」タブで変更。コード正規化は `shortcut.py`、登録 I/O は `hotkey.py` に分離 |
+| 決定 | Win32 `RegisterHotKey` による **グローバルホットキー** とする。受信は Tk ウィンドウの subclass ではなく **メッセージ専用ウィンドウ**。既定は Ctrl+Shift+N。割り当ては設定「操作」タブで変更。コード正規化は `shortcut.py`、登録 I/O は `hotkey.py` に分離 |
 | 理由 | メニューパネルを開かず、他作業中にカードを切れる。オーバーレイの操作モデルと一致する |
 | トレードオフ | 他アプリが同一ホットキーを先に登録していると失敗する。設定ダイアログ表示中は発火を抑制する |
 | 関連 | FR-030, UC-012, NFR-011 |
