@@ -1022,6 +1022,97 @@ And 「設定を保存しました」は表示されない
 
 ---
 
+## FR-030: キーボードショートカットで新規カード作成
+
+### AC-030-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-030, FR-003 |
+| ステータス | specified |
+| 検証 | 自動 + 手動（Windows） |
+
+```gherkin
+Given Petatto-Kanban が起動しており、設定の shortcuts.new_card は既定 Ctrl+Shift+N である
+And 他のアプリが前面である
+When ユーザーが Ctrl+Shift+N を押す
+Then タイトル "新しいタスク" のカードが UC-004 と同じ規則で追加される
+And タイトルがインライン編集状態になる
+And board.json に保存される
+```
+
+**テスト**: （実装時）`test_hotkey.py` + 手動
+
+### AC-030-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-030 |
+| ステータス | specified |
+| 検証 | 自動 + 手動（Windows） |
+
+```gherkin
+Given 設定ダイアログ「操作」タブが表示されている
+When ユーザーが「新規カード作成」のショートカットを Ctrl+Shift+K に変更して OK する
+Then settings.json の shortcuts.new_card が "Ctrl+Shift+K" になる
+And 以降 Ctrl+Shift+K で新規カードが作成される
+And 旧コード Ctrl+Shift+N では作成されない
+```
+
+**テスト**: （実装時）`test_display_settings.py`, `test_settings_dialog.py`, `test_hotkey.py` + 手動
+
+### AC-030-03
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-030 |
+| ステータス | specified |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json に shortcuts が無い、または new_card が不正である
+When 表示設定を読み込む
+Then shortcuts.new_card は "Ctrl+Shift+N" として扱われる
+```
+
+**テスト**: （実装時）`test_display_settings.py`, `test_hotkey.py`
+
+### AC-030-04
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-030 |
+| ステータス | specified |
+| 検証 | 自動 + 手動（Windows） |
+
+```gherkin
+Given ユーザーが設定ダイアログで shortcuts.new_card を変更した
+When RegisterHotKey が失敗する
+Then エラーメッセージが表示される
+And メモリ上のショートカット設定はダイアログ確定前の値に戻る
+And settings.json は更新されない
+```
+
+**テスト**: （実装時）`test_settings_actions.py` + 手動
+
+### AC-030-05
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-030 |
+| ステータス | specified |
+| 検証 | 手動（Windows） |
+
+```gherkin
+Given 設定ダイアログが表示されている
+When ユーザーが割り当て済みショートカットを押す
+Then 新規カードは作成されない
+```
+
+**テスト**: 手動
+
+---
+
 ## M2 以降（プレースホルダー）
 
 | ID | 関連 FR | ステータス |

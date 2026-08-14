@@ -105,7 +105,8 @@ petatto-kanban/
 │   ├── card_renderer.py          # カード UI 描画（UiMetrics）
 │   ├── system/
 │   │   ├── auto_start.py         # Windows Run キー（FR-029）
-│   │   └── launch_command.py     # ログオン時コマンド行の解決
+│   │   ├── launch_command.py     # ログオン時コマンド行の解決
+│   │   └── hotkey.py             # グローバルホットキー（FR-030、予定）
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -132,7 +133,7 @@ petatto-kanban/
 | `display/settings_dialog.py` | UC-006 設定ダイアログ（`ttk.Notebook` シェル・確定値組み立て） | tkinter, `mode_labels`, `settings_dialog_tabs`, `settings_dialog_labels`, `settings_dialog_panels`, `settings`, `monitors` |
 | `display/settings_dialog_tabs.py` | タブラベル・タブ別項目定義 | 標準ライブラリのみ |
 | `display/settings_dialog_labels.py` | 設定ダイアログ UI 文言 | 標準ライブラリのみ |
-| `display/settings_dialog_panels.py` | 表示 / システムタブのウィジェット構築 | tkinter, `mode_labels`, `settings_dialog_labels`, `monitors` |
+| `display/settings_dialog_panels.py` | 表示 / テーマ / 操作 / システムタブのウィジェット構築 | tkinter, `mode_labels`, `settings_dialog_labels`, `monitors` |
 | `display/settings_actions.py` | 設定適用・終了確認・全カード削除・自動起動反映と失敗時ロールバック（`app.py` から利用） | `settings`, `settings_dialog`, `settings_dialog_labels`, `storage`, `system/auto_start` |
 | `display/ui_scale.py` | UI サイズプリセット・スケール係数（FR-026） | 標準ライブラリのみ |
 | `display/ui_scale_labels.py` | UI サイズコンボボックス用ラベル | 標準ライブラリのみ |
@@ -144,6 +145,7 @@ petatto-kanban/
 | `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ |
 | `system/auto_start.py` | Windows Run キーの登録・削除（FR-029） | 標準ライブラリ（`winreg`）、`launch_command` |
 | `system/launch_command.py` | ログオン時コマンド行の解決（frozen / pythonw） | 標準ライブラリのみ |
+| `system/hotkey.py` | グローバルホットキーのコード正規化・登録/解除（FR-030、予定） | 標準ライブラリ（`ctypes` / `win32`） |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
@@ -225,6 +227,18 @@ petatto-kanban/
 | 理由 | 管理者権限不要、アンインストール時は設定 OFF で削除可能、デスクトップアプリの一般的な方式 |
 | トレードオフ | グループ ポリシーで Run キーが制限される環境では無効。タスク スケジューラより遅延起動の制御は弱い |
 | 関連 | FR-029, NFR-008 |
+
+### ADR-007: 新規カードショートカットはグローバルホットキー
+
+| 項目 | 内容 |
+|------|------|
+| ステータス | Accepted |
+| 日付 | 2026-08-14 |
+| コンテキスト | 既定 UI はオーバーレイ（クリック透過）。tkinter のウィンドウバインドでは他アプリ前面時にキーを受け取れない |
+| 決定 | Win32 `RegisterHotKey` による **グローバルホットキー** とする。既定は Ctrl+Shift+N。割り当ては設定「操作」タブで変更 |
+| 理由 | メニューパネルを開かず、他作業中にカードを切れる。オーバーレイの操作モデルと一致する |
+| トレードオフ | 他アプリが同一ホットキーを先に登録していると失敗する。設定ダイアログ表示中は発火を抑制する |
+| 関連 | FR-030, UC-012, NFR-011 |
 
 ---
 
