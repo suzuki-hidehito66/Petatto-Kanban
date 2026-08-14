@@ -11,7 +11,7 @@ from typing import Any
 from petatto_kanban.display.ui_font import UiFont, parse_ui_font
 from petatto_kanban.display.ui_scale import UiSize, parse_ui_size
 from petatto_kanban.display.ui_theme import UiTheme, parse_ui_theme
-from petatto_kanban.system.hotkey import DEFAULT_NEW_CARD_SHORTCUT, normalize_shortcut
+from petatto_kanban.system.shortcut import DEFAULT_NEW_CARD_SHORTCUT, normalize_shortcut
 
 SETTINGS_FILE_NAME = "settings.json"
 

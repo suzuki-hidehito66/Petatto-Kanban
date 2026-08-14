@@ -185,7 +185,7 @@
 |------|-----|
 | 関連 FR | FR-030, FR-003 |
 | 関連 AC | AC-030-01, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
-| 実装 | `system/hotkey.py`, `app.py` |
+| 実装 | `system/shortcut.py`, `system/hotkey.py`, `app.py` |
 | 設定 UI | [UC-006 §操作タブ](#uc-006-設定ダイアログ) |
 
 | 項目 | 仕様 |
@@ -196,7 +196,7 @@
 | 動作 | 発火時は [UC-004](#uc-004-カード即時追加) と同一（配置・初期タイトル・インライン編集・保存） |
 | 編集中 | タイトルインライン編集中なら確定。期限パネルが開いていればキャンセル。その後にカード追加 |
 | 抑制 | 設定ダイアログ表示中は発火しない |
-| 再登録 | 設定 OK 成功後。失敗時は旧コードのまま |
+| 再登録 | 設定 OK 成功後。失敗時はダイアログ全項目をロールバックし、旧コードのまま |
 | 解除 | アプリ終了時 |
 
 M1 で割り当て可能なアクションは **新規カード作成** のみ。他アクションは将来の操作タブ拡張とする。
@@ -245,7 +245,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027, FR-028, FR-029, FR-030 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `system/hotkey.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `system/shortcut.py`, `system/hotkey.py`, `app.py` |
 | 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01, AC-029-01, AC-029-02, AC-029-06, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
 
 ### タブ構成
@@ -288,7 +288,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | **変更** | 押下後、次に入力したキーコンボを仮割り当て。Escape で変更キャンセル |
 | **既定に戻す** | `Ctrl+Shift+N` に戻す |
 | 入力規則 | 修飾（Ctrl / Alt / Shift）を 1 つ以上含む。単体キー・修飾のみは受け付けない |
-| 確定 | OK で `shortcuts.new_card` を保存しホットキーを再登録。失敗時は FR-030 / AC-030-04 |
+| 確定 | OK でホットキーを再登録し `shortcuts.new_card` を保存。失敗時はダイアログ全項目をロールバックし `settings.json` を保存しない（FR-029 と同様） |
 
 ### システムタブ
 
@@ -628,3 +628,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.9.2 | 2026-08-14 | UC-006: 自動起動は Windows 11 以降のみ。非 Windows 無効化の記述を削除 |
 | 2.10.0 | 2026-08-14 | UC-006 操作タブ・UC-012 キーボードショートカット（FR-030、既定 Ctrl+Shift+N） |
 | 2.10.1 | 2026-08-14 | UC-006 操作タブ・UC-012 を実装（`system/hotkey.py` / RegisterHotKey） |
+| 2.10.2 | 2026-08-14 | UC-012: コード正規化を `shortcut.py` に分離。失敗時は全項目ロールバック |

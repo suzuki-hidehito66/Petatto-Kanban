@@ -30,8 +30,8 @@ from petatto_kanban.display.settings_actions import (
 )
 from petatto_kanban.display.settings_dialog import (
     SettingsDialog,
-    SettingsDialogInput,
     SettingsDialogResult,
+    dialog_input_from_settings,
 )
 from petatto_kanban.display.settings_dialog_labels import MSG_HOTKEY_FAILED, MSG_SETTINGS_SAVED
 from petatto_kanban.display.transparent import TRANSPARENT_COLOR
@@ -682,17 +682,9 @@ class KanbanApp:
         try:
             dialog = SettingsDialog(
                 self.root,
-                dialog_input=SettingsDialogInput(
-                    mode=self.display_settings.mode,
-                    confirm_delete=self.display_settings.confirm_delete,
-                    confirm_exit=self.display_settings.confirm_exit,
-                    launch_at_login=self.display_settings.launch_at_login,
-                    monitor_index=self.display_settings.monitor_index,
-                    ui_size=self.display_settings.ui_size,
-                    ui_font=self.display_settings.ui_font,
-                    ui_theme=self.display_settings.ui_theme,
-                    monitors=self._monitors,
-                    shortcut_new_card=self.display_settings.shortcut_new_card,
+                dialog_input=dialog_input_from_settings(
+                    self.display_settings,
+                    self._monitors,
                 ),
                 on_delete_all_cards=self._delete_all_cards,
             )

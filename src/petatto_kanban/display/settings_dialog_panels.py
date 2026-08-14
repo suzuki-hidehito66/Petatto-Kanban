@@ -42,7 +42,7 @@ from petatto_kanban.display.ui_theme_labels import (
     selectable_ui_theme_labels,
     ui_theme_label,
 )
-from petatto_kanban.system.hotkey import DEFAULT_NEW_CARD_SHORTCUT
+from petatto_kanban.system.shortcut import DEFAULT_NEW_CARD_SHORTCUT
 
 if TYPE_CHECKING:
     import tkinter as tk

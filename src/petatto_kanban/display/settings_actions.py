@@ -17,7 +17,7 @@ from petatto_kanban.display.settings_dialog_labels import (
 )
 from petatto_kanban.storage import save_board
 from petatto_kanban.system.auto_start import apply_auto_start_setting
-from petatto_kanban.system.hotkey import normalize_shortcut
+from petatto_kanban.system.shortcut import normalize_shortcut
 
 if TYPE_CHECKING:
     import tkinter as tk
@@ -93,12 +93,12 @@ def persist_dialog_result(
 ) -> SettingsApplyChanges | None:
     """ダイアログ結果を OS 反映してから settings.json に保存する.
 
-    自動起動またはホットキーの反映に失敗した場合はメモリ上の設定もロールバックし、
+    自動起動またはホットキーの反映に失敗した場合はメモリ上の設定を全項目ロールバックし、
     ファイルは更新しない。
     """
     snapshot = replace(display_settings)
     changes = apply_dialog_result(display_settings, result)
-    shortcut_applied = False
+    restores: list[Callable[[], bool]] = []
     if changes.shortcut_new_card_changed:
         if not apply_shortcut_setting(
             display_settings.shortcut_new_card,
@@ -109,7 +109,15 @@ def persist_dialog_result(
         ):
             _restore_display_settings(display_settings, snapshot)
             return None
-        shortcut_applied = True
+        restores.append(
+            lambda: apply_shortcut_setting(
+                snapshot.shortcut_new_card,
+                apply_shortcut=apply_shortcut,
+                messagebox=messagebox,
+                parent=parent,
+                app_title=app_title,
+            )
+        )
     if changes.launch_at_login_changed and not apply_launch_at_login(
         display_settings,
         messagebox=messagebox,
@@ -117,14 +125,8 @@ def persist_dialog_result(
         app_title=app_title,
     ):
         _restore_display_settings(display_settings, snapshot)
-        if shortcut_applied:
-            apply_shortcut_setting(
-                snapshot.shortcut_new_card,
-                apply_shortcut=apply_shortcut,
-                messagebox=messagebox,
-                parent=parent,
-                app_title=app_title,
-            )
+        for restore in reversed(restores):
+            restore()
         return None
     save_display_settings(display_settings)
     return changes

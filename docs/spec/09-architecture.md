@@ -106,7 +106,8 @@ petatto-kanban/
 │   ├── system/
 │   │   ├── auto_start.py         # Windows Run キー（FR-029）
 │   │   ├── launch_command.py     # ログオン時コマンド行の解決
-│   │   └── hotkey.py             # グローバルホットキー（FR-030）
+│   │   ├── shortcut.py           # ショートカットコード正規化（FR-030）
+│   │   └── hotkey.py             # グローバルホットキー登録（FR-030）
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -130,11 +131,11 @@ petatto-kanban/
 | `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） | tkinter, `transparent`, `settings` |
 | `display/desktop_board_controller.py` | DM-DESKTOP-02/03 本体 Z オーダー制御 | tkinter, `desktop`, `foreground`, `menu_panel_host` |
 | `display/foreground.py` | 前面ウィンドウのプロセス判定 | `transparent`, Windows API |
-| `display/settings_dialog.py` | UC-006 設定ダイアログ（`ttk.Notebook` シェル・確定値組み立て） | tkinter, `mode_labels`, `settings_dialog_tabs`, `settings_dialog_labels`, `settings_dialog_panels`, `settings`, `monitors` |
+| `display/settings_dialog.py` | UC-006 設定ダイアログ（`ttk.Notebook` シェル・確定値組み立て） | tkinter, `mode_labels`, `settings_dialog_tabs`, `settings_dialog_labels`, `settings_dialog_panels`, `settings`, `monitors`, `system/shortcut` |
 | `display/settings_dialog_tabs.py` | タブラベル・タブ別項目定義 | 標準ライブラリのみ |
 | `display/settings_dialog_labels.py` | 設定ダイアログ UI 文言 | 標準ライブラリのみ |
-| `display/settings_dialog_panels.py` | 表示 / テーマ / 操作 / システムタブのウィジェット構築 | tkinter, `mode_labels`, `settings_dialog_labels`, `monitors` |
-| `display/settings_actions.py` | 設定適用・終了確認・全カード削除・自動起動/ホットキー反映と失敗時ロールバック（`app.py` から利用） | `settings`, `settings_dialog`, `settings_dialog_labels`, `storage`, `system/auto_start`, `system/hotkey` |
+| `display/settings_dialog_panels.py` | 表示 / テーマ / 操作 / システムタブのウィジェット構築 | tkinter, `mode_labels`, `settings_dialog_labels`, `monitors`, `system/shortcut` |
+| `display/settings_actions.py` | 設定適用・終了確認・全カード削除・自動起動/ホットキー反映と失敗時ロールバック（`app.py` から利用） | `settings`, `settings_dialog`, `settings_dialog_labels`, `storage`, `system/auto_start`, `system/shortcut` |
 | `display/ui_scale.py` | UI サイズプリセット・スケール係数（FR-026） | 標準ライブラリのみ |
 | `display/ui_scale_labels.py` | UI サイズコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/card_layout.py` | カード基準寸法・黄金比・スケール（UC-003 / UC-009） | 標準ライブラリのみ |
@@ -145,7 +146,8 @@ petatto-kanban/
 | `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ |
 | `system/auto_start.py` | Windows Run キーの登録・削除（FR-029） | 標準ライブラリ（`winreg`）、`launch_command` |
 | `system/launch_command.py` | ログオン時コマンド行の解決（frozen / pythonw） | 標準ライブラリのみ |
-| `system/hotkey.py` | グローバルホットキーのコード正規化・登録/解除（FR-030） | 標準ライブラリ（`ctypes` / `win32`） |
+| `system/shortcut.py` | ショートカットコードの解析・正規化（FR-030） | 標準ライブラリのみ |
+| `system/hotkey.py` | グローバルホットキーの登録/解除（FR-030） | 標準ライブラリ（`ctypes` / `win32`）、`shortcut` |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
@@ -235,7 +237,7 @@ petatto-kanban/
 | ステータス | Accepted |
 | 日付 | 2026-08-14 |
 | コンテキスト | 既定 UI はオーバーレイ（クリック透過）。tkinter のウィンドウバインドでは他アプリ前面時にキーを受け取れない |
-| 決定 | Win32 `RegisterHotKey` による **グローバルホットキー** とする。既定は Ctrl+Shift+N。割り当ては設定「操作」タブで変更 |
+| 決定 | Win32 `RegisterHotKey` による **グローバルホットキー** とする。既定は Ctrl+Shift+N。割り当ては設定「操作」タブで変更。コード正規化は `shortcut.py`、登録 I/O は `hotkey.py` に分離 |
 | 理由 | メニューパネルを開かず、他作業中にカードを切れる。オーバーレイの操作モデルと一致する |
 | トレードオフ | 他アプリが同一ホットキーを先に登録していると失敗する。設定ダイアログ表示中は発火を抑制する |
 | 関連 | FR-030, UC-012, NFR-011 |

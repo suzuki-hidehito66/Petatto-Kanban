@@ -2,9 +2,10 @@
 
 from petatto_kanban.display.mode_labels import display_mode_label
 from petatto_kanban.display.monitors import Monitor
-from petatto_kanban.display.settings import DisplayMode
+from petatto_kanban.display.settings import DisplayMode, DisplaySettings
 from petatto_kanban.display.settings_dialog import (
     SettingsFormValues,
+    dialog_input_from_settings,
     result_from_form_values,
 )
 from petatto_kanban.display.settings_dialog_tabs import (
@@ -24,7 +25,7 @@ from petatto_kanban.display.ui_scale import UiSize
 from petatto_kanban.display.ui_scale_labels import ui_size_label
 from petatto_kanban.display.ui_theme import UiTheme
 from petatto_kanban.display.ui_theme_labels import ui_theme_label
-from petatto_kanban.system.hotkey import DEFAULT_NEW_CARD_SHORTCUT
+from petatto_kanban.system.shortcut import DEFAULT_NEW_CARD_SHORTCUT
 
 _MONITORS = [
     Monitor(index=0, name="ディスプレイ 1", x=0, y=0, width=1920, height=1080),
@@ -207,3 +208,22 @@ def test_result_from_form_values_invalid_shortcut_falls_back() -> None:
         default_ui_theme=UiTheme.DEFAULT,
     )
     assert result.shortcut_new_card == DEFAULT_NEW_CARD_SHORTCUT
+
+
+def test_dialog_input_from_settings_copies_display_fields() -> None:
+    settings = DisplaySettings(
+        mode=DisplayMode.DESKTOP,
+        confirm_delete=False,
+        confirm_exit=True,
+        launch_at_login=True,
+        monitor_index=1,
+        shortcut_new_card="Ctrl+Shift+K",
+    )
+    dialog_input = dialog_input_from_settings(settings, _MONITORS)
+    assert dialog_input.mode == DisplayMode.DESKTOP
+    assert dialog_input.confirm_delete is False
+    assert dialog_input.confirm_exit is True
+    assert dialog_input.launch_at_login is True
+    assert dialog_input.monitor_index == 1
+    assert dialog_input.shortcut_new_card == "Ctrl+Shift+K"
+    assert dialog_input.monitors == _MONITORS

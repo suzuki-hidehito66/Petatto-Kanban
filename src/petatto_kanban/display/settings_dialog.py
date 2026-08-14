@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from petatto_kanban.display.mode_labels import display_mode_from_label
 from petatto_kanban.display.monitors import Monitor, monitor_index_for_name
-from petatto_kanban.display.settings import DisplayMode
+from petatto_kanban.display.settings import DisplayMode, DisplaySettings
 from petatto_kanban.display.settings_dialog_labels import SETTINGS_DIALOG_TITLE
 from petatto_kanban.display.settings_dialog_panels import (
     build_actions_tab,
@@ -30,7 +30,7 @@ from petatto_kanban.display.ui_scale_labels import ui_size_from_label
 from petatto_kanban.display.ui_theme import UiTheme
 from petatto_kanban.display.ui_theme_labels import ui_theme_from_label
 from petatto_kanban.system.auto_start import is_auto_start_supported
-from petatto_kanban.system.hotkey import (
+from petatto_kanban.system.shortcut import (
     DEFAULT_NEW_CARD_SHORTCUT,
     chord_from_tk_key,
     normalize_shortcut,
@@ -115,6 +115,25 @@ def result_from_form_values(
     )
 
 
+def dialog_input_from_settings(
+    settings: DisplaySettings,
+    monitors: list[Monitor],
+) -> SettingsDialogInput:
+    """DisplaySettings から設定ダイアログ初期値を組み立てる."""
+    return SettingsDialogInput(
+        mode=settings.mode,
+        confirm_delete=settings.confirm_delete,
+        confirm_exit=settings.confirm_exit,
+        launch_at_login=settings.launch_at_login,
+        monitor_index=settings.monitor_index,
+        ui_size=settings.ui_size,
+        ui_font=settings.ui_font,
+        ui_theme=settings.ui_theme,
+        monitors=monitors,
+        shortcut_new_card=settings.shortcut_new_card,
+    )
+
+
 class SettingsDialog(simpledialog.Dialog):
     """アプリ設定ダイアログ（UC-006）。「表示」「テーマ」「操作」「システム」タブ."""
 
@@ -177,6 +196,11 @@ class SettingsDialog(simpledialog.Dialog):
         master.rowconfigure(0, weight=1)
         return notebook
 
+    @property
+    def _capturing_shortcut(self) -> bool:
+        tab = getattr(self, "_actions_tab", None)
+        return tab is not None and tab.capturing
+
     def _begin_shortcut_capture(self) -> None:
         self._actions_tab.start_capture()
         self.focus_set()
@@ -185,7 +209,7 @@ class SettingsDialog(simpledialog.Dialog):
         self._actions_tab.reset_to_default()
 
     def _on_shortcut_capture_key(self, event: tk.Event) -> str | None:
-        if not self._actions_tab.capturing:
+        if not self._capturing_shortcut:
             return None
         if event.keysym == "Escape":
             return None
@@ -196,12 +220,12 @@ class SettingsDialog(simpledialog.Dialog):
         return "break"
 
     def ok(self, event: tk.Event | None = None) -> None:
-        if getattr(self, "_actions_tab", None) is not None and self._actions_tab.capturing:
+        if self._capturing_shortcut:
             return
         super().ok(event)
 
     def cancel(self, event: tk.Event | None = None) -> None:
-        if getattr(self, "_actions_tab", None) is not None and self._actions_tab.capturing:
+        if self._capturing_shortcut:
             self._actions_tab.cancel_capture()
             return
         super().cancel(event)

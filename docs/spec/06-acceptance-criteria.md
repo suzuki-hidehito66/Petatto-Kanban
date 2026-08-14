@@ -1041,7 +1041,7 @@ And タイトルがインライン編集状態になる
 And board.json に保存される
 ```
 
-**テスト**: `test_hotkey.py` + 手動
+**テスト**: `test_shortcut.py`, `test_hotkey.py` + 手動
 
 ### AC-030-02
 
@@ -1059,7 +1059,7 @@ And 以降 Ctrl+Shift+K で新規カードが作成される
 And 旧コード Ctrl+Shift+N では作成されない
 ```
 
-**テスト**: `test_display_settings.py`, `test_settings_dialog.py`, `test_hotkey.py` + 手動
+**テスト**: `test_display_settings.py`, `test_settings_dialog.py`, `test_shortcut.py`, `test_hotkey.py` + 手動
 
 ### AC-030-03
 
@@ -1075,7 +1075,7 @@ When 表示設定を読み込む
 Then shortcuts.new_card は "Ctrl+Shift+N" として扱われる
 ```
 
-**テスト**: `test_display_settings.py`, `test_hotkey.py`
+**テスト**: `test_display_settings.py`, `test_shortcut.py`
 
 ### AC-030-04
 
@@ -1089,11 +1089,12 @@ Then shortcuts.new_card は "Ctrl+Shift+N" として扱われる
 Given ユーザーが設定ダイアログで shortcuts.new_card を変更した
 When RegisterHotKey が失敗する
 Then エラーメッセージが表示される
-And メモリ上のショートカット設定はダイアログ確定前の値に戻る
+And メモリ上の DisplaySettings はダイアログ確定前の値に戻る
 And settings.json は更新されない
+And 「設定を保存しました」は表示されない
 ```
 
-**テスト**: `test_persist_dialog_result_rolls_back_on_hotkey_failure` + 手動
+**テスト**: `test_persist_dialog_result_rolls_back_on_hotkey_failure`, `test_persist_dialog_result_restores_shortcut_when_auto_start_fails` + 手動
 
 ### AC-030-05
 

@@ -412,6 +412,54 @@ def test_persist_dialog_result_rolls_back_on_hotkey_failure(
     assert not settings_path.exists()
 
 
+def test_persist_dialog_result_restores_shortcut_when_auto_start_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings_path = tmp_path / "settings.json"
+    monkeypatch.setattr(
+        "petatto_kanban.display.settings.get_settings_path",
+        lambda: settings_path,
+    )
+
+    def raise_oserror(_enabled: bool) -> None:
+        msg = "denied"
+        raise OSError(msg)
+
+    monkeypatch.setattr(
+        "petatto_kanban.display.settings_actions.apply_auto_start_setting",
+        raise_oserror,
+    )
+    applied: list[str] = []
+    settings = DisplaySettings(shortcut_new_card="Ctrl+Shift+N")
+    result = SettingsDialogResult(
+        mode=DisplayMode.OVERLAY,
+        confirm_delete=True,
+        confirm_exit=False,
+        launch_at_login=True,
+        monitor_index=0,
+        ui_size=UiSize.MEDIUM,
+        ui_font=UiFont.SEGOE_UI,
+        ui_theme=UiTheme.DEFAULT,
+        shortcut_new_card="Ctrl+Shift+K",
+    )
+
+    changes = persist_dialog_result(
+        settings,
+        result,
+        messagebox=FakeMessageBox(),
+        parent=object(),
+        app_title="Petatto Kanban",
+        apply_shortcut=applied.append,
+    )
+
+    assert changes is None
+    assert settings.shortcut_new_card == "Ctrl+Shift+N"
+    assert settings.launch_at_login is False
+    assert applied == ["Ctrl+Shift+K", "Ctrl+Shift+N"]
+    assert not settings_path.exists()
+
+
 def test_confirm_exit_skips_dialog_when_disabled() -> None:
     messagebox = FakeMessageBox()
 
