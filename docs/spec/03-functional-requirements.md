@@ -393,8 +393,8 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 優先度 | Should |
 | ステータス | implemented |
 | 関連 US | US-009 |
-| 関連 AC | AC-019-01, AC-019-02 |
-| 実装 | `src/petatto_kanban/display/desktop.py`, `display/transparent.py`, `display/modes.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreground.py` |
+| 関連 AC | AC-019-01, AC-019-02, AC-019-03 |
+| 実装 | `src/petatto_kanban/display/desktop.py`, `display/transparent.py`, `display/modes.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreign_app.py`, `display/mouse_buttons.py`, `display/win32_user32.py` |
 | UI 契約 | [12-display-modes.md §5](./12-display-modes.md#5-デスクトップモードdesktop-mode) |
 
 **説明**  
@@ -407,7 +407,8 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - 設定ダイアログ（UC-006）でオーバーレイモードと相互切替（FR-022）
 - `settings.json` の `mode: "desktop"` で永続化
 - 本体は `display/desktop.py`（Z オーダー `HWND_BOTTOM` 等）。メニューは `display/menu_panel_host.py`（独立 Toplevel + `-topmost`）
-- 昇格・降格ロジックは `display/desktop_board_controller.py`（DM-DESKTOP-02 / 03）。他アプリ判定は `display/foreground.py`
+- 昇格・降格ロジックは `display/desktop_board_controller.py`（DM-DESKTOP-02 / 03）。他アプリ判定は `display/foreign_app.py`（前面ウィンドウ・カーソル下・マウス押下の合成。Win32 は `win32_user32.py`）
+- 昇格中に他アプリのウィンドウをクリックしたときは **ボタン押下時点** で本体を背面へ戻す（離しを待たない。DM-DESKTOP-03）
 - Windows 11 以降
 
 ---
