@@ -47,10 +47,13 @@ from petatto_kanban.new_card_placement import (
 from petatto_kanban.progress import PROGRESS_STEP, clamp_progress
 from petatto_kanban.storage import load_board, save_board
 from petatto_kanban.system.auto_start import sync_auto_start_from_settings
-from petatto_kanban.system.hotkey import NewCardHotkey, create_new_card_hotkey
+from petatto_kanban.system.hotkey import (
+    HOTKEY_POLL_MS,
+    NewCardHotkey,
+    create_new_card_hotkey,
+)
 
 APP_TITLE = "Petatto-Kanban"
-_HOTKEY_POLL_MS = 50
 
 
 class KanbanApp:
@@ -642,7 +645,7 @@ class KanbanApp:
             return
         self._new_card_hotkey.poll()
         try:
-            self.root.after(_HOTKEY_POLL_MS, self._schedule_hotkey_poll)
+            self.root.after(HOTKEY_POLL_MS, self._schedule_hotkey_poll)
         except tk.TclError:
             return
 
