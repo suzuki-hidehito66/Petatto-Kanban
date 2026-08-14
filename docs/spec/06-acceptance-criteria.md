@@ -984,7 +984,7 @@ Then 「Windows ログオン時に自動起動する」チェックボックス�
 And apply_auto_start_setting はレジストリを変更しない
 ```
 
-**テスト**: `test_is_auto_start_supported_on_linux`, `test_settings_dialog.py` + 手動（Windows では有効）
+**テスト**: `test_is_auto_start_supported_false_when_not_win32`, `test_is_auto_start_supported_true_on_win32`, `test_settings_dialog.py` + 手動（Windows では有効）
 
 ### AC-029-05
 
