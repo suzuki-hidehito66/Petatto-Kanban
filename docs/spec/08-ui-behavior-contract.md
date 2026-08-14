@@ -12,7 +12,7 @@
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-001, FR-019, FR-020 |
-| 関連 AC | AC-001-01, AC-019-01, AC-019-02, AC-020-01, AC-020-02 |
+| 関連 AC | AC-001-01, AC-019-01, AC-019-02, AC-019-03, AC-020-01, AC-020-02 |
 | 表示モード | [12-display-modes.md](./12-display-modes.md) |
 
 | 要素 | 仕様 |
@@ -45,7 +45,7 @@
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-003, FR-019, FR-023 |
-| 実装 | `src/petatto_kanban/menu_panel.py`, `menu_panel_layout.py`, `display/menu_panel_host.py`, `app.py` |
+| 実装 | `src/petatto_kanban/menu_panel.py`, `menu_panel_layout.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `app.py` |
 | UI 契約 | 旧「ツールバー」をメニューパネルに置換（M1） |
 
 ### 概要
@@ -90,7 +90,7 @@
 - メニューパネルは **独立した透過 Toplevel**（`display/menu_panel_host.py`）上に描画する
 - デスクトップモードでは Toplevel に `-topmost` を付与し、**他アプリより常に前面**に表示する
 - **メニューアクティブ時**（ホバー・フォーカス・押下）は `DesktopBoardController.activate_from_menu()` で **全カードを含む本体** を一時最前面に出す（DM-DESKTOP-02）
-- **他アプリアクティブ時**は `DesktopBoardController.lower_on_foreign_app_active()` で本体を即時背面へ（DM-DESKTOP-03）
+- **他アプリアクティブ時**は `DesktopBoardController.lower_on_foreign_pointer_press()`（他ウィンドウ上のマウス**押下**）および `lower_on_foreign_app_active()`（前面ウィンドウ変更）で本体を即時背面へ（DM-DESKTOP-03）。離しを待たない
 - カード等は本体ウィンドウ（背面）に残る。メニューのホバー・ドラッグ・永続化はオーバーレイ時と同一
 
 ### 永続化
@@ -632,3 +632,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.10.3 | 2026-08-14 | UC-012: WM_HOTKEY はメッセージ専用ウィンドウで受信（Tk WndProc 差し替えを廃止） |
 | 2.10.4 | 2026-08-14 | UC-012: Python WndProc を廃止。専用スレッド + `GetMessage` + Tk `poll()` |
 | 2.10.5 | 2026-08-14 | UC-012: Win32 ポンプを `hotkey_pump.py` に分離。セッションは `hotkey.py` |
+| 2.11.0 | 2026-08-14 | UC-002: 他ウィンドウクリックの背面復帰を押下時点に変更（DM-DESKTOP-03） |

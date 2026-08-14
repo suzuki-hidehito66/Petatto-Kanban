@@ -19,6 +19,7 @@ if "tkinter" not in sys.modules:
     _simpledialog.Dialog = type("Dialog", (), {})
     sys.modules["tkinter.simpledialog"] = _simpledialog
 
+from petatto_kanban.display.desktop_board_controller import DesktopBoardController
 from petatto_kanban.display.mode_labels import (
     display_mode_from_label,
     display_mode_label,
@@ -140,6 +141,46 @@ def test_is_foreign_app_foreground_compares_process_id() -> None:
         assert is_foreign_app_foreground() is False
 
 
+def test_is_foreign_app_under_cursor_false_on_non_windows() -> None:
+    with patch("petatto_kanban.display.foreground.is_windows", return_value=False):
+        from petatto_kanban.display.foreground import is_foreign_app_under_cursor
+
+        assert is_foreign_app_under_cursor() is False
+
+
+def test_is_foreign_app_under_cursor_compares_process_id() -> None:
+    with (
+        patch("petatto_kanban.display.foreground.is_windows", return_value=True),
+        patch("petatto_kanban.display.foreground.os.getpid", return_value=1000),
+        patch(
+            "petatto_kanban.display.foreground._cursor_window_process_id",
+            return_value=2000,
+        ),
+    ):
+        from petatto_kanban.display.foreground import is_foreign_app_under_cursor
+
+        assert is_foreign_app_under_cursor() is True
+
+    with (
+        patch("petatto_kanban.display.foreground.is_windows", return_value=True),
+        patch("petatto_kanban.display.foreground.os.getpid", return_value=1000),
+        patch(
+            "petatto_kanban.display.foreground._cursor_window_process_id",
+            return_value=1000,
+        ),
+    ):
+        from petatto_kanban.display.foreground import is_foreign_app_under_cursor
+
+        assert is_foreign_app_under_cursor() is False
+
+
+def test_is_any_mouse_button_down_false_on_non_windows() -> None:
+    with patch("petatto_kanban.display.foreground.is_windows", return_value=False):
+        from petatto_kanban.display.foreground import is_any_mouse_button_down
+
+        assert is_any_mouse_button_down() is False
+
+
 def test_desktop_board_controller_activate_and_restore() -> None:
     root = MagicMock()
     menu_host = MagicMock()
@@ -176,3 +217,118 @@ def test_desktop_board_controller_activate_and_restore() -> None:
         ):
             controller.lower_on_foreign_app_active()
         restore.assert_called_once_with(root)
+
+
+def _make_desktop_controller(
+    root: MagicMock,
+    restore: MagicMock,
+) -> DesktopBoardController:
+    controller = DesktopBoardController(
+        root,
+        MagicMock(),
+        is_desktop_mode=MagicMock(return_value=True),
+        can_lower=MagicMock(return_value=True),
+    )
+    controller.activate_from_menu()
+    restore.reset_mock()
+    return controller
+
+
+def test_desktop_board_controller_lowers_on_foreign_mouse_press_not_release() -> None:
+    root = MagicMock()
+    with (
+        patch("petatto_kanban.display.desktop_board_controller.bring_board_to_front"),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.restore_desktop_board_z_order"
+        ) as restore,
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_foreign_app_foreground",
+            return_value=False,
+        ),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_any_mouse_button_down",
+            return_value=True,
+        ),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_foreign_app_under_cursor",
+            return_value=True,
+        ),
+    ):
+        controller = _make_desktop_controller(root, restore)
+        controller.lower_on_foreign_pointer_press()
+    restore.assert_called_once_with(root)
+    assert controller.is_elevated is False
+
+
+def test_desktop_board_controller_does_not_lower_on_own_window_mouse_press() -> None:
+    root = MagicMock()
+    with (
+        patch("petatto_kanban.display.desktop_board_controller.bring_board_to_front"),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.restore_desktop_board_z_order"
+        ) as restore,
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_any_mouse_button_down",
+            return_value=True,
+        ),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_foreign_app_under_cursor",
+            return_value=False,
+        ),
+    ):
+        controller = _make_desktop_controller(root, restore)
+        controller.lower_on_foreign_pointer_press()
+    restore.assert_not_called()
+    assert controller.is_elevated is True
+
+
+def test_desktop_board_controller_does_not_lower_until_mouse_is_pressed() -> None:
+    root = MagicMock()
+    with (
+        patch("petatto_kanban.display.desktop_board_controller.bring_board_to_front"),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.restore_desktop_board_z_order"
+        ) as restore,
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_foreign_app_foreground",
+            return_value=False,
+        ),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_any_mouse_button_down",
+            return_value=False,
+        ),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_foreign_app_under_cursor",
+            return_value=True,
+        ),
+    ):
+        controller = _make_desktop_controller(root, restore)
+        controller.lower_on_foreign_pointer_press()
+    restore.assert_not_called()
+    assert controller.is_elevated is True
+
+
+def test_foreground_poll_lowers_on_foreign_mouse_press() -> None:
+    root = MagicMock()
+    with (
+        patch("petatto_kanban.display.desktop_board_controller.bring_board_to_front"),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.restore_desktop_board_z_order"
+        ) as restore,
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_foreign_app_foreground",
+            return_value=False,
+        ),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_any_mouse_button_down",
+            return_value=True,
+        ),
+        patch(
+            "petatto_kanban.display.desktop_board_controller.is_foreign_app_under_cursor",
+            return_value=True,
+        ),
+    ):
+        controller = _make_desktop_controller(root, restore)
+        controller._on_foreground_poll()
+    restore.assert_called_once_with(root)
+    assert controller.is_elevated is False

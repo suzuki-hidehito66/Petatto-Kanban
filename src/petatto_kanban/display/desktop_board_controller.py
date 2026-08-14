@@ -9,7 +9,11 @@ from petatto_kanban.display.desktop import (
     bring_board_to_front,
     restore_desktop_board_z_order,
 )
-from petatto_kanban.display.foreground import is_foreign_app_foreground
+from petatto_kanban.display.foreground import (
+    is_any_mouse_button_down,
+    is_foreign_app_foreground,
+    is_foreign_app_under_cursor,
+)
 
 if TYPE_CHECKING:
     import tkinter as tk
@@ -18,6 +22,7 @@ if TYPE_CHECKING:
 
 BOARD_LOWER_DELAY_MS = 1500
 FOREGROUND_POLL_MS = 300
+MOUSE_PRESS_POLL_MS = 16
 
 
 class DesktopBoardController:
@@ -72,6 +77,7 @@ class DesktopBoardController:
         bring_board_to_front(self._root)
         self._elevated = True
         self._menu_host.lift()
+        self.start_foreground_watch()
 
     def on_menu_deactivate(self) -> None:
         """メニュー非アクティブ後、一定時間で背面復帰を予約."""
@@ -90,22 +96,33 @@ class DesktopBoardController:
             self._lower_if_idle,
         )
 
+    def lower_on_foreign_pointer_press(self) -> None:
+        """DM-DESKTOP-03: 他アプリ上のマウス押下で待機なし背面復帰（離しを待たない）."""
+        if not self._is_desktop_mode():
+            return
+        if not is_any_mouse_button_down() or not is_foreign_app_under_cursor():
+            return
+        self._restore_if_elevated()
+
     def lower_on_foreign_app_active(self) -> None:
         """DM-DESKTOP-03: 他アプリ前面時は待機なしで背面復帰."""
         if not self._is_desktop_mode():
             return
         if not is_foreign_app_foreground():
             return
-        self._cancel_lower()
-        if not self._can_lower() or not self._elevated:
-            return
-        self._restore_z_order()
+        self._restore_if_elevated()
 
     def start_foreground_watch(self) -> None:
         if not self._is_desktop_mode():
             return
         self._stop_foreground_watch()
         self._schedule_foreground_poll()
+
+    def _restore_if_elevated(self) -> None:
+        self._cancel_lower()
+        if not self._can_lower() or not self._elevated:
+            return
+        self._restore_z_order()
 
     def _restore_z_order(self) -> None:
         if not self._is_desktop_mode():
@@ -133,9 +150,14 @@ class DesktopBoardController:
             self._root.after_cancel(self._foreground_poll_after_id)
             self._foreground_poll_after_id = None
 
+    def _poll_interval_ms(self) -> int:
+        if self._elevated:
+            return MOUSE_PRESS_POLL_MS
+        return FOREGROUND_POLL_MS
+
     def _schedule_foreground_poll(self) -> None:
         self._foreground_poll_after_id = self._root.after(
-            FOREGROUND_POLL_MS,
+            self._poll_interval_ms(),
             self._on_foreground_poll,
         )
 
@@ -143,5 +165,6 @@ class DesktopBoardController:
         self._foreground_poll_after_id = None
         if not self._is_desktop_mode():
             return
+        self.lower_on_foreign_pointer_press()
         self.lower_on_foreign_app_active()
         self._schedule_foreground_poll()

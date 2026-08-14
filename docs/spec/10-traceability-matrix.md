@@ -35,7 +35,7 @@
 | FR-008 | US-006 | AC-008-01 | （M2） | — | deferred |
 | FR-009 | US-006 | AC-009-01 | （M2） | — | deferred |
 | FR-018 | US-008 | AC-018-01 | （M2） | 手動 | deferred |
-| FR-019 | US-009 | AC-019-01, AC-019-02 | `display/desktop.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreground.py`, `display/modes.py` | `test_display_modes.py` + 手動 | implemented |
+| FR-019 | US-009 | AC-019-01, AC-019-02, AC-019-03 | `display/desktop.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreground.py`, `display/modes.py` | `test_display_modes.py` + 手動 | implemented |
 | FR-022 | US-008, US-009, US-010 | AC-022-01, AC-022-02 | `display/settings_dialog.py`, `display/settings_dialog_panels.py`, `display/modes.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py` + 手動 | implemented |
 | FR-026 | US-016 | AC-026-01〜04 | `display/ui_scale.py`, `display/ui_scale_labels.py`, `display/card_layout.py`, `display/ui_metrics.py`, `display/ui_chrome.py`, `card_renderer.py`, `settings.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py` | `test_ui_scale.py`, `test_card_layout.py`, `test_ui_scale_labels.py`, `test_settings_dialog.py`, `test_display_settings.py` + 手動 | implemented |
 | FR-027 | US-017 | AC-027-01, AC-027-02, AC-027-03 | `display/ui_font.py`, `display/ui_font_labels.py`, `display/ui_metrics.py`, `display/card_layout.py`, `settings.py`, `app.py`, `display/ui_chrome.py`, `card_renderer.py` | `test_ui_font.py`, `test_settings_dialog.py`, `test_display_settings.py`, `test_settings_actions.py` + 手動 | implemented |
