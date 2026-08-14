@@ -30,10 +30,10 @@ from petatto_kanban.display.settings_actions import (
 )
 from petatto_kanban.display.settings_dialog import (
     SettingsDialog,
-    SettingsDialogInput,
     SettingsDialogResult,
+    dialog_input_from_settings,
 )
-from petatto_kanban.display.settings_dialog_labels import MSG_SETTINGS_SAVED
+from petatto_kanban.display.settings_dialog_labels import MSG_HOTKEY_FAILED, MSG_SETTINGS_SAVED
 from petatto_kanban.display.transparent import TRANSPARENT_COLOR
 from petatto_kanban.display.ui_chrome import UiChrome
 from petatto_kanban.display.ui_metrics import metrics_for_display
@@ -47,6 +47,7 @@ from petatto_kanban.new_card_placement import (
 from petatto_kanban.progress import PROGRESS_STEP, clamp_progress
 from petatto_kanban.storage import load_board, save_board
 from petatto_kanban.system.auto_start import sync_auto_start_from_settings
+from petatto_kanban.system.hotkey import NewCardHotkey, create_new_card_hotkey
 
 APP_TITLE = "Petatto-Kanban"
 
@@ -75,6 +76,8 @@ class KanbanApp:
         self._desktop_board: DesktopBoardController | None = None
         self._chrome: UiChrome
         self._card_renderer: CardRenderer
+        self._new_card_hotkey: NewCardHotkey | None = None
+        self._settings_dialog_open = False
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         self.root.configure(bg=TRANSPARENT_COLOR)
@@ -84,6 +87,7 @@ class KanbanApp:
         if self.display_settings.launch_at_login:
             sync_auto_start_from_settings(True)
         self._apply_display_mode()
+        self._install_new_card_hotkey()
         self.refresh()
 
     @property
@@ -619,6 +623,34 @@ class KanbanApp:
         save_board(self.board)
         self.refresh(begin_inline_edit_for=card.id)
 
+    def _install_new_card_hotkey(self) -> None:
+        self.root.update_idletasks()
+        hwnd = int(self.root.winfo_id())
+        self._new_card_hotkey = create_new_card_hotkey(hwnd, self._on_new_card_hotkey)
+        try:
+            self._new_card_hotkey.set_shortcut(self.display_settings.shortcut_new_card)
+        except (OSError, RuntimeError) as error:
+            messagebox.showinfo(
+                APP_TITLE,
+                MSG_HOTKEY_FAILED.format(error=error),
+                parent=self.root,
+            )
+
+    def _on_new_card_hotkey(self) -> None:
+        if self._settings_dialog_open:
+            return
+        try:
+            if self.root.grab_current() is not None:
+                return
+        except tk.TclError:
+            pass
+        self.root.after(0, self._add_card)
+
+    def _apply_shortcut(self, shortcut: str) -> None:
+        if self._new_card_hotkey is None:
+            return
+        self._new_card_hotkey.set_shortcut(shortcut)
+
     def _delete_card(self, card: Card) -> None:
         if self.display_settings.confirm_delete and not messagebox.askyesno(
             APP_TITLE,
@@ -646,21 +678,18 @@ class KanbanApp:
     def _open_settings(self) -> None:
         self._due_date_picker.cancel_if_any()
         self._commit_inline_title_edit_if_any(refresh_after=False)
-        dialog = SettingsDialog(
-            self.root,
-            dialog_input=SettingsDialogInput(
-                mode=self.display_settings.mode,
-                confirm_delete=self.display_settings.confirm_delete,
-                confirm_exit=self.display_settings.confirm_exit,
-                launch_at_login=self.display_settings.launch_at_login,
-                monitor_index=self.display_settings.monitor_index,
-                ui_size=self.display_settings.ui_size,
-                ui_font=self.display_settings.ui_font,
-                ui_theme=self.display_settings.ui_theme,
-                monitors=self._monitors,
-            ),
-            on_delete_all_cards=self._delete_all_cards,
-        )
+        self._settings_dialog_open = True
+        try:
+            dialog = SettingsDialog(
+                self.root,
+                dialog_input=dialog_input_from_settings(
+                    self.display_settings,
+                    self._monitors,
+                ),
+                on_delete_all_cards=self._delete_all_cards,
+            )
+        finally:
+            self._settings_dialog_open = False
         if dialog.result is None:
             return
 
@@ -675,6 +704,7 @@ class KanbanApp:
             messagebox=messagebox,
             parent=self.root,
             app_title=APP_TITLE,
+            apply_shortcut=self._apply_shortcut,
         )
         if changes is None:
             return False
@@ -703,6 +733,9 @@ class KanbanApp:
             self._desktop_board.stop()
         self._due_date_picker.cancel_if_any()
         self._commit_inline_title_edit_if_any(refresh_after=False)
+        if self._new_card_hotkey is not None:
+            self._new_card_hotkey.close()
+            self._new_card_hotkey = None
         save_board(self.board)
         save_display_settings(self.display_settings)
         self.root.destroy()

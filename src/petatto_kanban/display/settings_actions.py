@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, fields, replace
 from typing import TYPE_CHECKING, Protocol
 
@@ -11,10 +12,12 @@ from petatto_kanban.display.settings_dialog_labels import (
     MSG_AUTO_START_FAILED,
     MSG_CONFIRM_DELETE_ALL,
     MSG_CONFIRM_EXIT,
+    MSG_HOTKEY_FAILED,
     MSG_NO_CARDS_TO_DELETE,
 )
 from petatto_kanban.storage import save_board
 from petatto_kanban.system.auto_start import apply_auto_start_setting
+from petatto_kanban.system.shortcut import normalize_shortcut
 
 if TYPE_CHECKING:
     import tkinter as tk
@@ -41,6 +44,7 @@ class SettingsApplyChanges:
     ui_font_changed: bool
     ui_theme_changed: bool
     launch_at_login_changed: bool
+    shortcut_new_card_changed: bool
 
     @property
     def needs_display_refresh(self) -> bool:
@@ -56,6 +60,7 @@ def apply_dialog_result(
     result: SettingsDialogResult,
 ) -> SettingsApplyChanges:
     """ダイアログ結果を DisplaySettings に反映する（未保存）。"""
+    shortcut = normalize_shortcut(result.shortcut_new_card)
     changes = SettingsApplyChanges(
         mode_changed=result.mode != display_settings.mode,
         monitor_changed=result.monitor_index != display_settings.monitor_index,
@@ -63,6 +68,7 @@ def apply_dialog_result(
         ui_font_changed=result.ui_font != display_settings.ui_font,
         ui_theme_changed=result.ui_theme != display_settings.ui_theme,
         launch_at_login_changed=result.launch_at_login != display_settings.launch_at_login,
+        shortcut_new_card_changed=shortcut != display_settings.shortcut_new_card,
     )
     display_settings.mode = result.mode
     display_settings.confirm_delete = result.confirm_delete
@@ -72,6 +78,7 @@ def apply_dialog_result(
     display_settings.ui_size = result.ui_size
     display_settings.ui_font = result.ui_font
     display_settings.ui_theme = result.ui_theme
+    display_settings.shortcut_new_card = shortcut
     return changes
 
 
@@ -82,13 +89,35 @@ def persist_dialog_result(
     messagebox: MessageBoxHost,
     parent: tk.Misc,
     app_title: str,
+    apply_shortcut: Callable[[str], None] | None = None,
 ) -> SettingsApplyChanges | None:
     """ダイアログ結果を OS 反映してから settings.json に保存する.
 
-    自動起動の反映に失敗した場合はメモリ上の設定もロールバックし、ファイルは更新しない。
+    自動起動またはホットキーの反映に失敗した場合はメモリ上の設定を全項目ロールバックし、
+    ファイルは更新しない。
     """
     snapshot = replace(display_settings)
     changes = apply_dialog_result(display_settings, result)
+    restores: list[Callable[[], bool]] = []
+    if changes.shortcut_new_card_changed:
+        if not apply_shortcut_setting(
+            display_settings.shortcut_new_card,
+            apply_shortcut=apply_shortcut,
+            messagebox=messagebox,
+            parent=parent,
+            app_title=app_title,
+        ):
+            _restore_display_settings(display_settings, snapshot)
+            return None
+        restores.append(
+            lambda: apply_shortcut_setting(
+                snapshot.shortcut_new_card,
+                apply_shortcut=apply_shortcut,
+                messagebox=messagebox,
+                parent=parent,
+                app_title=app_title,
+            )
+        )
     if changes.launch_at_login_changed and not apply_launch_at_login(
         display_settings,
         messagebox=messagebox,
@@ -96,9 +125,34 @@ def persist_dialog_result(
         app_title=app_title,
     ):
         _restore_display_settings(display_settings, snapshot)
+        for restore in reversed(restores):
+            restore()
         return None
     save_display_settings(display_settings)
     return changes
+
+
+def apply_shortcut_setting(
+    shortcut: str,
+    *,
+    apply_shortcut: Callable[[str], None] | None,
+    messagebox: MessageBoxHost,
+    parent: tk.Misc,
+    app_title: str,
+) -> bool:
+    """ショートカットを OS に反映。失敗時はダイアログを表示し False。"""
+    if apply_shortcut is None:
+        return True
+    try:
+        apply_shortcut(shortcut)
+    except (OSError, RuntimeError) as error:
+        messagebox.showinfo(
+            app_title,
+            MSG_HOTKEY_FAILED.format(error=error),
+            parent=parent,
+        )
+        return False
+    return True
 
 
 def apply_launch_at_login(

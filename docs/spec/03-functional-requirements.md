@@ -46,6 +46,7 @@
 | [FR-027](#fr-027-uiフォント設定) | UI フォント設定 | Must | implemented | M1 拡張 |
 | [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | implemented | M1 拡張 |
 | [FR-029](#fr-029-windowsログオン時自動起動) | Windows ログオン時自動起動 | Should | implemented | M1 拡張 |
+| [FR-030](#fr-030-キーボードショートカットで新規カード作成) | キーボードショートカットで新規カード作成 | Should | implemented | M1 拡張 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -107,7 +108,7 @@
 |------|-----|
 | 優先度 | Must |
 | ステータス | implemented |
-| 関連 US | US-002 |
+| 関連 US | US-002, US-020 |
 | 関連 AC | AC-003-01, AC-003-02 |
 | 実装 | `src/petatto_kanban/app.py`, `menu_panel.py`, `new_card_placement.py` |
 
@@ -123,6 +124,7 @@
 - 配置基準は `MenuPanel.bounds()` が返す現在のパネル矩形（展開/収納・ドラッグ移動後の位置を反映）
 - 追加直後は FR-004 のインライン編集状態で開始し、タイトル入力にフォーカス
 - 入力ダイアログは表示しない
+- キーボードショートカットからの作成は [FR-030](#fr-030-キーボードショートカットで新規カード作成)。配置・初期タイトル・インライン編集は本要件と同一
 
 ---
 
@@ -568,6 +570,37 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - 開発起動では `python.exe` と同じディレクトリの `pythonw.exe`（存在時）+ `-m petatto_kanban` を登録。`pythonw.exe` が無ければ `sys.executable` を使う
 - レジストリ値名: **`Petatto-Kanban`**
 - 起動コマンド解決は `system/launch_command.py`、レジストリ I/O は `system/auto_start.py` に分離する
+
+---
+
+### FR-030: キーボードショートカットで新規カード作成
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Should |
+| ステータス | implemented |
+| 関連 US | US-020 |
+| 関連 AC | AC-030-01, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
+| 実装 | `system/shortcut.py`, `system/hotkey.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` |
+| UI 契約 | [UC-006 §操作タブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-012](./08-ui-behavior-contract.md#uc-012-キーボードショートカット) |
+| データ契約 | [DC-003 `shortcuts`](./07-data-contract.md#dc-003-表示設定スキーマ) |
+
+**説明**  
+キーボードショートカットで [FR-003](#fr-003-カード作成) と同じ新規カード作成を行う。既定は **Ctrl+Shift+N**。割り当ては設定ダイアログ **「操作」タブ** で変更できる。
+
+**制約**
+- **対象 OS は Windows 11 以降のみ**（NFR-011）
+- **グローバルホットキー**（Win32 `RegisterHotKey`）。アプリ起動中は他アプリが前面でも発火する（オーバーレイのクリック透過でもメニューにフォーカスしなくてよい）
+- 既定コード: **`Ctrl+Shift+N`**（`settings.json` の `shortcuts.new_card`）
+- 作成結果は FR-003 / [UC-004](./08-ui-behavior-contract.md#uc-004-カード即時追加) と同一（配置・初期タイトル・インライン編集・`board.json` 保存）
+- 発火時、進行中のタイトルインライン編集は **確定**し、期限パネルが開いていれば **キャンセル**してからカードを追加する
+- **設定ダイアログ表示中は発火しない**（カードをダイアログの裏に作らない）
+- コード形式: `Ctrl` / `Alt` / `Shift` の 1 つ以上 + 英数字 1 キーまたは F1〜F12。正規化は `Ctrl+Alt+Shift+N` の順。Windows キーは対象外
+- 修飾キーのみ、または修飾なしの単一キーは割り当て不可
+- 欠損・空・不正な `shortcuts.new_card` は既定 `Ctrl+Shift+N` にフォールバック
+- コード正規化は `system/shortcut.py`、`RegisterHotKey` は `system/hotkey.py` に分離する
+- OK 確定時にホットキーを再登録。`RegisterHotKey` 失敗時はエラーを表示し、**ダイアログ全項目をロールバック**して `settings.json` は更新しない（FR-029 の失敗時と同様）
+- アプリ終了時にホットキーを解除する
 
 ---
 

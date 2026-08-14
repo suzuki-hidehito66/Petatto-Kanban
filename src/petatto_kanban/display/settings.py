@@ -11,6 +11,7 @@ from typing import Any
 from petatto_kanban.display.ui_font import UiFont, parse_ui_font
 from petatto_kanban.display.ui_scale import UiSize, parse_ui_size
 from petatto_kanban.display.ui_theme import UiTheme, parse_ui_theme
+from petatto_kanban.system.shortcut import DEFAULT_NEW_CARD_SHORTCUT, normalize_shortcut
 
 SETTINGS_FILE_NAME = "settings.json"
 
@@ -36,6 +37,7 @@ class DisplaySettings:
     ui_font: UiFont = UiFont.SEGOE_UI
     ui_theme: UiTheme = UiTheme.DEFAULT
     launch_at_login: bool = False
+    shortcut_new_card: str = DEFAULT_NEW_CARD_SHORTCUT
     menu_panel_x: int | None = None
     menu_panel_y: int | None = None
 
@@ -65,6 +67,9 @@ def display_settings_to_dict(settings: DisplaySettings) -> dict[str, Any]:
         "ui_font": settings.ui_font.value,
         "ui_theme": settings.ui_theme.value,
         "launch_at_login": settings.launch_at_login,
+        "shortcuts": {
+            "new_card": normalize_shortcut(settings.shortcut_new_card),
+        },
     }
     if settings.menu_panel_x is not None:
         data["menu_panel_x"] = settings.menu_panel_x
@@ -86,9 +91,20 @@ def display_settings_from_dict(data: dict[str, Any]) -> DisplaySettings:
         ui_font=parse_ui_font(data.get("ui_font")),
         ui_theme=parse_ui_theme(data.get("ui_theme")),
         launch_at_login=bool(data.get("launch_at_login", False)),
+        shortcut_new_card=_parse_shortcut_new_card(data),
         menu_panel_x=int(menu_x) if menu_x is not None else None,
         menu_panel_y=int(menu_y) if menu_y is not None else None,
     )
+
+
+def _parse_shortcut_new_card(data: dict[str, Any]) -> str:
+    shortcuts = data.get("shortcuts")
+    if not isinstance(shortcuts, dict):
+        return DEFAULT_NEW_CARD_SHORTCUT
+    raw = shortcuts.get("new_card")
+    if not isinstance(raw, str):
+        return DEFAULT_NEW_CARD_SHORTCUT
+    return normalize_shortcut(raw)
 
 
 def load_display_settings(path: Path | None = None) -> DisplaySettings:
