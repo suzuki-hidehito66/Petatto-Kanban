@@ -95,6 +95,8 @@ petatto-kanban/
 │   ├── card_renderer.py          # カード UI 描画（UiMetrics）
 │   │   ├── settings.py           # settings.json
 │   │   └── monitors.py           # モニター列挙
+│   ├── system/
+│   │   └── auto_start.py         # Windows ログオン時自動起動（FR-029）
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -122,7 +124,7 @@ petatto-kanban/
 | `display/settings_dialog_tabs.py` | タブラベル・タブ別項目定義 | 標準ライブラリのみ |
 | `display/settings_dialog_labels.py` | 設定ダイアログ UI 文言 | 標準ライブラリのみ |
 | `display/settings_dialog_panels.py` | 表示 / システムタブのウィジェット構築 | tkinter, `mode_labels`, `settings_dialog_labels`, `monitors` |
-| `display/settings_actions.py` | 設定適用・終了確認・全カード削除（`app.py` から利用） | `settings_dialog`, `settings_dialog_labels`, `storage` |
+| `display/settings_actions.py` | 設定適用・終了確認・全カード削除・自動起動反映（`app.py` から利用） | `settings_dialog`, `settings_dialog_labels`, `storage`, `system/auto_start` |
 | `display/ui_scale.py` | UI サイズプリセット・スケール係数（FR-026） | 標準ライブラリのみ |
 | `display/ui_scale_labels.py` | UI サイズコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/card_layout.py` | カード基準寸法・黄金比・スケール（UC-003 / UC-009） | 標準ライブラリのみ |
@@ -131,6 +133,7 @@ petatto-kanban/
 | `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_metrics`, `ui_theme`, `menu_panel`, `due_date_picker` |
 | `display/ui_font.py` | UI フォントプリセット・tkinter ファミリー解決（FR-027） | 標準ライブラリのみ |
 | `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ |
+| `system/auto_start.py` | Windows Run キーによるログオン時自動起動（FR-029） | 標準ライブラリ（`winreg`） |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |

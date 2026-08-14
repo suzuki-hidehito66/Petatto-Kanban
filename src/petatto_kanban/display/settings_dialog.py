@@ -27,6 +27,7 @@ from petatto_kanban.display.ui_scale import UiSize
 from petatto_kanban.display.ui_scale_labels import ui_size_from_label
 from petatto_kanban.display.ui_theme import UiTheme
 from petatto_kanban.display.ui_theme_labels import ui_theme_from_label
+from petatto_kanban.system.auto_start import is_auto_start_supported
 
 if TYPE_CHECKING:
     import tkinter as tk
@@ -40,6 +41,7 @@ class SettingsDialogResult:
     mode: DisplayMode
     confirm_delete: bool
     confirm_exit: bool
+    launch_at_login: bool
     monitor_index: int
     ui_size: UiSize
     ui_font: UiFont
@@ -57,6 +59,7 @@ class SettingsFormValues:
     ui_theme_label: str
     confirm_delete: bool
     confirm_exit: bool
+    launch_at_login: bool
 
 
 @dataclass(frozen=True)
@@ -66,6 +69,7 @@ class SettingsDialogInput:
     mode: DisplayMode
     confirm_delete: bool
     confirm_exit: bool
+    launch_at_login: bool
     monitor_index: int
     ui_size: UiSize
     ui_font: UiFont
@@ -96,6 +100,7 @@ def result_from_form_values(
         ui_size=ui_size_from_label(values.ui_size_label, default_ui_size),
         ui_font=ui_font_from_label(values.ui_font_label, default_ui_font),
         ui_theme=ui_theme_from_label(values.ui_theme_label, default_ui_theme),
+        launch_at_login=values.launch_at_login,
     )
 
 
@@ -143,6 +148,8 @@ class SettingsDialog(simpledialog.Dialog):
             system_tab,
             confirm_delete=self._input.confirm_delete,
             confirm_exit=self._input.confirm_exit,
+            launch_at_login=self._input.launch_at_login,
+            auto_start_supported=is_auto_start_supported(),
             on_delete_all_cards=self._on_delete_all_cards,
         )
 
@@ -160,6 +167,7 @@ class SettingsDialog(simpledialog.Dialog):
                 ui_theme_label=self._theme_tab.ui_theme_var.get(),
                 confirm_delete=self._system_tab.confirm_delete_var.get(),
                 confirm_exit=self._system_tab.confirm_exit_var.get(),
+                launch_at_login=self._system_tab.launch_at_login_var.get(),
             ),
             monitors=self._input.monitors,
             default_mode=self._input.mode,

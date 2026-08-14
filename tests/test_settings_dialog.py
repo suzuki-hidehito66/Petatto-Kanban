@@ -35,7 +35,7 @@ def test_settings_tab_labels_and_field_groups() -> None:
     assert SETTINGS_TAB_SYSTEM == "システム"
     assert DISPLAY_TAB_FIELDS == ("mode", "monitor_index", "ui_size", "ui_font")
     assert THEME_TAB_FIELDS == ("ui_theme",)
-    assert SYSTEM_TAB_FIELDS == ("confirm_delete", "confirm_exit")
+    assert SYSTEM_TAB_FIELDS == ("confirm_delete", "confirm_exit", "launch_at_login")
     assert SYSTEM_TAB_ACTIONS == ("delete_all_cards",)
 
 
@@ -49,6 +49,7 @@ def test_result_from_form_values_display_tab() -> None:
             ui_theme_label=ui_theme_label(UiTheme.DEFAULT),
             confirm_delete=True,
             confirm_exit=False,
+            launch_at_login=False,
         ),
         monitors=_MONITORS,
         default_mode=DisplayMode.OVERLAY,
@@ -73,6 +74,7 @@ def test_result_from_form_values_ui_size() -> None:
             ui_theme_label=ui_theme_label(UiTheme.DEFAULT),
             confirm_delete=True,
             confirm_exit=False,
+            launch_at_login=False,
         ),
         monitors=_MONITORS,
         default_mode=DisplayMode.OVERLAY,
@@ -95,6 +97,7 @@ def test_result_from_form_values_ui_size_xlarge() -> None:
             ui_theme_label=ui_theme_label(UiTheme.DEFAULT),
             confirm_delete=True,
             confirm_exit=False,
+            launch_at_login=False,
         ),
         monitors=_MONITORS,
         default_mode=DisplayMode.OVERLAY,
@@ -116,6 +119,7 @@ def test_result_from_form_values_ui_theme() -> None:
             ui_theme_label="ダーク",
             confirm_delete=True,
             confirm_exit=False,
+            launch_at_login=False,
         ),
         monitors=_MONITORS,
         default_mode=DisplayMode.OVERLAY,
@@ -137,6 +141,7 @@ def test_result_from_form_values_system_tab_only_change() -> None:
             ui_theme_label=ui_theme_label(UiTheme.DEFAULT),
             confirm_delete=False,
             confirm_exit=True,
+            launch_at_login=True,
         ),
         monitors=_MONITORS,
         default_mode=DisplayMode.OVERLAY,
@@ -149,3 +154,4 @@ def test_result_from_form_values_system_tab_only_change() -> None:
     assert result.monitor_index == 0
     assert result.confirm_delete is False
     assert result.confirm_exit is True
+    assert result.launch_at_login is True

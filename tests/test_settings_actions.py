@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from petatto_kanban.display.settings import DisplayMode, DisplaySettings
 from petatto_kanban.display.settings_actions import (
     apply_dialog_result,
@@ -53,6 +55,7 @@ def test_apply_dialog_result_updates_settings_and_detects_changes() -> None:
         ui_size=UiSize.LARGE,
         ui_font=UiFont.SEGOE_UI,
         ui_theme=UiTheme.DEFAULT,
+        launch_at_login=False,
     )
 
     changes = apply_dialog_result(settings, result)
@@ -77,6 +80,7 @@ def test_apply_dialog_result_no_display_refresh_when_only_flags_change() -> None
         ui_size=UiSize.MEDIUM,
         ui_font=UiFont.SEGOE_UI,
         ui_theme=UiTheme.DEFAULT,
+        launch_at_login=False,
     )
 
     changes = apply_dialog_result(settings, result)
@@ -98,6 +102,7 @@ def test_apply_dialog_result_detects_ui_size_change() -> None:
         ui_size=UiSize.SMALL,
         ui_font=UiFont.SEGOE_UI,
         ui_theme=UiTheme.DEFAULT,
+        launch_at_login=False,
     )
 
     changes = apply_dialog_result(settings, result)
@@ -118,6 +123,7 @@ def test_apply_dialog_result_detects_ui_font_change() -> None:
         ui_size=UiSize.MEDIUM,
         ui_font=UiFont.MEIRYO,
         ui_theme=UiTheme.DEFAULT,
+        launch_at_login=False,
     )
 
     changes = apply_dialog_result(settings, result)
@@ -139,6 +145,7 @@ def test_apply_dialog_result_detects_ui_theme_change() -> None:
         ui_size=UiSize.MEDIUM,
         ui_font=UiFont.SEGOE_UI,
         ui_theme=UiTheme.DARK,
+        launch_at_login=False,
     )
 
     changes = apply_dialog_result(settings, result)
@@ -147,6 +154,51 @@ def test_apply_dialog_result_detects_ui_theme_change() -> None:
     assert changes.ui_font_changed is False
     assert changes.needs_ui_refresh is True
     assert settings.ui_theme == UiTheme.DARK
+
+
+def test_apply_dialog_result_detects_launch_at_login_change() -> None:
+    settings = DisplaySettings(mode=DisplayMode.OVERLAY, monitor_index=0)
+    result = SettingsDialogResult(
+        mode=DisplayMode.OVERLAY,
+        confirm_delete=True,
+        confirm_exit=False,
+        launch_at_login=True,
+        monitor_index=0,
+        ui_size=UiSize.MEDIUM,
+        ui_font=UiFont.SEGOE_UI,
+        ui_theme=UiTheme.DEFAULT,
+    )
+
+    changes = apply_dialog_result(settings, result)
+
+    assert changes.launch_at_login_changed is True
+    assert settings.launch_at_login is True
+
+
+def test_apply_launch_at_login_reports_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    from petatto_kanban.display.settings_actions import apply_launch_at_login
+
+    settings = DisplaySettings(launch_at_login=True)
+    messagebox = FakeMessageBox()
+
+    def raise_oserror(_enabled: bool) -> None:
+        msg = "denied"
+        raise OSError(msg)
+
+    monkeypatch.setattr(
+        "petatto_kanban.display.settings_actions.sync_auto_start_from_settings",
+        raise_oserror,
+    )
+    assert (
+        apply_launch_at_login(
+            settings,
+            messagebox=messagebox,
+            parent=object(),
+            app_title="Petatto Kanban",
+        )
+        is False
+    )
+    assert len(messagebox.showinfo_calls) == 1
 
 
 def test_confirm_exit_skips_dialog_when_disabled() -> None:

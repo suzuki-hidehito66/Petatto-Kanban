@@ -45,6 +45,7 @@
 | [FR-026](#fr-026-uiサイズ設定) | UI サイズ設定 | Must | implemented | M1 拡張 |
 | [FR-027](#fr-027-uiフォント設定) | UI フォント設定 | Must | implemented | M1 拡張 |
 | [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | implemented | M1 拡張 |
+| [FR-029](#fr-029-windowsログオン時自動起動) | Windows ログオン時自動起動 | Should | implemented | M1 拡張 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -540,6 +541,32 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - 不明・欠損・不正な `ui_theme` は **default** として読み込む
 - 各テーマの背景色・文字色は **コントラスト比 4.5:1 以上**（通常テキスト）を目標に選定する（[UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ)）
 - オーバーレイ透過色（`TRANSPARENT_COLOR`）・Win32 透過処理はテーマ対象外
+
+---
+
+### FR-029: Windows ログオン時自動起動
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Should |
+| ステータス | implemented |
+| 関連 US | US-019 |
+| 関連 AC | AC-029-01, AC-029-02, AC-029-03 |
+| 実装 | `src/petatto_kanban/system/auto_start.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` |
+| UI 契約 | [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
+
+**説明**  
+設定ダイアログ **「システム」タブ** で、Windows ログオン時に Petatto-Kanban を自動起動するかを切り替えられる。
+
+**制約**
+- **Windows 11+ のみ**（`HKCU\Software\Microsoft\Windows\CurrentVersion\Run` に登録）
+- `settings.json` の `launch_at_login`（boolean）に永続化。既定値 **false**
+- OK 確定時にレジストリへ反映。反映失敗時はエラーメッセージを表示し **`settings.json` は更新しない**
+- アプリ起動時、`launch_at_login` が `true` ならレジストリエントリを **再同期**（`.exe` 更新後のパスずれ対策）
+- PyInstaller ビルド（`sys.frozen`）では **`Petatto-Kanban.exe` の絶対パス** を登録
+- 開発起動（`python -m petatto_kanban`）では `pythonw.exe`（存在時）+ `-m petatto_kanban` を登録
+- レジストリ値名: **`Petatto-Kanban`**
+- Windows 以外の OS ではチェックボックスを **無効化**（設定 UI は表示、操作不可）
 
 ---
 
