@@ -185,12 +185,12 @@
 |------|-----|
 | 関連 FR | FR-030, FR-003 |
 | 関連 AC | AC-030-01, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
-| 実装 | `system/shortcut.py`, `system/hotkey.py`, `app.py` |
+| 実装 | `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `app.py` |
 | 設定 UI | [UC-006 §操作タブ](#uc-006-設定ダイアログ) |
 
 | 項目 | 仕様 |
 |------|------|
-| 方式 | Windows グローバルホットキー（`RegisterHotKey`）。受信は Tk とは別スレッドのメッセージ専用ウィンドウ（ネイティブ `DefWindowProc`）。アプリが起動していれば他ウィンドウ前面でも発火 |
+| 方式 | Windows グローバルホットキー（`RegisterHotKey`）。受信は Tk とは別スレッド（`hotkey_pump.py`）のメッセージ専用ウィンドウ（ネイティブ `DefWindowProc`）。アプリが起動していれば他ウィンドウ前面でも発火 |
 | 対象 OS | Windows 11 以降 |
 | 既定 | 新規カード作成 = `Ctrl+Shift+N` |
 | 動作 | 発火時は [UC-004](#uc-004-カード即時追加) と同一（配置・初期タイトル・インライン編集・保存） |
@@ -245,7 +245,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027, FR-028, FR-029, FR-030 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `system/shortcut.py`, `system/hotkey.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `app.py` |
 | 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01, AC-029-01, AC-029-02, AC-029-06, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
 
 ### タブ構成
@@ -631,3 +631,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.10.2 | 2026-08-14 | UC-012: コード正規化を `shortcut.py` に分離。失敗時は全項目ロールバック |
 | 2.10.3 | 2026-08-14 | UC-012: WM_HOTKEY はメッセージ専用ウィンドウで受信（Tk WndProc 差し替えを廃止） |
 | 2.10.4 | 2026-08-14 | UC-012: Python WndProc を廃止。専用スレッド + `GetMessage` + Tk `poll()` |
+| 2.10.5 | 2026-08-14 | UC-012: Win32 ポンプを `hotkey_pump.py` に分離。セッションは `hotkey.py` |

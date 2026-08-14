@@ -19,7 +19,7 @@ flowchart TB
         subgraph App["petatto_kanban"]
             UI["app.py (tkinter GUI)"]
             Display["display/ (設定・表示モード)"]
-            System["system/ (自動起動)"]
+            System["system/ (OS連携)"]
             Models["models.py (Domain)"]
             Storage["storage.py (JSON I/O)"]
         end
@@ -107,7 +107,8 @@ petatto-kanban/
 │   │   ├── auto_start.py         # Windows Run キー（FR-029）
 │   │   ├── launch_command.py     # ログオン時コマンド行の解決
 │   │   ├── shortcut.py           # ショートカットコード正規化（FR-030）
-│   │   └── hotkey.py             # グローバルホットキー（専用スレッドで WM_HOTKEY）
+│   │   ├── hotkey.py             # ホットキーセッション（poll / 失敗時ロールバック）
+│   │   └── hotkey_pump.py        # Win32 専用スレッドで WM_HOTKEY を受信
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -147,7 +148,8 @@ petatto-kanban/
 | `system/auto_start.py` | Windows Run キーの登録・削除（FR-029） | 標準ライブラリ（`winreg`）、`launch_command` |
 | `system/launch_command.py` | ログオン時コマンド行の解決（frozen / pythonw） | 標準ライブラリのみ |
 | `system/shortcut.py` | ショートカットコードの解析・正規化（FR-030） | 標準ライブラリのみ |
-| `system/hotkey.py` | グローバルホットキーの登録/解除（FR-030）。専用スレッドのメッセージ専用ウィンドウで `GetMessage`（Python WndProc なし）。Tk は `poll()` | 標準ライブラリ（`ctypes` / `win32` / `threading`）、`shortcut` |
+| `system/hotkey.py` | グローバルホットキーのセッション（FR-030）。割り当て・`poll()`・失敗時ロールバック | `shortcut`, `hotkey_pump` |
+| `system/hotkey_pump.py` | Win32 メッセージポンプ。専用スレッドのメッセージ専用ウィンドウで `GetMessage`（Python WndProc なし） | 標準ライブラリ（`ctypes` / `threading`） |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
@@ -237,7 +239,7 @@ petatto-kanban/
 | ステータス | Accepted |
 | 日付 | 2026-08-14 |
 | コンテキスト | 既定 UI はオーバーレイ（クリック透過）。tkinter のウィンドウバインドでは他アプリ前面時にキーを受け取れない |
-| 決定 | Win32 `RegisterHotKey` による **グローバルホットキー** とする。受信は Tk ウィンドウの subclass でも Python ctypes WndProc でもなく、**専用スレッド** のメッセージ専用ウィンドウ（ネイティブ `DefWindowProc`）+ `GetMessage`。Tk は `after` でキューを読む。既定は Ctrl+Shift+N。割り当ては設定「操作」タブで変更。コード正規化は `shortcut.py`、登録 I/O は `hotkey.py` に分離 |
+| 決定 | Win32 `RegisterHotKey` による **グローバルホットキー** とする。受信は Tk ウィンドウの subclass でも Python ctypes WndProc でもなく、**専用スレッド** のメッセージ専用ウィンドウ（ネイティブ `DefWindowProc`）+ `GetMessage`。Tk は `after` でキューを読む。既定は Ctrl+Shift+N。割り当ては設定「操作」タブで変更。コード正規化は `shortcut.py`、セッションは `hotkey.py`、Win32 ポンプは `hotkey_pump.py` に分離 |
 | 理由 | メニューパネルを開かず、他作業中にカードを切れる。オーバーレイの操作モデルと一致する。Python ctypes WndProc を Tk のメッセージポンプから呼ぶと Python 3.14 で GIL fatal になるため、受信は専用スレッドに隔離する |
 | トレードオフ | 他アプリが同一ホットキーを先に登録していると失敗する。設定ダイアログ表示中は発火を抑制する |
 | 関連 | FR-030, UC-012, NFR-011 |

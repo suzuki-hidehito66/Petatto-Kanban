@@ -581,7 +581,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-020 |
 | 関連 AC | AC-030-01, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
-| 実装 | `system/shortcut.py`, `system/hotkey.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` |
+| 実装 | `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` |
 | UI 契約 | [UC-006 §操作タブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-012](./08-ui-behavior-contract.md#uc-012-キーボードショートカット) |
 | データ契約 | [DC-003 `shortcuts`](./07-data-contract.md#dc-003-表示設定スキーマ) |
 
@@ -598,7 +598,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - コード形式: `Ctrl` / `Alt` / `Shift` の 1 つ以上 + 英数字 1 キーまたは F1〜F12。正規化は `Ctrl+Alt+Shift+N` の順。Windows キーは対象外
 - 修飾キーのみ、または修飾なしの単一キーは割り当て不可
 - 欠損・空・不正な `shortcuts.new_card` は既定 `Ctrl+Shift+N` にフォールバック
-- コード正規化は `system/shortcut.py`、`RegisterHotKey` は `system/hotkey.py` に分離する
+- コード正規化は `system/shortcut.py`、セッションは `system/hotkey.py`、Win32 メッセージポンプは `system/hotkey_pump.py` に分離する
 - `WM_HOTKEY` は **専用スレッド** のメッセージ専用ウィンドウで受信する。WndProc はネイティブ `DefWindowProcW` のみとし、Python ctypes コールバックは使わない。Tk スレッドは `after` でキューを `poll()` する
 - OK 確定時にホットキーを再登録。`RegisterHotKey` 失敗時はエラーを表示し、**ダイアログ全項目をロールバック**して `settings.json` は更新しない（FR-029 の失敗時と同様）
 - アプリ終了時にホットキーを解除する
