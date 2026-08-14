@@ -67,11 +67,26 @@ def test_tk_callback_exception_is_written(tmp_path: Path) -> None:
     assert "tk-probe" in text
 
 
-def test_redact_home_replaces_user_path() -> None:
-    home = Path("/home/alice")
-    text = redact_home(f"fail at {home / 'secret.txt'}", home=home)
+def test_redact_home_replaces_user_path(tmp_path: Path) -> None:
+    home = tmp_path / "alice"
+    home.mkdir()
+    secret = home / "secret.txt"
+    text = redact_home(f"fail at {secret}", home=home)
     assert str(home) not in text
+    assert str(secret) not in text
     assert "~/secret.txt" in text
+
+
+def test_redact_home_replaces_slash_and_backslash_forms(tmp_path: Path) -> None:
+    home = tmp_path / "alice"
+    home.mkdir()
+    posix = f"{home.as_posix()}/secret.txt"
+    backslash = str(home).replace("/", "\\") + "\\secret.txt"
+    for message in (posix, backslash, str(home / "secret.txt")):
+        text = redact_home(f"fail at {message}", home=home)
+        assert str(home) not in text
+        assert str(home).replace("/", "\\") not in text
+        assert "~/secret.txt" in text
 
 
 def test_home_path_in_exception_is_redacted(
