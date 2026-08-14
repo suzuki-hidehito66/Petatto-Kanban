@@ -50,6 +50,7 @@ from petatto_kanban.system.auto_start import sync_auto_start_from_settings
 from petatto_kanban.system.hotkey import NewCardHotkey, create_new_card_hotkey
 
 APP_TITLE = "Petatto-Kanban"
+_HOTKEY_POLL_MS = 50
 
 
 class KanbanApp:
@@ -624,8 +625,8 @@ class KanbanApp:
         self.refresh(begin_inline_edit_for=card.id)
 
     def _install_new_card_hotkey(self) -> None:
-        self._new_card_hotkey = create_new_card_hotkey(self._on_new_card_hotkey)
         try:
+            self._new_card_hotkey = create_new_card_hotkey(self._on_new_card_hotkey)
             self._new_card_hotkey.set_shortcut(self.display_settings.shortcut_new_card)
         except (OSError, RuntimeError) as error:
             messagebox.showinfo(
@@ -633,6 +634,17 @@ class KanbanApp:
                 MSG_HOTKEY_FAILED.format(error=error),
                 parent=self.root,
             )
+        if self._new_card_hotkey is not None:
+            self._schedule_hotkey_poll()
+
+    def _schedule_hotkey_poll(self) -> None:
+        if self._new_card_hotkey is None:
+            return
+        self._new_card_hotkey.poll()
+        try:
+            self.root.after(_HOTKEY_POLL_MS, self._schedule_hotkey_poll)
+        except tk.TclError:
+            return
 
     def _on_new_card_hotkey(self) -> None:
         if self._settings_dialog_open:
