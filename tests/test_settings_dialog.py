@@ -8,7 +8,9 @@ from petatto_kanban.display.settings_dialog import (
     result_from_form_values,
 )
 from petatto_kanban.display.settings_dialog_tabs import (
+    ACTIONS_TAB_FIELDS,
     DISPLAY_TAB_FIELDS,
+    SETTINGS_TAB_ACTIONS,
     SETTINGS_TAB_DISPLAY,
     SETTINGS_TAB_SYSTEM,
     SETTINGS_TAB_THEME,
@@ -22,6 +24,7 @@ from petatto_kanban.display.ui_scale import UiSize
 from petatto_kanban.display.ui_scale_labels import ui_size_label
 from petatto_kanban.display.ui_theme import UiTheme
 from petatto_kanban.display.ui_theme_labels import ui_theme_label
+from petatto_kanban.system.hotkey import DEFAULT_NEW_CARD_SHORTCUT
 
 _MONITORS = [
     Monitor(index=0, name="ディスプレイ 1", x=0, y=0, width=1920, height=1080),
@@ -32,9 +35,11 @@ _MONITORS = [
 def test_settings_tab_labels_and_field_groups() -> None:
     assert SETTINGS_TAB_DISPLAY == "表示"
     assert SETTINGS_TAB_THEME == "テーマ"
+    assert SETTINGS_TAB_ACTIONS == "操作"
     assert SETTINGS_TAB_SYSTEM == "システム"
     assert DISPLAY_TAB_FIELDS == ("mode", "monitor_index", "ui_size", "ui_font")
     assert THEME_TAB_FIELDS == ("ui_theme",)
+    assert ACTIONS_TAB_FIELDS == ("shortcut_new_card",)
     assert SYSTEM_TAB_FIELDS == ("confirm_delete", "confirm_exit", "launch_at_login")
     assert SYSTEM_TAB_ACTIONS == ("delete_all_cards",)
 
@@ -155,3 +160,50 @@ def test_result_from_form_values_system_tab_only_change() -> None:
     assert result.confirm_delete is False
     assert result.confirm_exit is True
     assert result.launch_at_login is True
+    assert result.shortcut_new_card == DEFAULT_NEW_CARD_SHORTCUT
+
+
+def test_result_from_form_values_shortcut_new_card() -> None:
+    result = result_from_form_values(
+        SettingsFormValues(
+            mode_label=display_mode_label(DisplayMode.OVERLAY),
+            monitor_name="ディスプレイ 1",
+            ui_size_label=ui_size_label(UiSize.MEDIUM),
+            ui_font_label=ui_font_label(UiFont.SEGOE_UI),
+            ui_theme_label=ui_theme_label(UiTheme.DEFAULT),
+            confirm_delete=True,
+            confirm_exit=False,
+            launch_at_login=False,
+            shortcut_new_card="ctrl+shift+k",
+        ),
+        monitors=_MONITORS,
+        default_mode=DisplayMode.OVERLAY,
+        default_monitor_index=0,
+        default_ui_size=UiSize.MEDIUM,
+        default_ui_font=UiFont.SEGOE_UI,
+        default_ui_theme=UiTheme.DEFAULT,
+    )
+    assert result.shortcut_new_card == "Ctrl+Shift+K"
+
+
+def test_result_from_form_values_invalid_shortcut_falls_back() -> None:
+    result = result_from_form_values(
+        SettingsFormValues(
+            mode_label=display_mode_label(DisplayMode.OVERLAY),
+            monitor_name="ディスプレイ 1",
+            ui_size_label=ui_size_label(UiSize.MEDIUM),
+            ui_font_label=ui_font_label(UiFont.SEGOE_UI),
+            ui_theme_label=ui_theme_label(UiTheme.DEFAULT),
+            confirm_delete=True,
+            confirm_exit=False,
+            launch_at_login=False,
+            shortcut_new_card="N",
+        ),
+        monitors=_MONITORS,
+        default_mode=DisplayMode.OVERLAY,
+        default_monitor_index=0,
+        default_ui_size=UiSize.MEDIUM,
+        default_ui_font=UiFont.SEGOE_UI,
+        default_ui_theme=UiTheme.DEFAULT,
+    )
+    assert result.shortcut_new_card == DEFAULT_NEW_CARD_SHORTCUT

@@ -1029,7 +1029,7 @@ And 「設定を保存しました」は表示されない
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-030, FR-003 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動（Windows） |
 
 ```gherkin
@@ -1041,14 +1041,14 @@ And タイトルがインライン編集状態になる
 And board.json に保存される
 ```
 
-**テスト**: （実装時）`test_hotkey.py` + 手動
+**テスト**: `test_hotkey.py` + 手動
 
 ### AC-030-02
 
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-030 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動（Windows） |
 
 ```gherkin
@@ -1059,14 +1059,14 @@ And 以降 Ctrl+Shift+K で新規カードが作成される
 And 旧コード Ctrl+Shift+N では作成されない
 ```
 
-**テスト**: （実装時）`test_display_settings.py`, `test_settings_dialog.py`, `test_hotkey.py` + 手動
+**テスト**: `test_display_settings.py`, `test_settings_dialog.py`, `test_hotkey.py` + 手動
 
 ### AC-030-03
 
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-030 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 |
 
 ```gherkin
@@ -1075,14 +1075,14 @@ When 表示設定を読み込む
 Then shortcuts.new_card は "Ctrl+Shift+N" として扱われる
 ```
 
-**テスト**: （実装時）`test_display_settings.py`, `test_hotkey.py`
+**テスト**: `test_display_settings.py`, `test_hotkey.py`
 
 ### AC-030-04
 
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-030 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動（Windows） |
 
 ```gherkin
@@ -1093,7 +1093,7 @@ And メモリ上のショートカット設定はダイアログ確定前の値�
 And settings.json は更新されない
 ```
 
-**テスト**: （実装時）`test_settings_actions.py` + 手動
+**テスト**: `test_persist_dialog_result_rolls_back_on_hotkey_failure` + 手動
 
 ### AC-030-05
 

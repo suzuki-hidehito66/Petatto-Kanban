@@ -185,7 +185,7 @@
 |------|-----|
 | 関連 FR | FR-030, FR-003 |
 | 関連 AC | AC-030-01, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
-| 実装 | （未実装）`system/hotkey.py`（予定）, `app.py` |
+| 実装 | `system/hotkey.py`, `app.py` |
 | 設定 UI | [UC-006 §操作タブ](#uc-006-設定ダイアログ) |
 
 | 項目 | 仕様 |
@@ -245,7 +245,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-003, FR-005, FR-019, FR-023, FR-024, FR-026, FR-027, FR-028, FR-029, FR-030 |
-| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `mode_labels.py`, `system/auto_start.py`, `system/launch_command.py`, `system/hotkey.py`, `app.py` |
 | 関連 AC | AC-005-03, AC-019-01, AC-021-01, AC-022-02, AC-023-02, AC-024-01, AC-029-01, AC-029-02, AC-029-06, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
 
 ### タブ構成
@@ -627,3 +627,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.9.1 | 2026-08-14 | UC-006: 自動起動失敗時は全項目ロールバック。起動コマンド解決を分離 |
 | 2.9.2 | 2026-08-14 | UC-006: 自動起動は Windows 11 以降のみ。非 Windows 無効化の記述を削除 |
 | 2.10.0 | 2026-08-14 | UC-006 操作タブ・UC-012 キーボードショートカット（FR-030、既定 Ctrl+Shift+N） |
+| 2.10.1 | 2026-08-14 | UC-006 操作タブ・UC-012 を実装（`system/hotkey.py` / RegisterHotKey） |

@@ -12,16 +12,20 @@ from petatto_kanban.display.mode_labels import (
 from petatto_kanban.display.monitors import Monitor
 from petatto_kanban.display.settings import DisplayMode
 from petatto_kanban.display.settings_dialog_labels import (
+    BUTTON_CHANGE_SHORTCUT,
     BUTTON_DELETE_ALL_CARDS,
+    BUTTON_RESET_SHORTCUT,
     CHECK_CONFIRM_DELETE,
     CHECK_CONFIRM_EXIT,
     CHECK_LAUNCH_AT_LOGIN,
     COMBOBOX_WIDTH,
     LABEL_DISPLAY_MODE,
     LABEL_DISPLAY_MONITOR,
+    LABEL_SHORTCUT_NEW_CARD,
     LABEL_UI_FONT,
     LABEL_UI_SIZE,
     LABEL_UI_THEME,
+    MSG_SHORTCUT_CAPTURE,
 )
 from petatto_kanban.display.ui_font import UiFont
 from petatto_kanban.display.ui_font_labels import (
@@ -38,6 +42,7 @@ from petatto_kanban.display.ui_theme_labels import (
     selectable_ui_theme_labels,
     ui_theme_label,
 )
+from petatto_kanban.system.hotkey import DEFAULT_NEW_CARD_SHORTCUT
 
 if TYPE_CHECKING:
     import tkinter as tk
@@ -68,6 +73,34 @@ class ThemeTabState:
     """テーマタブの入力状態."""
 
     ui_theme_var: tk.StringVar
+
+
+@dataclass
+class ActionsTabState:
+    """操作タブの入力状態."""
+
+    shortcut_new_card_var: tk.StringVar
+    capturing: bool = False
+    _before_capture: str = ""
+
+    def start_capture(self) -> None:
+        self._before_capture = self.shortcut_new_card_var.get()
+        self.capturing = True
+        self.shortcut_new_card_var.set(MSG_SHORTCUT_CAPTURE)
+
+    def cancel_capture(self) -> None:
+        if not self.capturing:
+            return
+        self.capturing = False
+        self.shortcut_new_card_var.set(self._before_capture)
+
+    def commit_capture(self, shortcut: str) -> None:
+        self.capturing = False
+        self.shortcut_new_card_var.set(shortcut)
+
+    def reset_to_default(self) -> None:
+        self.capturing = False
+        self.shortcut_new_card_var.set(DEFAULT_NEW_CARD_SHORTCUT)
 
 
 def build_display_tab(
@@ -153,6 +186,39 @@ def build_theme_tab(
     ).grid(row=1, column=0, sticky=tk.EW)
     parent.columnconfigure(0, weight=1)
     return ThemeTabState(ui_theme_var=ui_theme_var)
+
+
+def build_actions_tab(
+    parent: tk.Misc,
+    *,
+    shortcut_new_card: str,
+    on_change: Callable[[], None],
+    on_reset: Callable[[], None],
+) -> ActionsTabState:
+    """操作タブ（ショートカットキー）を構築する."""
+    import tkinter as tk
+    from tkinter import ttk
+
+    ttk.Label(parent, text=LABEL_SHORTCUT_NEW_CARD).grid(
+        row=0,
+        column=0,
+        sticky=tk.W,
+        pady=(0, 4),
+    )
+    shortcut_var = tk.StringVar(value=shortcut_new_card)
+    row = ttk.Frame(parent)
+    row.grid(row=1, column=0, sticky=tk.EW)
+    ttk.Label(row, textvariable=shortcut_var).pack(side=tk.LEFT)
+    ttk.Button(row, text=BUTTON_CHANGE_SHORTCUT, command=on_change).pack(
+        side=tk.LEFT,
+        padx=(12, 0),
+    )
+    ttk.Button(row, text=BUTTON_RESET_SHORTCUT, command=on_reset).pack(
+        side=tk.LEFT,
+        padx=(8, 0),
+    )
+    parent.columnconfigure(0, weight=1)
+    return ActionsTabState(shortcut_new_card_var=shortcut_var)
 
 
 def build_system_tab(

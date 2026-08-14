@@ -46,7 +46,7 @@
 | [FR-027](#fr-027-uiフォント設定) | UI フォント設定 | Must | implemented | M1 拡張 |
 | [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | implemented | M1 拡張 |
 | [FR-029](#fr-029-windowsログオン時自動起動) | Windows ログオン時自動起動 | Should | implemented | M1 拡張 |
-| [FR-030](#fr-030-キーボードショートカットで新規カード作成) | キーボードショートカットで新規カード作成 | Should | specified | M1 拡張 |
+| [FR-030](#fr-030-キーボードショートカットで新規カード作成) | キーボードショートカットで新規カード作成 | Should | implemented | M1 拡張 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -578,10 +578,10 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 属性 | 値 |
 |------|-----|
 | 優先度 | Should |
-| ステータス | specified |
+| ステータス | implemented |
 | 関連 US | US-020 |
 | 関連 AC | AC-030-01, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
-| 実装 | （未実装）`system/hotkey.py`（予定）, `display/settings.py`, `display/settings_dialog_panels.py`, `app.py` |
+| 実装 | `system/hotkey.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `app.py` |
 | UI 契約 | [UC-006 §操作タブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-012](./08-ui-behavior-contract.md#uc-012-キーボードショートカット) |
 | データ契約 | [DC-003 `shortcuts`](./07-data-contract.md#dc-003-表示設定スキーマ) |
 

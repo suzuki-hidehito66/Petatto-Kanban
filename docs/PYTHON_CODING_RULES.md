@@ -27,7 +27,7 @@ src/petatto_kanban/
 ├── __main__.py       # CLI / exe エントリポイント
 ├── app.py            # GUI アプリケーション
 ├── display/          # 表示モード・設定ダイアログ・UI メトリクス
-├── system/           # OS 連携（自動起動・起動コマンド解決）
+├── system/           # OS 連携（自動起動・起動コマンド解決・グローバルホットキー）
 ├── models.py         # ドメインモデル（Board, Column, Card）
 └── storage.py        # データ永続化
 
@@ -42,7 +42,7 @@ scripts/              # ビルドスクリプト（Windows .exe）
 | ドメインモデル | `models.py` | `Board`, `Card` |
 | 永続化・I/O | `storage.py` | JSON 読み書き |
 | UI（tkinter） | `app.py`, `display/` | ウィンドウ、設定ダイアログ、カード描画 |
-| OS 連携 | `system/` | 自動起動（winreg）、起動コマンド解決 |
+| OS 連携 | `system/` | 自動起動（winreg）、起動コマンド解決、グローバルホットキー |
 | テスト | `tests/test_*.py` | モデル・ストレージ・設定・自動起動の単体テスト |
 
 ---

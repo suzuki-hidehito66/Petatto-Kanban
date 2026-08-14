@@ -27,7 +27,7 @@
 | [US-016](#us-016-uiサイズを設定する) | Must | implemented | M1 拡張 |
 | [US-017](#us-017-uiフォントを設定する) | Must | specified | M1 拡張 |
 | [US-019](#us-019-windowsログオン時に自動起動する) | Should | implemented | M1 拡張 |
-| [US-020](#us-020-ショートカットでカードを追加する) | Should | specified | M1 拡張 |
+| [US-020](#us-020-ショートカットでカードを追加する) | Should | implemented | M1 拡張 |
 | [US-005](#us-005-カードを別列へ移動する) | Should | deferred | M2 |
 | [US-008](#us-008-ウィンドウモードで使う) | Should | deferred | M2 |
 | [US-009](#us-009-デスクトップモードで使う) | Should | implemented | M1 拡張 |
@@ -322,7 +322,7 @@
 |------|-----|
 | 関連 FR | FR-030, FR-003 |
 | 関連 AC | AC-030-01, AC-030-02, AC-030-03, AC-030-04, AC-030-05 |
-| ステータス | specified |
+| ステータス | implemented |
 
 **操作:** 既定 **Ctrl+Shift+N**。割り当ては設定 **「操作」タブ** で変更。作成後の配置・インライン編集は US-002 / UC-004 と同じ。
 

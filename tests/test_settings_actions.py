@@ -12,6 +12,7 @@ from petatto_kanban.display.settings import DisplayMode, DisplaySettings
 from petatto_kanban.display.settings_actions import (
     apply_dialog_result,
     apply_launch_at_login,
+    apply_shortcut_setting,
     confirm_exit,
     delete_all_cards_with_confirm,
     persist_dialog_result,
@@ -175,6 +176,27 @@ def test_apply_dialog_result_detects_launch_at_login_change() -> None:
 
     assert changes.launch_at_login_changed is True
     assert settings.launch_at_login is True
+    assert changes.shortcut_new_card_changed is False
+
+
+def test_apply_dialog_result_detects_shortcut_change() -> None:
+    settings = DisplaySettings(mode=DisplayMode.OVERLAY, monitor_index=0)
+    result = SettingsDialogResult(
+        mode=DisplayMode.OVERLAY,
+        confirm_delete=True,
+        confirm_exit=False,
+        launch_at_login=False,
+        monitor_index=0,
+        ui_size=UiSize.MEDIUM,
+        ui_font=UiFont.SEGOE_UI,
+        ui_theme=UiTheme.DEFAULT,
+        shortcut_new_card="Ctrl+Shift+K",
+    )
+
+    changes = apply_dialog_result(settings, result)
+
+    assert changes.shortcut_new_card_changed is True
+    assert settings.shortcut_new_card == "Ctrl+Shift+K"
 
 
 def test_apply_launch_at_login_reports_failure(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -285,6 +307,108 @@ def test_persist_dialog_result_rolls_back_all_fields_on_auto_start_failure(
     assert settings.confirm_delete is True
     assert settings.monitor_index == 0
     assert settings.ui_size == UiSize.MEDIUM
+    assert not settings_path.exists()
+
+
+def test_apply_shortcut_setting_reports_failure() -> None:
+    messagebox = FakeMessageBox()
+
+    def raise_oserror(_shortcut: str) -> None:
+        msg = "busy"
+        raise OSError(msg)
+
+    assert (
+        apply_shortcut_setting(
+            "Ctrl+Shift+K",
+            apply_shortcut=raise_oserror,
+            messagebox=messagebox,
+            parent=object(),
+            app_title="Petatto Kanban",
+        )
+        is False
+    )
+    assert len(messagebox.showinfo_calls) == 1
+
+
+def test_persist_dialog_result_saves_when_shortcut_ok(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings_path = tmp_path / "settings.json"
+    monkeypatch.setattr(
+        "petatto_kanban.display.settings.get_settings_path",
+        lambda: settings_path,
+    )
+    applied: list[str] = []
+    settings = DisplaySettings()
+    result = SettingsDialogResult(
+        mode=DisplayMode.OVERLAY,
+        confirm_delete=True,
+        confirm_exit=False,
+        launch_at_login=False,
+        monitor_index=0,
+        ui_size=UiSize.MEDIUM,
+        ui_font=UiFont.SEGOE_UI,
+        ui_theme=UiTheme.DEFAULT,
+        shortcut_new_card="Ctrl+Shift+K",
+    )
+
+    changes = persist_dialog_result(
+        settings,
+        result,
+        messagebox=FakeMessageBox(),
+        parent=object(),
+        app_title="Petatto Kanban",
+        apply_shortcut=applied.append,
+    )
+
+    assert changes is not None
+    assert changes.shortcut_new_card_changed is True
+    assert settings.shortcut_new_card == "Ctrl+Shift+K"
+    assert applied == ["Ctrl+Shift+K"]
+    assert settings_path.exists()
+
+
+def test_persist_dialog_result_rolls_back_on_hotkey_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings_path = tmp_path / "settings.json"
+    monkeypatch.setattr(
+        "petatto_kanban.display.settings.get_settings_path",
+        lambda: settings_path,
+    )
+
+    def raise_oserror(_shortcut: str) -> None:
+        msg = "busy"
+        raise OSError(msg)
+
+    settings = DisplaySettings(mode=DisplayMode.OVERLAY, shortcut_new_card="Ctrl+Shift+N")
+    result = SettingsDialogResult(
+        mode=DisplayMode.DESKTOP,
+        confirm_delete=False,
+        confirm_exit=True,
+        launch_at_login=False,
+        monitor_index=1,
+        ui_size=UiSize.LARGE,
+        ui_font=UiFont.MEIRYO,
+        ui_theme=UiTheme.DARK,
+        shortcut_new_card="Ctrl+Shift+K",
+    )
+
+    changes = persist_dialog_result(
+        settings,
+        result,
+        messagebox=FakeMessageBox(),
+        parent=object(),
+        app_title="Petatto Kanban",
+        apply_shortcut=raise_oserror,
+    )
+
+    assert changes is None
+    assert settings.mode == DisplayMode.OVERLAY
+    assert settings.shortcut_new_card == "Ctrl+Shift+N"
+    assert settings.confirm_delete is True
     assert not settings_path.exists()
 
 
