@@ -41,5 +41,5 @@
 | MVP | Minimum Viable Product。M1 マイルストーンで提供する最小機能セット |
 | PyInstaller | Python アプリを Windows `.exe` にパッケージするツール |
 | 永続化パス | `%USERPROFILE%\.petatto-kanban\board.json` |
-| 対応 OS | **Windows 11 以降** |
+| 対応 OS | **Windows 11 以降**（macOS / Linux は対象外） |
 | Run キー | ログオン時起動用の `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`。値名 `Petatto-Kanban` |

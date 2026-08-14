@@ -63,23 +63,6 @@ class FakeWinReg:
         return None
 
 
-def test_is_auto_start_supported_false_when_not_win32(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setattr(auto_start.sys, "platform", "linux")
-    assert auto_start.is_auto_start_supported() is False
-
-
-def test_is_auto_start_supported_true_on_win32(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(auto_start.sys, "platform", "win32")
-    assert auto_start.is_auto_start_supported() is True
-
-
-def test_apply_auto_start_noop_when_unsupported(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(auto_start, "is_auto_start_supported", lambda: False)
-    auto_start.apply_auto_start_setting(True)
-
-
 def test_apply_auto_start_enable_creates_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(auto_start, "is_auto_start_supported", lambda: True)
     reg = FakeWinReg(missing_key=True)

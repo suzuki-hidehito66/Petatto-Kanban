@@ -46,7 +46,7 @@ class WinRegBackend(Protocol):
 
 
 def is_auto_start_supported() -> bool:
-    """自動起動設定が OS 上で有効か（M1 は Windows のみ）。"""
+    """対象 OS（Windows 11 以降）上かどうか。"""
     return sys.platform == "win32"
 
 

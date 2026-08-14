@@ -974,17 +974,10 @@ Then launch_at_login は false として扱われる
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-029 |
-| ステータス | implemented |
-| 検証 | 自動 |
+| ステータス | cancelled |
+| 検証 | — |
 
-```gherkin
-Given アプリが Windows 以外の OS で動作している
-When 設定ダイアログ「システム」タブを開く
-Then 「Windows ログオン時に自動起動する」チェックボックスは無効である
-And apply_auto_start_setting はレジストリを変更しない
-```
-
-**テスト**: `test_is_auto_start_supported_false_when_not_win32`, `test_is_auto_start_supported_true_on_win32`, `test_settings_dialog.py` + 手動（Windows では有効）
+非 Windows（macOS / Linux）でのチェックボックス無効化。**対象 OS は Windows 11 以降のみ**（NFR-011 / C-6）のためスコープ外。
 
 ### AC-029-05
 
