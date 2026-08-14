@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |------|------|
 | 文書種別 | Specification-Driven Development（SDD）索引 |
-| 文書バージョン | 2.66.0 |
+| 文書バージョン | 2.71.0 |
 | 最終更新日 | 2026-08-14 |
 | ステータス | Active |
 
@@ -97,10 +97,10 @@ flowchart LR
 ### 初期スコープの要点
 
 - **単一ユーザー** — 1 人・1 PC。アカウント・共同編集なし
-- **独立アプリ** — サーバー・ブラウザ・常時ネットワーク不要
+- **独立アプリ** — サーバー・ブラウザ・常時ネットワーク不要。エラーログはローカル（FR-031）
 - **`.exe` 配布** — PyInstaller 単一実行ファイル
 - **M1 UI** — オーバーレイモード（透過・最前面・自由配置カード・ドラッグ移動）
-- **ローカルデータ** — `%USERPROFILE%\.petatto-kanban\board.json`, `settings.json`
+- **ローカルデータ** — `%USERPROFILE%\.petatto-kanban\board.json`, `settings.json`, `logs\`（エラーログ、FR-031）
 
 詳細: [01-vision-and-scope.md](./spec/01-vision-and-scope.md#2-初期スコープm1-mvpの定義)
 
@@ -184,3 +184,8 @@ flowchart LR
 | 2.64.0 | 2026-08-14 | FR-030 仕様同期。`hotkey_pump` 抽出（セッションと Win32 ポンプを分離） |
 | 2.65.0 | 2026-08-14 | FR-002: タイトル改行時はカード高さを下限以上に伸ばし、幅は固定 |
 | 2.66.0 | 2026-08-14 | FR-002 仕様同期。`card_frame` 抽出（枠サイズと基準寸法を分離） |
+| 2.67.0 | 2026-08-14 | FR-031 エラーログ（`.petatto-kanban/logs`）。FR-032 GitHub Issue 任意起票（オプトイン） |
+| 2.68.0 | 2026-08-14 | FR-032: GitHub Issue 起票の可否は設定「システム」タブで ON/OFF |
+| 2.69.0 | 2026-08-14 | FR-032 GitHub Issue 自動起票を cancelled。診断はローカルログ（FR-031）のみ |
+| 2.70.0 | 2026-08-14 | FR-031 実装。`error_log.py`・例外フック・日次ログ |
+| 2.71.0 | 2026-08-14 | FR-031 仕様同期。`error_log_paths` / `error_log_redact` 抽出 |

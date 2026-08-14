@@ -28,6 +28,7 @@
 | [US-017](#us-017-uiフォントを設定する) | Must | specified | M1 拡張 |
 | [US-019](#us-019-windowsログオン時に自動起動する) | Should | implemented | M1 拡張 |
 | [US-020](#us-020-ショートカットでカードを追加する) | Should | implemented | M1 拡張 |
+| [US-021](#us-021-エラーをログに残す) | Must | implemented | M1 拡張 |
 | [US-005](#us-005-カードを別列へ移動する) | Should | deferred | M2 |
 | [US-008](#us-008-ウィンドウモードで使う) | Should | deferred | M2 |
 | [US-009](#us-009-デスクトップモードで使う) | Should | implemented | M1 拡張 |
@@ -325,4 +326,20 @@
 | ステータス | implemented |
 
 **操作:** 既定 **Ctrl+Shift+N**。割り当ては設定 **「操作」タブ** で変更。作成後の配置・インライン編集は US-002 / UC-004 と同じ。
+
+---
+
+## US-021: エラーをログに残す
+
+**As a** 個人開発者  
+**I want to** クラッシュや予期しない例外が `%USERPROFILE%\.petatto-kanban\logs` に残る  
+**So that** 手元で原因を確認し、必要ならログを添付して報告できる
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-031 |
+| 関連 AC | AC-031-01, AC-031-02, AC-031-03 |
+| ステータス | implemented |
+
+**操作:** エラーログは常時出力。GitHub Issue の自動起票は行わない（FR-032 cancelled）。
 

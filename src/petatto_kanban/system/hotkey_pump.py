@@ -9,6 +9,7 @@ WndProc は user32 の DefWindowProcW だけを使う。
 from __future__ import annotations
 
 import ctypes
+import logging
 import queue
 import threading
 from ctypes import wintypes
@@ -134,21 +135,26 @@ class Win32HotkeyPump:
             self._ready.set()
             return
         self._ready.set()
-        user32 = _user32()
-        msg = _MSG()
-        while True:
-            status = int(user32.GetMessageW(ctypes.byref(msg), None, 0, 0))
-            if status <= 0:
-                break
-            if msg.message == WM_HOTKEY:
-                self._fired.put(int(msg.wParam))
-                continue
-            if msg.message == WM_APP:
-                self._process_commands()
-                continue
-            user32.TranslateMessage(ctypes.byref(msg))
-            user32.DispatchMessageW(ctypes.byref(msg))
-        self._destroy_window()
+        try:
+            user32 = _user32()
+            msg = _MSG()
+            while True:
+                status = int(user32.GetMessageW(ctypes.byref(msg), None, 0, 0))
+                if status <= 0:
+                    break
+                if msg.message == WM_HOTKEY:
+                    self._fired.put(int(msg.wParam))
+                    continue
+                if msg.message == WM_APP:
+                    self._process_commands()
+                    continue
+                user32.TranslateMessage(ctypes.byref(msg))
+                user32.DispatchMessageW(ctypes.byref(msg))
+            self._destroy_window()
+        except Exception:
+            logging.getLogger("petatto_kanban").exception(
+                "Uncaught exception in hotkey pump thread"
+            )
 
     def _process_commands(self) -> None:
         while True:

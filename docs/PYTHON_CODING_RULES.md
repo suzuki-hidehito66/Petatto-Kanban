@@ -4,7 +4,7 @@
 |------|------|
 | 対象 | 本リポジトリの Python ソースコード（`src/`, `tests/`） |
 | Python バージョン | 3.11 以上 |
-| 文書バージョン | 1.4.0 |
+| 文書バージョン | 1.7.0 |
 | 最終更新日 | 2026-08-14 |
 
 ---
@@ -27,7 +27,7 @@ src/petatto_kanban/
 ├── __main__.py       # CLI / exe エントリポイント
 ├── app.py            # GUI アプリケーション
 ├── display/          # 表示モード・設定ダイアログ・UI メトリクス
-├── system/           # OS 連携（自動起動・起動コマンド・ショートカット・ホットキー）
+├── system/           # OS 連携（自動起動・起動コマンド・ショートカット・ホットキー・エラーログ）
 ├── models.py         # ドメインモデル（Board, Column, Card）
 └── storage.py        # データ永続化
 
@@ -42,7 +42,7 @@ scripts/              # ビルドスクリプト（Windows .exe）
 | ドメインモデル | `models.py` | `Board`, `Card` |
 | 永続化・I/O | `storage.py` | JSON 読み書き |
 | UI（tkinter） | `app.py`, `display/` | ウィンドウ、設定ダイアログ、カード描画 |
-| OS 連携 | `system/` | 自動起動（winreg）、起動コマンド解決、ショートカット正規化、ホットキーセッション、Win32 ポンプ |
+| OS 連携 | `system/` | 自動起動（winreg）、起動コマンド解決、ショートカット正規化、ホットキーセッション、Win32 ポンプ、エラーログ（パス・伏せ字・初期化） |
 | テスト | `tests/test_*.py` | モデル・ストレージ・設定・自動起動・ショートカット・ホットキーの単体テスト |
 
 ---
@@ -145,6 +145,7 @@ python -m pytest
 - ユーザー向け GUI では `messagebox` で分かりやすいメッセージを表示する。
 - ファイル I/O では、MVP 段階では存在チェックとデフォルト値返却で足りる場合はシンプルに保つ。
 - ログが必要になった段階で `logging` モジュールを導入する（print デバッグは本番コードに残さない）。
+- アプリのエラーログ出力先は `%USERPROFILE%\.petatto-kanban\logs\`（[FR-031](./spec/03-functional-requirements.md#fr-031-ローカルエラーログ)）。カード本文や秘密情報はログに出さない。
 
 ---
 
@@ -215,3 +216,7 @@ def test_save_and_load_board(tmp_path: Path) -> None:
 | 1.2.0 | 2026-08-14 | `system/shortcut.py` をホットキー登録から分離 |
 | 1.3.0 | 2026-08-14 | `system/hotkey_pump.py` をホットキーセッションから分離 |
 | 1.4.0 | 2026-08-14 | `display/card_frame.py` をカード基準寸法から分離 |
+| 1.5.0 | 2026-08-14 | エラーログパス（FR-031）と秘密情報をログに出さないことを追記 |
+| 1.6.0 | 2026-08-14 | GitHub トークン前提の記述を削除（FR-032 cancelled） |
+| 1.6.1 | 2026-08-14 | `system/error_log.py` を配置ルールに追加 |
+| 1.7.0 | 2026-08-14 | `error_log_paths` / `error_log_redact` をエラーログ初期化から分離 |
