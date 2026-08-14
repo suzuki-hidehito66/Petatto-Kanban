@@ -10,7 +10,7 @@
 ## 1. システム概要
 
 **アーキテクチャ方針（M1）:** 単一ユーザーの独立したデスクトップアプリケーション。  
-クライアント（`.exe`）とローカルファイル（JSON・エラーログ）で構成し、自前のサーバー層は存在しない。GitHub Issues API は FR-032 が有効なときだけ任意接続する。
+クライアント（`.exe`）とローカルファイル（JSON・エラーログ）で構成し、サーバー層は存在しない。
 
 ```mermaid
 flowchart TB
@@ -27,14 +27,12 @@ flowchart TB
         SettingsJSON["~/.petatto-kanban/settings.json"]
         ErrorLogs["~/.petatto-kanban/logs/"]
         Registry["HKCU Run キー"]
-        GitHub["GitHub Issues API（任意・FR-032）"]
     end
     EXE --> App
     Storage --> BoardJSON
     Display --> SettingsJSON
     System --> Registry
     System --> ErrorLogs
-    System -.-> GitHub
     UI --> Models
     UI --> Storage
     UI --> Display
@@ -114,8 +112,7 @@ petatto-kanban/
 │   │   ├── shortcut.py           # ショートカットコード正規化（FR-030）
 │   │   ├── hotkey.py             # ホットキーセッション（poll / 失敗時ロールバック）
 │   │   ├── hotkey_pump.py        # Win32 専用スレッドで WM_HOTKEY を受信
-│   │   ├── error_log.py          # ローカルエラーログ（FR-031、未実装）
-│   │   └── github_issue.py       # GitHub Issue 任意起票（FR-032、未実装）
+│   │   └── error_log.py          # ローカルエラーログ（FR-031、未実装）
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -159,7 +156,6 @@ petatto-kanban/
 | `system/hotkey.py` | グローバルホットキーのセッション（FR-030）。割り当て・`poll()`・失敗時ロールバック | `shortcut`, `hotkey_pump` |
 | `system/hotkey_pump.py` | Win32 メッセージポンプ。専用スレッドのメッセージ専用ウィンドウで `GetMessage`（Python WndProc なし） | 標準ライブラリ（`ctypes` / `threading`） |
 | `system/error_log.py` | エラーログ初期化・日次ファイル・例外フック（FR-031）。**未実装** | 標準ライブラリ（`logging`） |
-| `system/github_issue.py` | オプトイン時のみ GitHub Issues API へ起票（FR-032）。**未実装** | 標準ライブラリ（`urllib.request`）、`error_log` |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
@@ -254,16 +250,16 @@ petatto-kanban/
 | トレードオフ | 他アプリが同一ホットキーを先に登録していると失敗する。設定ダイアログ表示中は発火を抑制する |
 | 関連 | FR-030, UC-012, NFR-011 |
 
-### ADR-008: エラーはローカルログ必須、GitHub 起票はオプトイン
+### ADR-008: エラーはローカルログのみ（GitHub 自動起票はしない）
 
 | 項目 | 内容 |
 |------|------|
 | ステータス | Accepted |
 | 日付 | 2026-08-14 |
-| コンテキスト | クラッシュ原因の収集が必要。一方 NFR-008 / C-5 はオフライン独立アプリを要求する。トークンを git や settings.json に置くのは危険 |
-| 決定 | (1) エラーは常に `%USERPROFILE%\.petatto-kanban\logs\` へ `logging` で出す（FR-031）。(2) GitHub Issue 起票の可否は設定「システム」タブのチェックで切り替える。既定 OFF。ON かつローカルトークンがあるときだけ `urllib` でベストエフォート起票（FR-032）。指紋で重複抑制。失敗してもアプリは止めない |
-| 理由 | 診断はオフラインで完結する。報告は利用者が選ぶ。標準ライブラリのみで NFR-005 を維持できる |
-| トレードオフ | 既定ではメンテナに届かない。PAT の設置は手動。公開リポジトリへの自動 Issue はノイズになり得るためレート制限と指紋必須 |
+| コンテキスト | クラッシュ原因の収集が必要。GitHub REST API で Issue を作るにはトークンが必要で、Issues を全員に許可しても同じ。NFR-008 / C-5 はオフライン独立アプリを要求する |
+| 決定 | エラーは常に `%USERPROFILE%\.petatto-kanban\logs\` へ `logging` で出す（FR-031）。アプリからの GitHub Issue 自動起票は行わない（FR-032 cancelled） |
+| 理由 | 診断はオフラインで完結する。PAT を利用者に求めたり exe に埋め込んだりしない |
+| トレードオフ | メンテナへは利用者がログを手動で渡す必要がある |
 | 関連 | FR-031, FR-032, NFR-008, DC-004 |
 
 ---
@@ -324,4 +320,4 @@ M3 着手時に ADR を追加する。
 - **対応 OS: Windows 11 以降**（Win32 / DWM API を前提）
 - tkinter 単体では Z オーダー制御・クリック透過が不足するため、M2 では `ctypes` + Win32 API または `pywin32` の導入を検討
 - マルチディスプレイ座標は `EnumDisplayMonitors` で取得
-- NFR-008（コア機能はネットワーク不要）を維持 — 表示モード実装もローカル API のみ。GitHub 起票（FR-032）は表示モードとは独立した任意経路
+- NFR-008（ネットワーク不要）を維持 — 表示モード実装もローカル API のみ

@@ -115,7 +115,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-021, FR-024, FR-023, FR-026, FR-027, FR-028, FR-029, FR-030, FR-032 |
+| 関連 FR | FR-021, FR-024, FR-023, FR-026, FR-027, FR-028, FR-029, FR-030 |
 | 保存先 | `%USERPROFILE%\.petatto-kanban\settings.json` |
 | マイルストーン | M1 |
 
@@ -135,7 +135,6 @@
 | `ui_theme` | string | ○ | UI カラーテーマ: `"default"` \| `"dark"` \| ...（FR-028） |
 | `launch_at_login` | boolean | ○ | Windows ログオン時に自動起動するか（FR-029） |
 | `shortcuts` | object | ○ | キーボードショートカット割り当て（FR-030） |
-| `report_errors_to_github` | boolean | ○ | GitHub Issue を自動起票するか（FR-032）。設定「システム」タブで ON/OFF。既定 `false` |
 
 #### shortcuts オブジェクト
 
@@ -158,7 +157,6 @@
 | `ui_theme` | `"default"` |
 | `launch_at_login` | `false` |
 | `shortcuts.new_card` | `"Ctrl+Shift+N"` |
-| `report_errors_to_github` | `false` |
 
 ### ui_font と tkinter フォント名
 
@@ -199,8 +197,6 @@
 
 不正値・欠損時は `default` にフォールバックする。
 
-`report_errors_to_github` が欠損・非 boolean のときは `false` として読み込む。
-
 ### サンプル
 
 ```json
@@ -216,8 +212,7 @@
   "launch_at_login": false,
   "shortcuts": {
     "new_card": "Ctrl+Shift+N"
-  },
-  "report_errors_to_github": false
+  }
 }
 ```
 
@@ -239,7 +234,7 @@
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-031, FR-032 |
+| 関連 FR | FR-031 |
 | ディレクトリ | `%USERPROFILE%\.petatto-kanban\logs\` |
 | エンコーディング | UTF-8 |
 | 実装 | （未実装）`system/error_log.py` |
@@ -258,26 +253,9 @@
 | # | 条件 |
 |---|------|
 | INV-L1 | ディレクトリ不存在時は作成する。作成失敗時はアプリを落とさない |
-| INV-L2 | トークン・`github_token` ファイル内容・`PETATTO_GITHUB_TOKEN` はログに出さない |
+| INV-L2 | 認証情報・環境変数の秘密はログに出さない |
 | INV-L3 | カードタイトル・ボード JSON 本文はログに出さない |
 | INV-L4 | ユーザーホームディレクトリは `~` に置換してよい |
-
-### トークンファイル（FR-032、ログではない）
-
-| 項目 | 仕様 |
-|------|------|
-| パス | `%USERPROFILE%\.petatto-kanban\github_token` |
-| 形式 | UTF-8、トークン文字列 1 行（前後空白は無視） |
-| 優先 | 環境変数 `PETATTO_GITHUB_TOKEN` があればファイルより優先 |
-| 禁止 | git 管理下に置かない。`settings.json` に保存しない |
-
-### 起票指紋（FR-032）
-
-| 項目 | 仕様 |
-|------|------|
-| パス | `%USERPROFILE%\.petatto-kanban\logs\issue-fingerprints.json` |
-| 内容 | 指紋 SHA-256 → 起票日（`YYYY-MM-DD`）および任意で Issue 番号 |
-| 用途 | 同一例外の再起票防止、暦日起票数の上限管理 |
 
 ### アプリデータディレクトリ（参考）
 
@@ -285,8 +263,6 @@
 %USERPROFILE%\.petatto-kanban\
 ├── board.json
 ├── settings.json
-├── github_token          # 任意。利用者が置く。git 管理外
 └── logs\
-    ├── petatto-kanban-YYYY-MM-DD.log
-    └── issue-fingerprints.json
+    └── petatto-kanban-YYYY-MM-DD.log
 ```

@@ -13,8 +13,8 @@
 
 > **単一ユーザーの独立したデスクトップアプリケーション（`.exe`）**
 
-- ユーザー認証・マルチユーザー・常時接続のネットワーク API は M1 に含めない
-- データは利用者の PC 内にのみ保存する（エラーログもローカル。GitHub 起票は [FR-032](#fr-032-github-issue-任意起票) のオプトインのみ）
+- ネットワーク API・ユーザー認証・マルチユーザー機能は M1 に含めない
+- データは利用者の PC 内にのみ保存する（エラーログもローカル、[FR-031](#fr-031-ローカルエラーログ)）
 
 参照: [01-vision-and-scope.md §2](./01-vision-and-scope.md#2-初期スコープm1-mvpの定義)
 
@@ -48,7 +48,7 @@
 | [FR-029](#fr-029-windowsログオン時自動起動) | Windows ログオン時自動起動 | Should | implemented | M1 拡張 |
 | [FR-030](#fr-030-キーボードショートカットで新規カード作成) | キーボードショートカットで新規カード作成 | Should | implemented | M1 拡張 |
 | [FR-031](#fr-031-ローカルエラーログ) | ローカルエラーログ | Must | specified | M1 拡張 |
-| [FR-032](#fr-032-github-issue-任意起票) | GitHub Issue 任意起票 | Should | specified | M1 拡張 |
+| [FR-032](#fr-032-github-issue-任意起票) | GitHub Issue 任意起票 | Should | cancelled | — |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -630,7 +630,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - 標準ライブラリの `logging` のみ（NFR-005）。`print` デバッグは使わない
 - 捕捉対象: `sys.excepthook`、tkinter `report_callback_exception`、専用スレッド（ホットキーポンプ等）の未捕捉例外、アプリ内 `logger.error` / `logger.exception`
 - 1 レコードに含める: 時刻（ISO 8601）、ログレベル、ロガー名、メッセージ、スタックトレース（ある場合）、アプリバージョン、Python バージョン、OS 概要
-- **カードタイトル・ボード内容・GitHub トークン・環境変数の秘密は書かない**。ユーザーホームパスは `~` に置換してよい
+- **カードタイトル・ボード内容・認証情報・環境変数の秘密は書かない**。ユーザーホームパスは `~` に置換してよい
 - ログ書き込み失敗（ディスク満杯・権限など）でも **アプリは継続**する。ユーザー向けダイアログは出さない
 - ログ I/O は UI を止めない。書き込み失敗はプロセス内で繰り返して騒がない
 - 本要件はオフライン完結。ネットワークは使わない
@@ -642,35 +642,15 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 属性 | 値 |
 |------|-----|
 | 優先度 | Should |
-| ステータス | specified |
-| 関連 US | US-021 |
-| 関連 AC | AC-032-01, AC-032-02, AC-032-03, AC-032-04, AC-032-05, AC-032-06, AC-032-07 |
-| 実装 | （未実装）`system/github_issue.py`（または同等）。`system/error_log.py` からベストエフォートで呼び出す。設定 UI は `display/settings_dialog_panels.py` のシステムタブ |
-| UI 契約 | [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
-| データ契約 | [DC-003 `report_errors_to_github`](./07-data-contract.md#dc-003-表示設定スキーマ), [DC-004](./07-data-contract.md#dc-004-エラーログ) |
+| ステータス | cancelled |
+| 関連 US | — |
+| 関連 AC | — |
+| 実装 | なし |
 
 **説明**  
-設定ダイアログ **「システム」タブ** で、エラー時に GitHub Issue を自動起票するかを ON/OFF できる。ON のときだけ、ローカルに記録した未捕捉例外を公開リポジトリへ起票する。コア機能ではない。失敗してもアプリは止まらない。
+アプリから GitHub Issue を自動起票する機能。**採用しない。**
 
-**制約**
-- **既定 OFF**（`settings.json` の `report_errors_to_github` = `false`）。OFF のときは HTTP を一切行わない（NFR-008）
-- 起票の可否を切り替える UI は設定ダイアログ **「システム」タブ** のチェックボックスのみ（メニューパネルや他タブには置かない）
-- チェック状態は `settings.json` の `report_errors_to_github` に永続化する。ダイアログを開いたときは保存値を表示する
-- OK 確定直後から有効（再起動不要）。OFF にしたあとの未捕捉例外では HTTP しない
-- キャンセル時はチェック変更を破棄する（他の設定項目と同じ）
-- 起票先（固定）: `https://github.com/suzuki-hidehito66/Petatto-Kanban` の Issues。GitHub REST API（`POST /repos/{owner}/{repo}/issues`）
-- 認証: 利用者自身の Personal Access Token。保存場所は **`%USERPROFILE%\.petatto-kanban\github_token`**（1 行のトークン文字列）または環境変数 `PETATTO_GITHUB_TOKEN`（ファイルより環境変数を優先）。**`settings.json`・git・ログファイルには書かない**
-- トークン権限の目安: Fine-grained なら当該リポジトリの Issues Read and write。Classic なら `public_repo`
-- ランタイムは **標準ライブラリ `urllib.request` のみ**（追加パッケージ禁止、NFR-005）
-- Tk スレッドでは HTTP しない。短タイムアウト（目安 5 秒）のバックグラウンド処理。アプリ終了を待たない
-- ネットワーク切断・タイムアウト・401/403/422・API 変更時は **ローカルログに起票失敗を残し、UI は通常どおり継続**。再試行は同一プロセス内で同じ指紋に対して行わない
-- 起票対象は **ERROR 以上の未捕捉例外**（ユーザー操作の検証エラーや設定ロールバックの messagebox は対象外）
-- Issue タイトル: `[auto] {例外型}: {メッセージ先頭 80 字}`
-- Issue 本文: アプリバージョン、OS、Python、スタックトレース（ホームパスを `~` に置換）。カード内容・トークン・PAT は載せない。末尾に指紋コメント `<!-- fingerprint:{sha256} -->`
-- 指紋: 例外型 + メッセージ正規化 + スタックのアプリフレーム（`petatto_kanban` 配下）から SHA-256。同一指紋は `%USERPROFILE%\.petatto-kanban\logs\issue-fingerprints.json` に記録し、**再起票しない**（オープン Issue へのコメント追加もしない）
-- レート: 1 インストールあたり **暦日 3 件まで**。超過分はローカルログのみ
-- チェック ON かつトークン無しで設定を OK したときは、警告を 1 回出し設定値は保存する（次回からトークンが置かれれば起票する）
-- 本機能は M3 のクラウド同期・認証（FR-017）とは別。常時接続やアカウントは不要
+GitHub REST API で Issue を作成するには認証トークンが必要で、リポジトリで Issues を全員に許可していても同じである。利用者に PAT を求めたり、exe にトークンを埋め込んだりはしない。診断は [FR-031](#fr-031-ローカルエラーログ) のローカルログのみとする。
 
 ---
 

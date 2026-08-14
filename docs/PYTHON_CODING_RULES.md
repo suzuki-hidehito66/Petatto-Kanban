@@ -4,7 +4,7 @@
 |------|------|
 | 対象 | 本リポジトリの Python ソースコード（`src/`, `tests/`） |
 | Python バージョン | 3.11 以上 |
-| 文書バージョン | 1.5.0 |
+| 文書バージョン | 1.6.0 |
 | 最終更新日 | 2026-08-14 |
 
 ---
@@ -145,7 +145,7 @@ python -m pytest
 - ユーザー向け GUI では `messagebox` で分かりやすいメッセージを表示する。
 - ファイル I/O では、MVP 段階では存在チェックとデフォルト値返却で足りる場合はシンプルに保つ。
 - ログが必要になった段階で `logging` モジュールを導入する（print デバッグは本番コードに残さない）。
-- アプリのエラーログ出力先は `%USERPROFILE%\.petatto-kanban\logs\`（[FR-031](./spec/03-functional-requirements.md#fr-031-ローカルエラーログ)）。GitHub トークンやカード本文はログに出さない。
+- アプリのエラーログ出力先は `%USERPROFILE%\.petatto-kanban\logs\`（[FR-031](./spec/03-functional-requirements.md#fr-031-ローカルエラーログ)）。カード本文や秘密情報はログに出さない。
 
 ---
 
@@ -217,3 +217,4 @@ def test_save_and_load_board(tmp_path: Path) -> None:
 | 1.3.0 | 2026-08-14 | `system/hotkey_pump.py` をホットキーセッションから分離 |
 | 1.4.0 | 2026-08-14 | `display/card_frame.py` をカード基準寸法から分離 |
 | 1.5.0 | 2026-08-14 | エラーログパス（FR-031）と秘密情報をログに出さないことを追記 |
+| 1.6.0 | 2026-08-14 | GitHub トークン前提の記述を削除（FR-032 cancelled） |
