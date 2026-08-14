@@ -10,7 +10,7 @@
 ## 1. システム概要
 
 **アーキテクチャ方針（M1）:** 単一ユーザーの独立したデスクトップアプリケーション。  
-クライアント（`.exe`）とローカル JSON ファイルのみで構成し、サーバー層は存在しない。
+クライアント（`.exe`）とローカルファイル（JSON・エラーログ）で構成し、自前のサーバー層は存在しない。GitHub Issues API は FR-032 が有効なときだけ任意接続する。
 
 ```mermaid
 flowchart TB
@@ -25,12 +25,16 @@ flowchart TB
         end
         BoardJSON["~/.petatto-kanban/board.json"]
         SettingsJSON["~/.petatto-kanban/settings.json"]
+        ErrorLogs["~/.petatto-kanban/logs/"]
         Registry["HKCU Run キー"]
+        GitHub["GitHub Issues API（任意・FR-032）"]
     end
     EXE --> App
     Storage --> BoardJSON
     Display --> SettingsJSON
     System --> Registry
+    System --> ErrorLogs
+    System -.-> GitHub
     UI --> Models
     UI --> Storage
     UI --> Display
@@ -108,7 +112,9 @@ petatto-kanban/
 │   │   ├── launch_command.py     # ログオン時コマンド行の解決
 │   │   ├── shortcut.py           # ショートカットコード正規化（FR-030）
 │   │   ├── hotkey.py             # ホットキーセッション（poll / 失敗時ロールバック）
-│   │   └── hotkey_pump.py        # Win32 専用スレッドで WM_HOTKEY を受信
+│   │   ├── hotkey_pump.py        # Win32 専用スレッドで WM_HOTKEY を受信
+│   │   ├── error_log.py          # ローカルエラーログ（FR-031、未実装）
+│   │   └── github_issue.py       # GitHub Issue 任意起票（FR-032、未実装）
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -126,7 +132,7 @@ petatto-kanban/
 |------------|------|------|
 | `models.py` | ドメインエンティティ、不変条件 | 標準ライブラリのみ |
 | `storage.py` | JSON シリアライズ / デシリアライズ | `models` |
-| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement`, `system/auto_start`, `system/hotkey` |
+| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement`, `system/auto_start`, `system/hotkey`, `system/error_log` |
 | `display/transparent.py` | 透過色・全画面シェル（オーバーレイ/デスクトップ共通） | 標準ライブラリ + tkinter |
 | `display/modes.py` | 表示モード適用のディスパッチ | `overlay`, `desktop`, `settings` |
 | `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） | tkinter, `transparent`, `settings` |
@@ -150,6 +156,8 @@ petatto-kanban/
 | `system/shortcut.py` | ショートカットコードの解析・正規化（FR-030） | 標準ライブラリのみ |
 | `system/hotkey.py` | グローバルホットキーのセッション（FR-030）。割り当て・`poll()`・失敗時ロールバック | `shortcut`, `hotkey_pump` |
 | `system/hotkey_pump.py` | Win32 メッセージポンプ。専用スレッドのメッセージ専用ウィンドウで `GetMessage`（Python WndProc なし） | 標準ライブラリ（`ctypes` / `threading`） |
+| `system/error_log.py` | エラーログ初期化・日次ファイル・例外フック（FR-031）。**未実装** | 標準ライブラリ（`logging`） |
+| `system/github_issue.py` | オプトイン時のみ GitHub Issues API へ起票（FR-032）。**未実装** | 標準ライブラリ（`urllib.request`）、`error_log` |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
@@ -244,6 +252,18 @@ petatto-kanban/
 | トレードオフ | 他アプリが同一ホットキーを先に登録していると失敗する。設定ダイアログ表示中は発火を抑制する |
 | 関連 | FR-030, UC-012, NFR-011 |
 
+### ADR-008: エラーはローカルログ必須、GitHub 起票はオプトイン
+
+| 項目 | 内容 |
+|------|------|
+| ステータス | Accepted |
+| 日付 | 2026-08-14 |
+| コンテキスト | クラッシュ原因の収集が必要。一方 NFR-008 / C-5 はオフライン独立アプリを要求する。トークンを git や settings.json に置くのは危険 |
+| 決定 | (1) エラーは常に `%USERPROFILE%\.petatto-kanban\logs\` へ `logging` で出す（FR-031）。(2) GitHub Issue は設定 OFF が既定。ON かつローカルトークンがあるときだけ `urllib` でベストエフォート起票（FR-032）。指紋で重複抑制。失敗してもアプリは止めない |
+| 理由 | 診断はオフラインで完結する。報告は利用者が選ぶ。標準ライブラリのみで NFR-005 を維持できる |
+| トレードオフ | 既定ではメンテナに届かない。PAT の設置は手動。公開リポジトリへの自動 Issue はノイズになり得るためレート制限と指紋必須 |
+| 関連 | FR-031, FR-032, NFR-008, DC-004 |
+
 ---
 
 ## 5. ビルド・配布
@@ -302,4 +322,4 @@ M3 着手時に ADR を追加する。
 - **対応 OS: Windows 11 以降**（Win32 / DWM API を前提）
 - tkinter 単体では Z オーダー制御・クリック透過が不足するため、M2 では `ctypes` + Win32 API または `pywin32` の導入を検討
 - マルチディスプレイ座標は `EnumDisplayMonitors` で取得
-- NFR-008（ネットワーク不要）を維持 — 表示モード実装もローカル API のみ
+- NFR-008（コア機能はネットワーク不要）を維持 — 表示モード実装もローカル API のみ。GitHub 起票（FR-032）は表示モードとは独立した任意経路

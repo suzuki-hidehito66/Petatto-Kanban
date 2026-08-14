@@ -24,6 +24,8 @@
 | UI カラーテーマ | UI color theme | カード・メニュー等の背景色・文字色プリセット。設定「テーマ」タブで **10 種** から選択（FR-028） |
 | 自動起動 | Launch at login | Windows ログオン時にアプリを起動する設定。`settings.json` の `launch_at_login` と HKCU Run キーで管理（FR-029） |
 | ショートカットキー | Keyboard shortcut | キーボード操作で機能を実行する割り当て。既定の新規カード作成は **Ctrl+Shift+N**（FR-030） |
+| エラーログ | Error log | `%USERPROFILE%\.petatto-kanban\logs\` に出す診断ファイル。未捕捉例外などを記録する（FR-031） |
+| GitHub Issue 任意起票 | Optional GitHub issue report | 設定 ON かつローカルトークンがあるときだけ、エラーを公開リポジトリの Issue にする（FR-032）。既定 OFF |
 
 ## SDD 用語
 
@@ -42,6 +44,8 @@
 | MVP | Minimum Viable Product。M1 マイルストーンで提供する最小機能セット |
 | PyInstaller | Python アプリを Windows `.exe` にパッケージするツール |
 | 永続化パス | `%USERPROFILE%\.petatto-kanban\board.json` |
+| エラーログパス | `%USERPROFILE%\.petatto-kanban\logs\` |
+| GitHub トークンパス | `%USERPROFILE%\.petatto-kanban\github_token`（任意。FR-032） |
 | 対応 OS | **Windows 11 以降**（macOS / Linux は対象外） |
 | Run キー | ログオン時起動用の `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`。値名 `Petatto-Kanban` |
 | グローバルホットキー | 他アプリが前面でも発火する OS レベルのキー割り当て（Win32 `RegisterHotKey`） |

@@ -13,8 +13,8 @@
 
 > **単一ユーザーの独立したデスクトップアプリケーション（`.exe`）**
 
-- ネットワーク API・ユーザー認証・マルチユーザー機能は M1 に含めない
-- データは利用者の PC 内にのみ保存する
+- ユーザー認証・マルチユーザー・常時接続のネットワーク API は M1 に含めない
+- データは利用者の PC 内にのみ保存する（エラーログもローカル。GitHub 起票は [FR-032](#fr-032-github-issue-任意起票) のオプトインのみ）
 
 参照: [01-vision-and-scope.md §2](./01-vision-and-scope.md#2-初期スコープm1-mvpの定義)
 
@@ -47,6 +47,8 @@
 | [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | implemented | M1 拡張 |
 | [FR-029](#fr-029-windowsログオン時自動起動) | Windows ログオン時自動起動 | Should | implemented | M1 拡張 |
 | [FR-030](#fr-030-キーボードショートカットで新規カード作成) | キーボードショートカットで新規カード作成 | Should | implemented | M1 拡張 |
+| [FR-031](#fr-031-ローカルエラーログ) | ローカルエラーログ | Must | specified | M1 拡張 |
+| [FR-032](#fr-032-github-issue-任意起票) | GitHub Issue 任意起票 | Should | specified | M1 拡張 |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
 | FR-012 | 列のカスタマイズ | Could | deferred | M2 |
@@ -602,6 +604,68 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - `WM_HOTKEY` は **専用スレッド** のメッセージ専用ウィンドウで受信する。WndProc はネイティブ `DefWindowProcW` のみとし、Python ctypes コールバックは使わない。Tk スレッドは `after` でキューを `poll()` する
 - OK 確定時にホットキーを再登録。`RegisterHotKey` 失敗時はエラーを表示し、**ダイアログ全項目をロールバック**して `settings.json` は更新しない（FR-029 の失敗時と同様）
 - アプリ終了時にホットキーを解除する
+
+---
+
+### FR-031: ローカルエラーログ
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Must |
+| ステータス | specified |
+| 関連 US | US-021 |
+| 関連 AC | AC-031-01, AC-031-02, AC-031-03 |
+| 実装 | （未実装）`system/error_log.py`、起動時に `app.py` から初期化 |
+| データ契約 | [DC-004](./07-data-contract.md#dc-004-エラーログ) |
+
+**説明**  
+アプリ起動中に発生したエラー（未捕捉例外・Tk コールバック例外・`logging` の ERROR 以上）を、ユーザー PC 上のログディレクトリへ書き出す。診断・再現に使う。既定で有効（オプトアウトしない）。
+
+**制約**
+- 保存先: `%USERPROFILE%\.petatto-kanban\logs\`（ディレクトリが無ければ作成する）
+- ファイル名: `petatto-kanban-YYYY-MM-DD.log`（ローカル日付、1 日 1 ファイル）
+- エンコーディング UTF-8。追記モード。保持は直近 14 日分。それより古いファイルは起動時に削除してよい
+- 標準ライブラリの `logging` のみ（NFR-005）。`print` デバッグは使わない
+- 捕捉対象: `sys.excepthook`、tkinter `report_callback_exception`、専用スレッド（ホットキーポンプ等）の未捕捉例外、アプリ内 `logger.error` / `logger.exception`
+- 1 レコードに含める: 時刻（ISO 8601）、ログレベル、ロガー名、メッセージ、スタックトレース（ある場合）、アプリバージョン、Python バージョン、OS 概要
+- **カードタイトル・ボード内容・GitHub トークン・環境変数の秘密は書かない**。ユーザーホームパスは `~` に置換してよい
+- ログ書き込み失敗（ディスク満杯・権限など）でも **アプリは継続**する。ユーザー向けダイアログは出さない
+- ログ I/O は UI を止めない。書き込み失敗はプロセス内で繰り返して騒がない
+- 本要件はオフライン完結。ネットワークは使わない
+
+---
+
+### FR-032: GitHub Issue 任意起票
+
+| 属性 | 値 |
+|------|-----|
+| 優先度 | Should |
+| ステータス | specified |
+| 関連 US | US-021 |
+| 関連 AC | AC-032-01, AC-032-02, AC-032-03, AC-032-04, AC-032-05 |
+| 実装 | （未実装）`system/github_issue.py`（または同等）。`system/error_log.py` からベストエフォートで呼び出す |
+| UI 契約 | [UC-006 §システムタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ) |
+| データ契約 | [DC-003 `report_errors_to_github`](./07-data-contract.md#dc-003-表示設定スキーマ), [DC-004](./07-data-contract.md#dc-004-エラーログ) |
+
+**説明**  
+ローカルにエラーを記録したあと、**利用者が明示的に有効にした場合だけ**、同じ診断情報で公開リポジトリへ GitHub Issue を自動作成する。コア機能ではない。失敗してもアプリは止まらない。
+
+**制約**
+- **既定 OFF**（`settings.json` の `report_errors_to_github` = `false`）。OFF のときは HTTP を一切行わない（NFR-008）
+- ON にする操作は設定ダイアログ **「システム」タブ** のチェックボックスのみ
+- 起票先（固定）: `https://github.com/suzuki-hidehito66/Petatto-Kanban` の Issues。GitHub REST API（`POST /repos/{owner}/{repo}/issues`）
+- 認証: 利用者自身の Personal Access Token。保存場所は **`%USERPROFILE%\.petatto-kanban\github_token`**（1 行のトークン文字列）または環境変数 `PETATTO_GITHUB_TOKEN`（ファイルより環境変数を優先）。**`settings.json`・git・ログファイルには書かない**
+- トークン権限の目安: Fine-grained なら当該リポジトリの Issues Read and write。Classic なら `public_repo`
+- ランタイムは **標準ライブラリ `urllib.request` のみ**（追加パッケージ禁止、NFR-005）
+- Tk スレッドでは HTTP しない。短タイムアウト（目安 5 秒）のバックグラウンド処理。アプリ終了を待たない
+- ネットワーク切断・タイムアウト・401/403/422・API 変更時は **ローカルログに起票失敗を残し、UI は通常どおり継続**。再試行は同一プロセス内で同じ指紋に対して行わない
+- 起票対象は **ERROR 以上の未捕捉例外**（ユーザー操作の検証エラーや設定ロールバックの messagebox は対象外）
+- Issue タイトル: `[auto] {例外型}: {メッセージ先頭 80 字}`
+- Issue 本文: アプリバージョン、OS、Python、スタックトレース（ホームパスを `~` に置換）。カード内容・トークン・PAT は載せない。末尾に指紋コメント `<!-- fingerprint:{sha256} -->`
+- 指紋: 例外型 + メッセージ正規化 + スタックのアプリフレーム（`petatto_kanban` 配下）から SHA-256。同一指紋は `%USERPROFILE%\.petatto-kanban\logs\issue-fingerprints.json` に記録し、**再起票しない**（オープン Issue へのコメント追加もしない）
+- レート: 1 インストールあたり **暦日 3 件まで**。超過分はローカルログのみ
+- チェック ON かつトークン無しで設定を OK したときは、警告を 1 回出し設定値は保存する（次回からトークンが置かれれば起票する）
+- 本機能は M3 のクラウド同期・認証（FR-017）とは別。常時接続やアカウントは不要
 
 ---
 

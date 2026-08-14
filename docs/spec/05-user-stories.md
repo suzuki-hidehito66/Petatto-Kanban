@@ -28,6 +28,7 @@
 | [US-017](#us-017-uiフォントを設定する) | Must | specified | M1 拡張 |
 | [US-019](#us-019-windowsログオン時に自動起動する) | Should | implemented | M1 拡張 |
 | [US-020](#us-020-ショートカットでカードを追加する) | Should | implemented | M1 拡張 |
+| [US-021](#us-021-エラーをログに残し任意でgithubへ起票する) | Must / Should | specified | M1 拡張 |
 | [US-005](#us-005-カードを別列へ移動する) | Should | deferred | M2 |
 | [US-008](#us-008-ウィンドウモードで使う) | Should | deferred | M2 |
 | [US-009](#us-009-デスクトップモードで使う) | Should | implemented | M1 拡張 |
@@ -325,4 +326,20 @@
 | ステータス | implemented |
 
 **操作:** 既定 **Ctrl+Shift+N**。割り当ては設定 **「操作」タブ** で変更。作成後の配置・インライン編集は US-002 / UC-004 と同じ。
+
+---
+
+## US-021: エラーをログに残し任意で GitHub へ起票する
+
+**As a** 個人開発者  
+**I want to** クラッシュや予期しない例外が `%USERPROFILE%\.petatto-kanban\logs` に残り、希望すれば GitHub Issue にも自動で上がる  
+**So that** 再現情報を手元に残しつつ、開発者へ報告する手間を減らせる
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-031, FR-032 |
+| 関連 AC | AC-031-01, AC-031-02, AC-031-03, AC-032-01, AC-032-02, AC-032-03, AC-032-04, AC-032-05 |
+| ステータス | specified |
+
+**操作:** エラーログは常時出力。GitHub 起票は設定 **「システム」タブ** のチェックを ON にし、ローカルにトークンファイルを置く。既定は起票しない。
 

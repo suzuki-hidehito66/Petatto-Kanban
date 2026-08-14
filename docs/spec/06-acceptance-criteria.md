@@ -311,14 +311,15 @@ Then 操作が 1 秒以内に完了する
 | 属性 | 値 |
 |------|-----|
 | 関連 NFR | NFR-008 |
-| ステータス | verified |
+| ステータス | specified |
 | 検証 | 自動（依存関係）+ コードレビュー |
 
 ```gherkin
 Given M1 MVP のソースコードと pyproject.toml
 When ランタイム依存とネットワーク呼び出しを確認する
 Then [project] dependencies が空である
-And 認証・HTTP クライアント等のネットワークコードが存在しない
+And 認証機能のコードが存在しない
+And HTTP 呼び出しは FR-032 の起票経路に限定され、report_errors_to_github が false のときは実行されない
 ```
 
 ### AC-NFR-008-02
@@ -334,6 +335,7 @@ Given ネットワークが切断された Windows PC
 When ユーザーが Petatto-Kanban.exe を起動する
 Then カードの作成・編集・移動・保存がすべて正常に動作する
 And 外部サービスへの接続を要求されない
+And report_errors_to_github が true でも、切断時にアプリは終了せず起票だけ省略される
 ```
 
 ### AC-NFR-011-01
@@ -1111,6 +1113,164 @@ Then 新規カードは作成されない
 ```
 
 **テスト**: 手動
+
+---
+
+## FR-031: ローカルエラーログ
+
+### AC-031-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-031 |
+| 関連 US | US-021 |
+| ステータス | specified |
+| 検証 | 自動（実装時）+ 手動 |
+
+```gherkin
+Given アプリを起動する
+When 起動処理が完了する
+Then %USERPROFILE%\.petatto-kanban\logs ディレクトリが存在する
+```
+
+**テスト**: （未実装）`test_error_log.py`
+
+### AC-031-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-031 |
+| 関連 US | US-021 |
+| ステータス | specified |
+| 検証 | 自動（実装時）+ 手動 |
+
+```gherkin
+Given アプリが起動している
+When 未捕捉例外または Tk コールバック例外が発生する
+Then logs\petatto-kanban-YYYY-MM-DD.log に時刻・例外型・スタックトレースが追記される
+And カードタイトルと GitHub トークンはファイルに含まれない
+And アプリは例外で強制終了しない（可能な範囲で継続する）
+```
+
+**テスト**: （未実装）`test_error_log.py` + 手動
+
+### AC-031-03
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-031 |
+| ステータス | specified |
+| 検証 | 自動（実装時） |
+
+```gherkin
+Given ログディレクトリが書き込み不能である
+When エラーを記録しようとする
+Then アプリはクラッシュせずコア機能（カード表示・保存）を継続する
+And ユーザー向けにログ失敗のダイアログは出さない
+```
+
+**テスト**: （未実装）`test_error_log.py`
+
+---
+
+## FR-032: GitHub Issue 任意起票
+
+### AC-032-01
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-032 |
+| 関連 US | US-021 |
+| ステータス | specified |
+| 検証 | 自動（モック）+ 手動 |
+
+```gherkin
+Given report_errors_to_github が true である
+And github_token または PETATTO_GITHUB_TOKEN が有効である
+And ネットワークが利用できる
+When 未捕捉例外が発生する
+Then ローカルログに例外が記録される
+And GitHub の Petatto-Kanban リポジトリに [auto] で始まる Issue が 1 件作成される
+And Issue 本文にアプリバージョンとスタックトレースが含まれる
+And Issue 本文にカード内容とトークンは含まれない
+```
+
+**テスト**: （未実装）`test_github_issue.py`（HTTP はモック）+ 手動
+
+### AC-032-02
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-032 |
+| 関連 NFR | NFR-008 |
+| ステータス | specified |
+| 検証 | 自動（実装時） |
+
+```gherkin
+Given report_errors_to_github が false である、またはトークンが無い
+When 未捕捉例外が発生する
+Then ローカルログには例外が記録される
+And HTTP リクエストは送られない
+```
+
+**テスト**: （未実装）`test_github_issue.py`
+
+### AC-032-03
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-032 |
+| 関連 NFR | NFR-008 |
+| ステータス | specified |
+| 検証 | 自動（モック）+ 手動 |
+
+```gherkin
+Given report_errors_to_github が true でトークンがある
+And GitHub API がタイムアウトまたはネットワーク切断である
+When 未捕捉例外が発生する
+Then ローカルログに例外と起票失敗が記録される
+And アプリのカード操作・保存は継続できる
+And ユーザー向けに起票失敗ダイアログは出さない
+```
+
+**テスト**: （未実装）`test_github_issue.py` + 手動
+
+### AC-032-04
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-032 |
+| ステータス | specified |
+| 検証 | 自動（実装時） |
+
+```gherkin
+Given 同一指紋の例外ですでに Issue 起票済みである
+When 同じ例外が再度発生する
+Then 新しい GitHub Issue は作成されない
+And ローカルログには例外が追記される
+```
+
+**テスト**: （未実装）`test_github_issue.py`
+
+### AC-032-05
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-032 |
+| 関連 UC | UC-006 |
+| ステータス | specified |
+| 検証 | 自動 + 手動 |
+
+```gherkin
+Given 設定ダイアログの「システム」タブが表示されている
+And github_token ファイルも PETATTO_GITHUB_TOKEN も無い
+When ユーザーが「エラー時に GitHub Issue を自動起票する」を ON にして OK する
+Then settings.json の report_errors_to_github が true になる
+And トークンが無い旨の警告が 1 回表示される
+And コア設定の保存は成功する
+```
+
+**テスト**: （未実装）`test_settings_dialog.py` / `test_settings_actions.py` + 手動
 
 ---
 

@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |------|------|
 | 文書種別 | Specification-Driven Development（SDD）索引 |
-| 文書バージョン | 2.64.0 |
+| 文書バージョン | 2.65.0 |
 | 最終更新日 | 2026-08-14 |
 | ステータス | Active |
 
@@ -97,10 +97,10 @@ flowchart LR
 ### 初期スコープの要点
 
 - **単一ユーザー** — 1 人・1 PC。アカウント・共同編集なし
-- **独立アプリ** — サーバー・ブラウザ・常時ネットワーク不要
+- **独立アプリ** — サーバー・ブラウザ不要。コア機能は常時ネットワーク不要。エラーログはローカル（FR-031）。GitHub Issue 起票は任意（FR-032）
 - **`.exe` 配布** — PyInstaller 単一実行ファイル
 - **M1 UI** — オーバーレイモード（透過・最前面・自由配置カード・ドラッグ移動）
-- **ローカルデータ** — `%USERPROFILE%\.petatto-kanban\board.json`, `settings.json`
+- **ローカルデータ** — `%USERPROFILE%\.petatto-kanban\board.json`, `settings.json`, `logs\`（エラーログ、FR-031）
 
 詳細: [01-vision-and-scope.md](./spec/01-vision-and-scope.md#2-初期スコープm1-mvpの定義)
 
@@ -182,3 +182,4 @@ flowchart LR
 | 2.62.0 | 2026-08-14 | FR-030: WM_HOTKEY をメッセージ専用ウィンドウで受信（64-bit WndProc クラッシュ修正） |
 | 2.63.0 | 2026-08-14 | FR-030: Python WndProc を廃止。専用スレッドで `GetMessage`（Python 3.14 GIL クラッシュ修正） |
 | 2.64.0 | 2026-08-14 | FR-030 仕様同期。`hotkey_pump` 抽出（セッションと Win32 ポンプを分離） |
+| 2.65.0 | 2026-08-14 | FR-031 エラーログ（`.petatto-kanban/logs`）。FR-032 GitHub Issue 任意起票（オプトイン） |
