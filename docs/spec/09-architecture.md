@@ -112,7 +112,7 @@ petatto-kanban/
 │   │   ├── shortcut.py           # ショートカットコード正規化（FR-030）
 │   │   ├── hotkey.py             # ホットキーセッション（poll / 失敗時ロールバック）
 │   │   ├── hotkey_pump.py        # Win32 専用スレッドで WM_HOTKEY を受信
-│   │   └── error_log.py          # ローカルエラーログ（FR-031、未実装）
+│   │   └── error_log.py          # ローカルエラーログ（FR-031）
 │   ├── models.py                 # ドメインモデル
 │   └── storage.py                # 永続化（インフラ）
 ├── tests/
@@ -155,7 +155,7 @@ petatto-kanban/
 | `system/shortcut.py` | ショートカットコードの解析・正規化（FR-030） | 標準ライブラリのみ |
 | `system/hotkey.py` | グローバルホットキーのセッション（FR-030）。割り当て・`poll()`・失敗時ロールバック | `shortcut`, `hotkey_pump` |
 | `system/hotkey_pump.py` | Win32 メッセージポンプ。専用スレッドのメッセージ専用ウィンドウで `GetMessage`（Python WndProc なし） | 標準ライブラリ（`ctypes` / `threading`） |
-| `system/error_log.py` | エラーログ初期化・日次ファイル・例外フック（FR-031）。**未実装** | 標準ライブラリ（`logging`） |
+| `system/error_log.py` | エラーログ初期化・日次ファイル・例外フック（FR-031） | 標準ライブラリ（`logging`） |
 | `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |

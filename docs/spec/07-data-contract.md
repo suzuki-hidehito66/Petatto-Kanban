@@ -237,7 +237,7 @@
 | 関連 FR | FR-031 |
 | ディレクトリ | `%USERPROFILE%\.petatto-kanban\logs\` |
 | エンコーディング | UTF-8 |
-| 実装 | （未実装）`system/error_log.py` |
+| 実装 | `system/error_log.py` |
 
 ### ログファイル
 

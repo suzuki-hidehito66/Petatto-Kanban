@@ -28,7 +28,7 @@
 | [US-017](#us-017-uiフォントを設定する) | Must | specified | M1 拡張 |
 | [US-019](#us-019-windowsログオン時に自動起動する) | Should | implemented | M1 拡張 |
 | [US-020](#us-020-ショートカットでカードを追加する) | Should | implemented | M1 拡張 |
-| [US-021](#us-021-エラーをログに残す) | Must | specified | M1 拡張 |
+| [US-021](#us-021-エラーをログに残す) | Must | implemented | M1 拡張 |
 | [US-005](#us-005-カードを別列へ移動する) | Should | deferred | M2 |
 | [US-008](#us-008-ウィンドウモードで使う) | Should | deferred | M2 |
 | [US-009](#us-009-デスクトップモードで使う) | Should | implemented | M1 拡張 |
@@ -339,7 +339,7 @@
 |------|-----|
 | 関連 FR | FR-031 |
 | 関連 AC | AC-031-01, AC-031-02, AC-031-03 |
-| ステータス | specified |
+| ステータス | implemented |
 
 **操作:** エラーログは常時出力。GitHub Issue の自動起票は行わない（FR-032 cancelled）。
 

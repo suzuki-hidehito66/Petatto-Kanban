@@ -1143,8 +1143,8 @@ Then 新規カードは作成されない
 |------|-----|
 | 関連 FR | FR-031 |
 | 関連 US | US-021 |
-| ステータス | specified |
-| 検証 | 自動（実装時）+ 手動 |
+| ステータス | implemented |
+| 検証 | 自動 + 手動 |
 
 ```gherkin
 Given アプリを起動する
@@ -1152,7 +1152,7 @@ When 起動処理が完了する
 Then %USERPROFILE%\.petatto-kanban\logs ディレクトリが存在する
 ```
 
-**テスト**: （未実装）`test_error_log.py`
+**テスト**: `test_error_log.py`
 
 ### AC-031-02
 
@@ -1160,8 +1160,8 @@ Then %USERPROFILE%\.petatto-kanban\logs ディレクトリが存在する
 |------|-----|
 | 関連 FR | FR-031 |
 | 関連 US | US-021 |
-| ステータス | specified |
-| 検証 | 自動（実装時）+ 手動 |
+| ステータス | implemented |
+| 検証 | 自動 + 手動 |
 
 ```gherkin
 Given アプリが起動している
@@ -1171,15 +1171,15 @@ And カードタイトルと GitHub トークンはファイルに含まれな�
 And アプリは例外で強制終了しない（可能な範囲で継続する）
 ```
 
-**テスト**: （未実装）`test_error_log.py` + 手動
+**テスト**: `test_error_log.py` + 手動
 
 ### AC-031-03
 
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-031 |
-| ステータス | specified |
-| 検証 | 自動（実装時） |
+| ステータス | implemented |
+| 検証 | 自動 |
 
 ```gherkin
 Given ログディレクトリが書き込み不能である
@@ -1188,7 +1188,7 @@ Then アプリはクラッシュせずコア機能（カード表示・保存）
 And ユーザー向けにログ失敗のダイアログは出さない
 ```
 
-**テスト**: （未実装）`test_error_log.py`
+**テスト**: `test_error_log.py`
 
 ---
 

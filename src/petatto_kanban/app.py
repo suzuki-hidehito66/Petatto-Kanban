@@ -47,6 +47,7 @@ from petatto_kanban.new_card_placement import (
 from petatto_kanban.progress import PROGRESS_STEP, clamp_progress
 from petatto_kanban.storage import load_board, save_board
 from petatto_kanban.system.auto_start import sync_auto_start_from_settings
+from petatto_kanban.system.error_log import install_error_logging, log_tk_callback_exception
 from petatto_kanban.system.hotkey import (
     HOTKEY_POLL_MS,
     NewCardHotkey,
@@ -756,7 +757,9 @@ class KanbanApp:
 
 def run_app() -> None:
     """アプリケーションを起動する."""
+    install_error_logging()
     root = tk.Tk()
+    root.report_callback_exception = log_tk_callback_exception
     style = ttk.Style(root)
     if "vista" in style.theme_names():
         style.theme_use("vista")

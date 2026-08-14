@@ -38,7 +38,7 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 
 | 区分 | 内容 |
 |------|------|
-| 含む | FR-001〜005, FR-007, FR-010, FR-014, FR-020, FR-021, FR-023, FR-024, FR-025, FR-026, FR-027, FR-028, FR-029（Should）, FR-030（Should）, FR-031（Must・仕様のみ）, NFR-001〜008, NFR-011 |
+| 含む | FR-001〜005, FR-007, FR-010, FR-014, FR-020, FR-021, FR-023, FR-024, FR-025, FR-026, FR-027, FR-028, FR-029（Should）, FR-030（Should）, FR-031（Must）, NFR-001〜008, NFR-011 |
 | 含まない | ウィンドウモード（FR-018）、デスクトップモード（FR-019）、モード切替（FR-022）、列間移動（FR-006）、手動保存/再読み込み（FR-008/009） |
 
 ### 成果物
@@ -145,3 +145,4 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 | 2.7.0 | 2026-08-14 | M1 拡張に FR-031（ローカルエラーログ）/ FR-032（GitHub Issue 任意起票） |
 | 2.7.1 | 2026-08-14 | FR-032: 起票可否は設定「システム」タブで ON/OFF |
 | 2.7.2 | 2026-08-14 | FR-032 GitHub Issue 自動起票を cancelled。診断は FR-031 のみ |
+| 2.7.3 | 2026-08-14 | FR-031 実装（`system/error_log.py`） |

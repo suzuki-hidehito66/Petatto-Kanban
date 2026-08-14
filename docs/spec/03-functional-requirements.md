@@ -47,7 +47,7 @@
 | [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | implemented | M1 拡張 |
 | [FR-029](#fr-029-windowsログオン時自動起動) | Windows ログオン時自動起動 | Should | implemented | M1 拡張 |
 | [FR-030](#fr-030-キーボードショートカットで新規カード作成) | キーボードショートカットで新規カード作成 | Should | implemented | M1 拡張 |
-| [FR-031](#fr-031-ローカルエラーログ) | ローカルエラーログ | Must | specified | M1 拡張 |
+| [FR-031](#fr-031-ローカルエラーログ) | ローカルエラーログ | Must | implemented | M1 拡張 |
 | [FR-032](#fr-032-github-issue-任意起票) | GitHub Issue 任意起票 | Should | cancelled | — |
 | FR-006 | カード列間移動 | Should | deferred | M2 |
 | FR-011 | 複数ボード | Could | deferred | M2 |
@@ -614,10 +614,10 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 属性 | 値 |
 |------|-----|
 | 優先度 | Must |
-| ステータス | specified |
+| ステータス | implemented |
 | 関連 US | US-021 |
 | 関連 AC | AC-031-01, AC-031-02, AC-031-03 |
-| 実装 | （未実装）`system/error_log.py`、起動時に `app.py` から初期化 |
+| 実装 | `system/error_log.py`、起動時に `app.py` から初期化 |
 | データ契約 | [DC-004](./07-data-contract.md#dc-004-エラーログ) |
 
 **説明**  

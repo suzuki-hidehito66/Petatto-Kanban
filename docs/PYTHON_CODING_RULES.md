@@ -4,7 +4,7 @@
 |------|------|
 | 対象 | 本リポジトリの Python ソースコード（`src/`, `tests/`） |
 | Python バージョン | 3.11 以上 |
-| 文書バージョン | 1.6.0 |
+| 文書バージョン | 1.6.1 |
 | 最終更新日 | 2026-08-14 |
 
 ---
@@ -27,7 +27,7 @@ src/petatto_kanban/
 ├── __main__.py       # CLI / exe エントリポイント
 ├── app.py            # GUI アプリケーション
 ├── display/          # 表示モード・設定ダイアログ・UI メトリクス
-├── system/           # OS 連携（自動起動・起動コマンド・ショートカット・ホットキー）
+├── system/           # OS 連携（自動起動・起動コマンド・ショートカット・ホットキー・エラーログ）
 ├── models.py         # ドメインモデル（Board, Column, Card）
 └── storage.py        # データ永続化
 
@@ -42,7 +42,7 @@ scripts/              # ビルドスクリプト（Windows .exe）
 | ドメインモデル | `models.py` | `Board`, `Card` |
 | 永続化・I/O | `storage.py` | JSON 読み書き |
 | UI（tkinter） | `app.py`, `display/` | ウィンドウ、設定ダイアログ、カード描画 |
-| OS 連携 | `system/` | 自動起動（winreg）、起動コマンド解決、ショートカット正規化、ホットキーセッション、Win32 ポンプ |
+| OS 連携 | `system/` | 自動起動（winreg）、起動コマンド解決、ショートカット正規化、ホットキーセッション、Win32 ポンプ、エラーログ |
 | テスト | `tests/test_*.py` | モデル・ストレージ・設定・自動起動・ショートカット・ホットキーの単体テスト |
 
 ---
@@ -218,3 +218,4 @@ def test_save_and_load_board(tmp_path: Path) -> None:
 | 1.4.0 | 2026-08-14 | `display/card_frame.py` をカード基準寸法から分離 |
 | 1.5.0 | 2026-08-14 | エラーログパス（FR-031）と秘密情報をログに出さないことを追記 |
 | 1.6.0 | 2026-08-14 | GitHub トークン前提の記述を削除（FR-032 cancelled） |
+| 1.6.1 | 2026-08-14 | `system/error_log.py` を配置ルールに追加 |

@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |------|------|
 | 文書種別 | Specification-Driven Development（SDD）索引 |
-| 文書バージョン | 2.69.0 |
+| 文書バージョン | 2.70.0 |
 | 最終更新日 | 2026-08-14 |
 | ステータス | Active |
 
@@ -187,3 +187,4 @@ flowchart LR
 | 2.67.0 | 2026-08-14 | FR-031 エラーログ（`.petatto-kanban/logs`）。FR-032 GitHub Issue 任意起票（オプトイン） |
 | 2.68.0 | 2026-08-14 | FR-032: GitHub Issue 起票の可否は設定「システム」タブで ON/OFF |
 | 2.69.0 | 2026-08-14 | FR-032 GitHub Issue 自動起票を cancelled。診断はローカルログ（FR-031）のみ |
+| 2.70.0 | 2026-08-14 | FR-031 実装。`error_log.py`・例外フック・日次ログ |
