@@ -4,7 +4,7 @@
 |------|------|
 | 対象 | 本リポジトリの Python ソースコード（`src/`, `tests/`） |
 | Python バージョン | 3.11 以上 |
-| 文書バージョン | 1.1.0 |
+| 文書バージョン | 1.3.0 |
 | 最終更新日 | 2026-08-14 |
 
 ---
@@ -27,7 +27,7 @@ src/petatto_kanban/
 ├── __main__.py       # CLI / exe エントリポイント
 ├── app.py            # GUI アプリケーション
 ├── display/          # 表示モード・設定ダイアログ・UI メトリクス
-├── system/           # OS 連携（自動起動・起動コマンド解決）
+├── system/           # OS 連携（自動起動・起動コマンド・ショートカット・ホットキー）
 ├── models.py         # ドメインモデル（Board, Column, Card）
 └── storage.py        # データ永続化
 
@@ -42,8 +42,8 @@ scripts/              # ビルドスクリプト（Windows .exe）
 | ドメインモデル | `models.py` | `Board`, `Card` |
 | 永続化・I/O | `storage.py` | JSON 読み書き |
 | UI（tkinter） | `app.py`, `display/` | ウィンドウ、設定ダイアログ、カード描画 |
-| OS 連携 | `system/` | 自動起動（winreg）、起動コマンド解決 |
-| テスト | `tests/test_*.py` | モデル・ストレージ・設定・自動起動の単体テスト |
+| OS 連携 | `system/` | 自動起動（winreg）、起動コマンド解決、ショートカット正規化、ホットキーセッション、Win32 ポンプ |
+| テスト | `tests/test_*.py` | モデル・ストレージ・設定・自動起動・ショートカット・ホットキーの単体テスト |
 
 ---
 
@@ -212,3 +212,5 @@ def test_save_and_load_board(tmp_path: Path) -> None:
 |------------|------|----------|
 | 1.0.0 | 2026-08-12 | 初版作成（Python デスクトップアプリ + exe ビルド対応） |
 | 1.1.0 | 2026-08-14 | `display/`・`system/` 配置を現行実装に同期 |
+| 1.2.0 | 2026-08-14 | `system/shortcut.py` をホットキー登録から分離 |
+| 1.3.0 | 2026-08-14 | `system/hotkey_pump.py` をホットキーセッションから分離 |

@@ -23,6 +23,7 @@
 | UI フォント | UI font | カード・メニュー等のフォントファミリー。設定で **Segoe UI / メイリオ / 游ゴシック / MS ゴシック** を選択（FR-027） |
 | UI カラーテーマ | UI color theme | カード・メニュー等の背景色・文字色プリセット。設定「テーマ」タブで **10 種** から選択（FR-028） |
 | 自動起動 | Launch at login | Windows ログオン時にアプリを起動する設定。`settings.json` の `launch_at_login` と HKCU Run キーで管理（FR-029） |
+| ショートカットキー | Keyboard shortcut | キーボード操作で機能を実行する割り当て。既定の新規カード作成は **Ctrl+Shift+N**（FR-030） |
 
 ## SDD 用語
 
@@ -43,3 +44,4 @@
 | 永続化パス | `%USERPROFILE%\.petatto-kanban\board.json` |
 | 対応 OS | **Windows 11 以降**（macOS / Linux は対象外） |
 | Run キー | ログオン時起動用の `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`。値名 `Petatto-Kanban` |
+| グローバルホットキー | 他アプリが前面でも発火する OS レベルのキー割り当て（Win32 `RegisterHotKey`） |

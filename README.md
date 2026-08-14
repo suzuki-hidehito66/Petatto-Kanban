@@ -117,6 +117,7 @@ scripts\build_exe.bat
 | `main` | リリース用。マージ時に CI が exe ビルド + GitHub Release |
 | `test` | 統合・検証用 |
 | `dev_*-017d` | 機能開発用（PR は通常 `test` 向け） |
+| `dev_release-*` | `test` → `main` が squash 由来でコンフリクトし、`test` を rebase できないとき。`main` 直下に `test` と同一ツリーを載せる |
 
 リリース前は `pyproject.toml` / `__init__.py` / `docs/spec/11-release-plan.md` の **3 箇所でバージョンを同期** してください（`tests/test_release_version.py` で検証）。
 
@@ -127,7 +128,7 @@ scripts\build_exe.bat
 | イベント | 動作 |
 |----------|------|
 | `main` 向け PR | Windows でテスト・Lint・exe ビルド |
-| `main` 向け PR（元ブランチ） | **`test` からのみ** マージ可（`enforce-test-to-main.yml`） |
+| `main` 向け PR（元ブランチ） | **`test` または `dev_release-*`**（`enforce-test-to-main.yml`） |
 | `main` へマージ | GitHub Release 作成（`v{バージョン}` タグ、`Petatto-Kanban.exe` 添付） |
 
 ### GitHub Actions 権限（メンテナ向け）
