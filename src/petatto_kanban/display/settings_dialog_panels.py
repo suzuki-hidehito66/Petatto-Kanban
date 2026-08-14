@@ -164,7 +164,7 @@ def build_system_tab(
     auto_start_supported: bool,
     on_delete_all_cards: Callable[[], None] | None,
 ) -> SystemTabState:
-    """システムタブ（確認オプション・一括削除）を構築する."""
+    """システムタブ（確認オプション・自動起動・一括削除）を構築する."""
     import tkinter as tk
     from tkinter import ttk
 

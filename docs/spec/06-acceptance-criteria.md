@@ -969,6 +969,64 @@ Then launch_at_login は false として扱われる
 
 **テスト**: `test_default_display_settings_is_overlay_mode`, `test_display_settings.py`
 
+### AC-029-04
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given アプリが Windows 以外の OS で動作している
+When 設定ダイアログ「システム」タブを開く
+Then 「Windows ログオン時に自動起動する」チェックボックスは無効である
+And apply_auto_start_setting はレジストリを変更しない
+```
+
+**テスト**: `test_is_auto_start_supported_on_linux`, `test_settings_dialog.py` + 手動（Windows では有効）
+
+### AC-029-05
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given settings.json の launch_at_login が true
+When アプリを起動する
+Then Run キーの Petatto-Kanban コマンド行が現在の実行パスで再書き込みされる
+```
+
+```gherkin
+Given settings.json の launch_at_login が false
+When アプリを起動する
+Then Run キーは変更されない
+```
+
+**テスト**: `test_sync_auto_start_from_settings_registers_when_enabled`, `test_sync_auto_start_from_settings_skips_when_disabled`
+
+### AC-029-06
+
+| 属性 | 値 |
+|------|-----|
+| 関連 FR | FR-029 |
+| ステータス | implemented |
+| 検証 | 自動 |
+
+```gherkin
+Given ユーザーが設定ダイアログで表示モードと launch_at_login を同時に変更した
+When レジストリへの反映が失敗する
+Then エラーメッセージが表示される
+And メモリ上の DisplaySettings はダイアログ確定前の値に戻る
+And settings.json は更新されない
+And 「設定を保存しました」は表示されない
+```
+
+**テスト**: `test_persist_dialog_result_rolls_back_all_fields_on_auto_start_failure`
+
 ---
 
 ## M2 以降（プレースホルダー）

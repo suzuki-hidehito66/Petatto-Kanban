@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 from typing import Protocol
+
+from petatto_kanban.system.launch_command import resolve_launch_command
 
 REGISTRY_RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 REGISTRY_VALUE_NAME = "Petatto-Kanban"
@@ -15,6 +16,10 @@ class WinRegBackend(Protocol):
 
     def OpenKey(
         self, key: object, sub_key: str, *, reserved: int = 0, access: int = 0
+    ) -> object: ...
+
+    def CreateKeyEx(
+        self, key: object, sub_key: str, reserved: int = 0, access: int = 0
     ) -> object: ...
 
     def QueryValueEx(self, key: object, name: str) -> tuple[object, int]: ...
@@ -45,26 +50,13 @@ def is_auto_start_supported() -> bool:
     return sys.platform == "win32"
 
 
-def resolve_launch_command() -> str | None:
-    """ログオン時に実行するコマンド行を返す。解決不能なら None。"""
-    if getattr(sys, "frozen", False):
-        return f'"{Path(sys.executable).resolve()}"'
-
-    executable = Path(sys.executable).resolve()
-    if executable.name.lower() == "python.exe":
-        pythonw = executable.with_name("pythonw.exe")
-        if pythonw.is_file():
-            executable = pythonw
-    return f'"{executable}" -m petatto_kanban'
-
-
 def is_auto_start_registered(*, winreg_module: WinRegBackend | None = None) -> bool:
     """Run キーに本アプリのエントリがあるか。"""
     if not is_auto_start_supported():
         return False
     reg = _winreg(winreg_module)
     try:
-        with _open_run_key(reg, access=reg.KEY_READ) as key:
+        with _open_run_key(reg, access=reg.KEY_READ, create=False) as key:
             reg.QueryValueEx(key, REGISTRY_VALUE_NAME)
     except OSError:
         return False
@@ -83,18 +75,9 @@ def apply_auto_start_setting(
 
     reg = _winreg(winreg_module)
     if enabled:
-        launch_command = command or resolve_launch_command()
-        if launch_command is None:
-            msg = "自動起動用の実行パスを解決できません。"
-            raise RuntimeError(msg)
-        with _open_run_key(reg, access=reg.KEY_SET_VALUE) as key:
-            reg.SetValueEx(key, REGISTRY_VALUE_NAME, 0, reg.REG_SZ, launch_command)
+        _register_run_value(reg, command=command)
         return
-
-    if not is_auto_start_registered(winreg_module=reg):
-        return
-    with _open_run_key(reg, access=reg.KEY_SET_VALUE) as key:
-        reg.DeleteValue(key, REGISTRY_VALUE_NAME)
+    _unregister_run_value(reg)
 
 
 def sync_auto_start_from_settings(
@@ -103,13 +86,31 @@ def sync_auto_start_from_settings(
     command: str | None = None,
     winreg_module: WinRegBackend | None = None,
 ) -> None:
-    """起動時・設定保存時に settings とレジストリを一致させる。"""
-    if not is_auto_start_supported():
+    """起動時・設定保存時に settings とレジストリを一致させる.
+
+    起動時は ``launch_at_login`` が True のときだけ呼び、コマンド行を再書き込みする。
+    False のときはレジストリを変更しない（OFF は設定ダイアログ確定時のみ削除）。
+    """
+    if not launch_at_login:
         return
-    if launch_at_login:
-        apply_auto_start_setting(True, command=command, winreg_module=winreg_module)
+    apply_auto_start_setting(True, command=command, winreg_module=winreg_module)
+
+
+def _register_run_value(reg: WinRegBackend, *, command: str | None) -> None:
+    launch_command = command or resolve_launch_command()
+    if not launch_command.strip():
+        msg = "自動起動用の実行パスを解決できません。"
+        raise RuntimeError(msg)
+    with _open_run_key(reg, access=reg.KEY_SET_VALUE, create=True) as key:
+        reg.SetValueEx(key, REGISTRY_VALUE_NAME, 0, reg.REG_SZ, launch_command)
+
+
+def _unregister_run_value(reg: WinRegBackend) -> None:
+    try:
+        with _open_run_key(reg, access=reg.KEY_SET_VALUE, create=False) as key:
+            reg.DeleteValue(key, REGISTRY_VALUE_NAME)
+    except OSError:
         return
-    apply_auto_start_setting(False, winreg_module=winreg_module)
 
 
 def _winreg(winreg_module: WinRegBackend | None) -> WinRegBackend:
@@ -132,6 +133,9 @@ class _RunKey:
         self._reg.CloseKey(self._key)
 
 
-def _open_run_key(reg: WinRegBackend, *, access: int) -> _RunKey:
-    key = reg.OpenKey(reg.HKEY_CURRENT_USER, REGISTRY_RUN_KEY, access=access)
+def _open_run_key(reg: WinRegBackend, *, access: int, create: bool) -> _RunKey:
+    if create:
+        key = reg.CreateKeyEx(reg.HKEY_CURRENT_USER, REGISTRY_RUN_KEY, 0, access)
+    else:
+        key = reg.OpenKey(reg.HKEY_CURRENT_USER, REGISTRY_RUN_KEY, access=access)
     return _RunKey(reg, key)

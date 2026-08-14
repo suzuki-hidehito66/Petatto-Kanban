@@ -11,8 +11,10 @@ import pytest
 from petatto_kanban.display.settings import DisplayMode, DisplaySettings
 from petatto_kanban.display.settings_actions import (
     apply_dialog_result,
+    apply_launch_at_login,
     confirm_exit,
     delete_all_cards_with_confirm,
+    persist_dialog_result,
 )
 from petatto_kanban.display.settings_dialog import SettingsDialogResult
 from petatto_kanban.display.ui_font import UiFont
@@ -176,8 +178,6 @@ def test_apply_dialog_result_detects_launch_at_login_change() -> None:
 
 
 def test_apply_launch_at_login_reports_failure(monkeypatch: pytest.MonkeyPatch) -> None:
-    from petatto_kanban.display.settings_actions import apply_launch_at_login
-
     settings = DisplaySettings(launch_at_login=True)
     messagebox = FakeMessageBox()
 
@@ -186,7 +186,7 @@ def test_apply_launch_at_login_reports_failure(monkeypatch: pytest.MonkeyPatch) 
         raise OSError(msg)
 
     monkeypatch.setattr(
-        "petatto_kanban.display.settings_actions.sync_auto_start_from_settings",
+        "petatto_kanban.display.settings_actions.apply_auto_start_setting",
         raise_oserror,
     )
     assert (
@@ -199,6 +199,93 @@ def test_apply_launch_at_login_reports_failure(monkeypatch: pytest.MonkeyPatch) 
         is False
     )
     assert len(messagebox.showinfo_calls) == 1
+
+
+def test_persist_dialog_result_saves_when_auto_start_ok(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings_path = tmp_path / "settings.json"
+    monkeypatch.setattr(
+        "petatto_kanban.display.settings.get_settings_path",
+        lambda: settings_path,
+    )
+    monkeypatch.setattr(
+        "petatto_kanban.display.settings_actions.apply_auto_start_setting",
+        lambda _enabled: None,
+    )
+    settings = DisplaySettings(mode=DisplayMode.OVERLAY, launch_at_login=False)
+    result = SettingsDialogResult(
+        mode=DisplayMode.DESKTOP,
+        confirm_delete=True,
+        confirm_exit=False,
+        launch_at_login=True,
+        monitor_index=0,
+        ui_size=UiSize.MEDIUM,
+        ui_font=UiFont.SEGOE_UI,
+        ui_theme=UiTheme.DEFAULT,
+    )
+
+    changes = persist_dialog_result(
+        settings,
+        result,
+        messagebox=FakeMessageBox(),
+        parent=object(),
+        app_title="Petatto Kanban",
+    )
+
+    assert changes is not None
+    assert changes.launch_at_login_changed is True
+    assert settings.mode == DisplayMode.DESKTOP
+    assert settings.launch_at_login is True
+    assert settings_path.exists()
+
+
+def test_persist_dialog_result_rolls_back_all_fields_on_auto_start_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings_path = tmp_path / "settings.json"
+    monkeypatch.setattr(
+        "petatto_kanban.display.settings.get_settings_path",
+        lambda: settings_path,
+    )
+
+    def raise_oserror(_enabled: bool) -> None:
+        msg = "denied"
+        raise OSError(msg)
+
+    monkeypatch.setattr(
+        "petatto_kanban.display.settings_actions.apply_auto_start_setting",
+        raise_oserror,
+    )
+    settings = DisplaySettings(mode=DisplayMode.OVERLAY, launch_at_login=False)
+    result = SettingsDialogResult(
+        mode=DisplayMode.DESKTOP,
+        confirm_delete=False,
+        confirm_exit=True,
+        launch_at_login=True,
+        monitor_index=1,
+        ui_size=UiSize.LARGE,
+        ui_font=UiFont.MEIRYO,
+        ui_theme=UiTheme.DARK,
+    )
+
+    changes = persist_dialog_result(
+        settings,
+        result,
+        messagebox=FakeMessageBox(),
+        parent=object(),
+        app_title="Petatto Kanban",
+    )
+
+    assert changes is None
+    assert settings.mode == DisplayMode.OVERLAY
+    assert settings.launch_at_login is False
+    assert settings.confirm_delete is True
+    assert settings.monitor_index == 0
+    assert settings.ui_size == UiSize.MEDIUM
+    assert not settings_path.exists()
 
 
 def test_confirm_exit_skips_dialog_when_disabled() -> None:
