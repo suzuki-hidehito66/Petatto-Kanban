@@ -2,30 +2,15 @@
 
 from __future__ import annotations
 
-import ctypes
 from ctypes import wintypes
 from typing import Any
 
 _api: Any | None = None
 
 
-class _GuiThreadInfo(ctypes.Structure):
-    """GetGUIThreadInfo 用。"""
-
-    _fields_ = (
-        ("cbSize", wintypes.DWORD),
-        ("flags", wintypes.DWORD),
-        ("hwndActive", wintypes.HWND),
-        ("hwndFocus", wintypes.HWND),
-        ("hwndCapture", wintypes.HWND),
-        ("hwndMenuOwner", wintypes.HWND),
-        ("hwndMoveSize", wintypes.HWND),
-        ("hwndCaret", wintypes.HWND),
-        ("rcCaret", wintypes.RECT),
-    )
-
-
 def _load_user32() -> Any:
+    import ctypes
+
     user32 = ctypes.WinDLL("user32", use_last_error=True)
     get_foreground_window = ctypes.WINFUNCTYPE(wintypes.HWND)(
         ("GetForegroundWindow", user32),
@@ -45,11 +30,6 @@ def _load_user32() -> Any:
     get_async_key_state = ctypes.WINFUNCTYPE(ctypes.c_short, ctypes.c_int)(
         ("GetAsyncKeyState", user32),
     )
-    get_gui_thread_info = ctypes.WINFUNCTYPE(
-        wintypes.BOOL,
-        wintypes.DWORD,
-        ctypes.POINTER(_GuiThreadInfo),
-    )(("GetGUIThreadInfo", user32))
 
     class User32Api:
         GetForegroundWindow = staticmethod(get_foreground_window)
@@ -57,7 +37,6 @@ def _load_user32() -> Any:
         WindowFromPoint = staticmethod(window_from_point)
         GetWindowThreadProcessId = staticmethod(get_window_thread_process_id)
         GetAsyncKeyState = staticmethod(get_async_key_state)
-        GetGUIThreadInfo = staticmethod(get_gui_thread_info)
 
     return User32Api()
 
@@ -72,6 +51,8 @@ def user32_api() -> Any:
 
 def process_id_for_hwnd(hwnd: int | None) -> int | None:
     """ウィンドウハンドルのプロセス ID。無効なら None。"""
+    import ctypes
+
     if not hwnd:
         return None
     pid = wintypes.DWORD()
@@ -86,6 +67,8 @@ def foreground_process_id() -> int | None:
 
 def cursor_window_process_id() -> int | None:
     """カーソル下ウィンドウのプロセス ID。"""
+    import ctypes
+
     point = wintypes.POINT()
     if not user32_api().GetCursorPos(ctypes.byref(point)):
         return None
@@ -95,27 +78,3 @@ def cursor_window_process_id() -> int | None:
 def async_key_state(virtual_key: int) -> int:
     """GetAsyncKeyState の戻り値。"""
     return int(user32_api().GetAsyncKeyState(virtual_key))
-
-
-def _foreground_gui_thread_info() -> _GuiThreadInfo | None:
-    info = _GuiThreadInfo()
-    info.cbSize = ctypes.sizeof(info)
-    if not user32_api().GetGUIThreadInfo(0, ctypes.byref(info)):
-        return None
-    return info
-
-
-def capture_process_id() -> int | None:
-    """前面スレッドがマウスキャプチャしているウィンドウのプロセス ID。"""
-    info = _foreground_gui_thread_info()
-    if info is None:
-        return None
-    return process_id_for_hwnd(info.hwndCapture)
-
-
-def move_size_process_id() -> int | None:
-    """前面スレッドが移動またはサイズ変更中のウィンドウのプロセス ID。"""
-    info = _foreground_gui_thread_info()
-    if info is None:
-        return None
-    return process_id_for_hwnd(info.hwndMoveSize)

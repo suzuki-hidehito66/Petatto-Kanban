@@ -139,9 +139,9 @@ petatto-kanban/
 | `display/modes.py` | 表示モード適用のディスパッチ | `overlay`, `desktop`, `settings` |
 | `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） | tkinter, `transparent`, `settings` |
 | `display/desktop_board_controller.py` | DM-DESKTOP-02/03 本体 Z オーダー制御 | tkinter, `desktop`, `foreign_app`, `menu_panel_host` |
-| `display/foreign_app.py` | 他アプリ前面・カーソル下・マウス押下・ドラッグの合成判定 | `transparent`, `mouse_buttons`, `win32_user32` |
+| `display/foreign_app.py` | 他アプリ前面・カーソル下・マウス押下の合成判定 | `transparent`, `mouse_buttons`, `win32_user32` |
 | `display/mouse_buttons.py` | マウスボタン押下 | `transparent`, `win32_user32` |
-| `display/win32_user32.py` | user32 の遅延バインド（`GetGUIThreadInfo` 含む） | Windows API |
+| `display/win32_user32.py` | user32 の遅延バインド | Windows API |
 | `display/settings_dialog.py` | UC-006 設定ダイアログ（`ttk.Notebook` シェル・確定値組み立て） | tkinter, `mode_labels`, `settings_dialog_tabs`, `settings_dialog_labels`, `settings_dialog_panels`, `settings`, `monitors`, `system/shortcut` |
 | `display/settings_dialog_tabs.py` | タブラベル・タブ別項目定義 | 標準ライブラリのみ |
 | `display/settings_dialog_labels.py` | 設定ダイアログ UI 文言 | 標準ライブラリのみ |
@@ -321,9 +321,9 @@ M3 着手時に ADR を追加する。
 | `display/transparent.py` | 透過色・全画面 |
 | `display/monitors.py` | モニター列挙 |
 | `display/desktop_board_controller.py` | デスクトップ時の Z オーダー（昇格中はマウス押下で即背面） |
-| `display/foreign_app.py` | 他アプリ前面 / カーソル下 / マウス押下 / ドラッグの合成 |
+| `display/foreign_app.py` | 他アプリ前面 / カーソル下 / マウス押下の合成 |
 | `display/mouse_buttons.py` | マウスボタン押下 |
-| `display/win32_user32.py` | user32 遅延バインド（`GetGUIThreadInfo` 含む） |
+| `display/win32_user32.py` | user32 遅延バインド |
 | `app.py` | モード切替 UI、カンバン描画 |
 
 ### 技術的制約

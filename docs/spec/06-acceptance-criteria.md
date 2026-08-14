@@ -599,22 +599,6 @@ And 自アプリのカードまたはメニュー上での押下では背面復�
 
 **テスト**: `test_desktop_board_controller_lowers_on_foreign_mouse_press_not_release`, `test_foreign_app.py` + 手動（Windows）
 
-### AC-019-04
-
-| 属性 | 値 |
-|------|-----|
-| 関連 FR | FR-019 |
-| ステータス | implemented |
-| 検証 | 自動 + 手動（Windows） |
-
-```gherkin
-Given デスクトップモードでメニュー操作により本体が一時最前面になっている
-When ユーザーが別アプリのウィンドウをドラッグして移動する
-Then カーソル下がカンバンの透過領域でも、本体はドラッグ中に通常ウィンドウより背面へ戻る
-```
-
-**テスト**: `test_is_foreign_pointer_press_true_when_foreign_window_is_moved` + 手動（Windows）
-
 ---
 
 ## FR-020: オーバーレイモード
