@@ -121,3 +121,58 @@ def test_is_foreign_pointer_press_requires_button_and_foreign_window() -> None:
         ),
     ):
         assert is_foreign_pointer_press() is False
+
+
+def test_is_foreign_pointer_press_true_when_foreign_window_is_moved() -> None:
+    from petatto_kanban.display.foreign_app import is_foreign_pointer_press
+
+    with (
+        patch("petatto_kanban.display.foreign_app.is_windows", return_value=True),
+        patch("petatto_kanban.display.foreign_app.os.getpid", return_value=1000),
+        patch(
+            "petatto_kanban.display.win32_user32.move_size_process_id",
+            return_value=2000,
+        ),
+        patch(
+            "petatto_kanban.display.foreign_app.is_any_mouse_button_down",
+            return_value=False,
+        ),
+        patch(
+            "petatto_kanban.display.foreign_app.is_foreign_app_under_cursor",
+            return_value=False,
+        ),
+    ):
+        assert is_foreign_pointer_press() is True
+
+
+def test_is_foreign_pointer_press_true_when_foreign_app_has_capture() -> None:
+    from petatto_kanban.display.foreign_app import is_foreign_pointer_press
+
+    with (
+        patch("petatto_kanban.display.foreign_app.is_windows", return_value=True),
+        patch("petatto_kanban.display.foreign_app.os.getpid", return_value=1000),
+        patch(
+            "petatto_kanban.display.win32_user32.move_size_process_id",
+            return_value=None,
+        ),
+        patch(
+            "petatto_kanban.display.win32_user32.capture_process_id",
+            return_value=2000,
+        ),
+        patch(
+            "petatto_kanban.display.foreign_app.is_any_mouse_button_down",
+            return_value=True,
+        ),
+        patch(
+            "petatto_kanban.display.foreign_app.is_foreign_app_under_cursor",
+            return_value=False,
+        ),
+    ):
+        assert is_foreign_pointer_press() is True
+
+
+def test_is_foreign_window_being_moved_false_on_non_windows() -> None:
+    with patch("petatto_kanban.display.foreign_app.is_windows", return_value=False):
+        from petatto_kanban.display.foreign_app import is_foreign_window_being_moved
+
+        assert is_foreign_window_being_moved() is False

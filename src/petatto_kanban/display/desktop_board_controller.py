@@ -96,7 +96,7 @@ class DesktopBoardController:
         )
 
     def lower_on_foreign_pointer_press(self) -> None:
-        """DM-DESKTOP-03: 他アプリ上のマウス押下で待機なし背面復帰（離しを待たない）."""
+        """DM-DESKTOP-03: 他アプリ上のマウス押下・ドラッグで待機なし背面復帰。"""
         if not self._is_desktop_mode() or not is_foreign_pointer_press():
             return
         self._restore_if_elevated()
