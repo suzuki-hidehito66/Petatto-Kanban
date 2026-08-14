@@ -34,6 +34,30 @@ def is_foreign_app_under_cursor() -> bool:
     return _is_foreign_pid(cursor_window_process_id())
 
 
+def is_foreign_app_capturing() -> bool:
+    """前面スレッドのマウスキャプチャが自プロセス外なら True。"""
+    if not is_windows():
+        return False
+
+    from petatto_kanban.display.win32_user32 import capture_process_id
+
+    return _is_foreign_pid(capture_process_id())
+
+
+def is_foreign_window_being_moved() -> bool:
+    """他アプリのウィンドウを移動またはサイズ変更中なら True。"""
+    if not is_windows():
+        return False
+
+    from petatto_kanban.display.win32_user32 import move_size_process_id
+
+    return _is_foreign_pid(move_size_process_id())
+
+
 def is_foreign_pointer_press() -> bool:
-    """他アプリ上でマウスボタンが押下中なら True（離しを待たない）。"""
-    return is_any_mouse_button_down() and is_foreign_app_under_cursor()
+    """他アプリの押下・ドラッグ・サイズ変更中なら True（離しを待たない）。"""
+    if is_foreign_window_being_moved():
+        return True
+    if not is_any_mouse_button_down():
+        return False
+    return is_foreign_app_under_cursor() or is_foreign_app_capturing()
