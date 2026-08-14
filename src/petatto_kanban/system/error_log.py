@@ -1,4 +1,4 @@
-"""ローカルエラーログ（FR-031）."""
+"""ローカルエラーログの初期化と例外フック（FR-031）."""
 
 from __future__ import annotations
 
@@ -9,80 +9,48 @@ import threading
 from contextlib import suppress
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, TextIO
 
 from petatto_kanban import __version__
+from petatto_kanban.system.error_log_paths import (
+    RETENTION_DAYS,
+    default_logs_dir,
+    expired_log_files,
+    log_file_name,
+    log_file_path,
+    parse_log_file_date,
+    purge_old_logs,
+)
+from petatto_kanban.system.error_log_redact import redact_home
 
-APP_DIR_NAME = ".petatto-kanban"
-LOGS_DIR_NAME = "logs"
-LOG_FILE_PREFIX = "petatto-kanban-"
-LOG_FILE_SUFFIX = ".log"
-RETENTION_DAYS = 14
 LOGGER_NAME = "petatto_kanban"
 
 _handler: logging.Handler | None = None
 
-
-def default_logs_dir() -> Path:
-    """既定のログディレクトリ."""
-    return Path.home() / APP_DIR_NAME / LOGS_DIR_NAME
-
-
-def log_file_name(day: date) -> str:
-    """日次ログファイル名."""
-    return f"{LOG_FILE_PREFIX}{day.isoformat()}{LOG_FILE_SUFFIX}"
-
-
-def log_file_path(logs_dir: Path, day: date | None = None) -> Path:
-    """指定日のログファイルパス."""
-    return logs_dir / log_file_name(day or date.today())
-
-
-def parse_log_file_date(name: str) -> date | None:
-    """`petatto-kanban-YYYY-MM-DD.log` から日付を取る."""
-    prefix = LOG_FILE_PREFIX
-    suffix = LOG_FILE_SUFFIX
-    if not (name.startswith(prefix) and name.endswith(suffix)):
-        return None
-    stamp = name[len(prefix) : -len(suffix)]
-    try:
-        return date.fromisoformat(stamp)
-    except ValueError:
-        return None
-
-
-def expired_log_files(
-    logs_dir: Path,
-    *,
-    today: date | None = None,
-    retention_days: int = RETENTION_DAYS,
-) -> list[Path]:
-    """保持期限を過ぎたログファイル."""
-    if not logs_dir.is_dir():
-        return []
-    now = today or date.today()
-    expired: list[Path] = []
-    for path in logs_dir.glob(f"{LOG_FILE_PREFIX}*{LOG_FILE_SUFFIX}"):
-        day = parse_log_file_date(path.name)
-        if day is not None and (now - day).days >= retention_days:
-            expired.append(path)
-    return expired
-
-
-def redact_home(text: str, home: Path | None = None) -> str:
-    """ユーザーホームパスを `~` に置換する."""
-    home_path = (home or Path.home()).resolve()
-    home_text = str(home_path)
-    redacted = text.replace(home_text, "~")
-    home_posix = home_path.as_posix()
-    if home_posix != home_text:
-        redacted = redacted.replace(home_posix, "~")
-    return redacted
+__all__ = [
+    "DailyFileHandler",
+    "RETENTION_DAYS",
+    "active_handler",
+    "default_logs_dir",
+    "expired_log_files",
+    "get_logger",
+    "install_error_logging",
+    "log_file_name",
+    "log_tk_callback_exception",
+    "log_uncaught_exception",
+    "parse_log_file_date",
+    "redact_home",
+]
 
 
 def get_logger() -> logging.Logger:
     """アプリ用ロガー."""
     return logging.getLogger(LOGGER_NAME)
+
+
+def active_handler() -> logging.Handler | None:
+    """現在のファイル（または Null）ハンドラ."""
+    return _handler
 
 
 def install_error_logging(*, logs_dir: Path | None = None) -> Path:
@@ -94,8 +62,8 @@ def install_error_logging(*, logs_dir: Path | None = None) -> Path:
         _install_logger(handler=logging.NullHandler())
         _install_exception_hooks()
         return directory
-    _purge_old_logs(directory)
-    handler = _DailyFileHandler(directory)
+    purge_old_logs(directory)
+    handler = DailyFileHandler(directory)
     handler.setLevel(logging.ERROR)
     handler.setFormatter(_ErrorLogFormatter())
     handler.addFilter(_ContextFilter())
@@ -104,24 +72,29 @@ def install_error_logging(*, logs_dir: Path | None = None) -> Path:
     return directory
 
 
+def log_uncaught_exception(
+    exc_type: type[BaseException],
+    exc_value: BaseException,
+    exc_traceback: object,
+    *,
+    where: str = "Uncaught exception",
+) -> None:
+    """未捕捉例外を ERROR で記録する."""
+    get_logger().error(where, exc_info=(exc_type, exc_value, exc_traceback))
+
+
 def log_tk_callback_exception(
     exc_type: type[BaseException],
     exc_value: BaseException,
     exc_traceback: object,
 ) -> None:
     """tkinter `report_callback_exception` 用."""
-    get_logger().error(
-        "Tk callback exception",
-        exc_info=(exc_type, exc_value, exc_traceback),
+    log_uncaught_exception(
+        exc_type,
+        exc_value,
+        exc_traceback,
+        where="Tk callback exception",
     )
-
-
-def _purge_old_logs(logs_dir: Path) -> None:
-    for path in expired_log_files(logs_dir):
-        try:
-            path.unlink()
-        except OSError:
-            continue
 
 
 def _install_logger(*, handler: logging.Handler) -> None:
@@ -147,18 +120,16 @@ def _sys_excepthook(
     exc_value: BaseException,
     exc_traceback: object,
 ) -> None:
-    get_logger().error(
-        "Uncaught exception",
-        exc_info=(exc_type, exc_value, exc_traceback),
-    )
+    log_uncaught_exception(exc_type, exc_value, exc_traceback)
 
 
 def _thread_excepthook(args: threading.ExceptHookArgs) -> None:
     name = args.thread.name if args.thread is not None else "unknown"
-    get_logger().error(
-        "Uncaught exception in thread %s",
-        name,
-        exc_info=(args.exc_type, args.exc_value, args.exc_traceback),
+    log_uncaught_exception(
+        args.exc_type,
+        args.exc_value,
+        args.exc_traceback,
+        where=f"Uncaught exception in thread {name}",
     )
 
 
@@ -194,13 +165,13 @@ class _ErrorLogFormatter(logging.Formatter):
         return redact_home(line)
 
 
-class _DailyFileHandler(logging.Handler):
-    """日付ごとのファイルへ追記する。書き込み失敗は握りつぶさないが例外は出さない."""
+class DailyFileHandler(logging.Handler):
+    """日付ごとのファイルへ追記する。書き込み失敗では例外を出さない."""
 
     def __init__(self, logs_dir: Path) -> None:
         super().__init__()
-        self._logs_dir = logs_dir
-        self._stream: Any = None
+        self.logs_dir = logs_dir
+        self._stream: TextIO | None = None
         self._current_day: date | None = None
 
     def emit(self, record: logging.LogRecord) -> None:
@@ -227,7 +198,7 @@ class _DailyFileHandler(logging.Handler):
             with suppress(OSError):
                 self._stream.close()
             self._stream = None
-        path = log_file_path(self._logs_dir, day)
+        path = log_file_path(self.logs_dir, day)
         self._stream = path.open("a", encoding="utf-8")
         self._current_day = day
         return self._stream

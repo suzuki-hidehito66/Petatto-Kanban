@@ -146,3 +146,4 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 | 2.7.1 | 2026-08-14 | FR-032: 起票可否は設定「システム」タブで ON/OFF |
 | 2.7.2 | 2026-08-14 | FR-032 GitHub Issue 自動起票を cancelled。診断は FR-031 のみ |
 | 2.7.3 | 2026-08-14 | FR-031 実装（`system/error_log.py`） |
+| 2.7.4 | 2026-08-14 | FR-031 仕様同期。パスと伏せ字を分離 |

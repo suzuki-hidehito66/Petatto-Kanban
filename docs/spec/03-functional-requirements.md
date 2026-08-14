@@ -617,7 +617,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | ステータス | implemented |
 | 関連 US | US-021 |
 | 関連 AC | AC-031-01, AC-031-02, AC-031-03 |
-| 実装 | `system/error_log.py`、起動時に `app.py` から初期化 |
+| 実装 | `system/error_log.py`, `system/error_log_paths.py`, `system/error_log_redact.py`、起動時に `app.py` から初期化 |
 | データ契約 | [DC-004](./07-data-contract.md#dc-004-エラーログ) |
 
 **説明**  
@@ -634,6 +634,7 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 - ログ書き込み失敗（ディスク満杯・権限など）でも **アプリは継続**する。ユーザー向けダイアログは出さない
 - ログ I/O は UI を止めない。書き込み失敗はプロセス内で繰り返して騒がない
 - 本要件はオフライン完結。ネットワークは使わない
+- パス・保持期限は `system/error_log_paths.py`、伏せ字は `system/error_log_redact.py`、初期化とフックは `system/error_log.py` に分離する
 
 ---
 

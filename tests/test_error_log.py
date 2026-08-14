@@ -9,17 +9,21 @@ from pathlib import Path
 import pytest
 
 from petatto_kanban import __version__
-from petatto_kanban.system import error_log
 from petatto_kanban.system.error_log import (
-    RETENTION_DAYS,
-    expired_log_files,
+    DailyFileHandler,
+    active_handler,
     get_logger,
     install_error_logging,
     log_file_name,
     log_tk_callback_exception,
-    parse_log_file_date,
-    redact_home,
+    log_uncaught_exception,
 )
+from petatto_kanban.system.error_log_paths import (
+    RETENTION_DAYS,
+    expired_log_files,
+    parse_log_file_date,
+)
+from petatto_kanban.system.error_log_redact import redact_home
 
 
 def test_install_creates_logs_directory(tmp_path: Path) -> None:
@@ -36,7 +40,7 @@ def test_uncaught_exception_is_written_to_daily_file(tmp_path: Path) -> None:
     try:
         raise RuntimeError("probe-error")
     except RuntimeError:
-        error_log._sys_excepthook(*sys.exc_info())
+        log_uncaught_exception(*sys.exc_info())
 
     log_path = logs_dir / log_file_name(date.today())
     text = log_path.read_text(encoding="utf-8")
@@ -75,13 +79,16 @@ def test_home_path_in_exception_is_redacted(
 ) -> None:
     home = tmp_path / "userhome"
     home.mkdir()
-    monkeypatch.setattr(error_log.Path, "home", staticmethod(lambda: home))
+    monkeypatch.setattr(
+        "petatto_kanban.system.error_log_redact.Path.home",
+        staticmethod(lambda: home),
+    )
     logs_dir = tmp_path / "logs"
     install_error_logging(logs_dir=logs_dir)
     try:
         raise RuntimeError(str(home / "board.json"))
     except RuntimeError:
-        error_log._sys_excepthook(*sys.exc_info())
+        log_uncaught_exception(*sys.exc_info())
 
     text = (logs_dir / log_file_name(date.today())).read_text(encoding="utf-8")
     assert str(home) not in text
@@ -91,11 +98,11 @@ def test_home_path_in_exception_is_redacted(
 def test_write_failure_does_not_raise(tmp_path: Path) -> None:
     logs_dir = tmp_path / "logs"
     install_error_logging(logs_dir=logs_dir)
-    handler = error_log._handler
-    assert isinstance(handler, error_log._DailyFileHandler)
+    handler = active_handler()
+    assert isinstance(handler, DailyFileHandler)
     handler._current_day = None
     handler._stream = None
-    handler._logs_dir = tmp_path / "missing" / "nested"
+    handler.logs_dir = tmp_path / "missing" / "nested"
     get_logger().error("should-not-raise")
 
 
