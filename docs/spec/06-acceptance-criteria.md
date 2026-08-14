@@ -72,7 +72,7 @@ And カード高さは 160px である
 And 期限パネルと進捗バーはカード内に表示される
 ```
 
-**テスト**: `test_resolve_card_frame_size_grows_height_only_for_wrapped_title` + 手動
+**テスト**: `test_card_frame.py` + 手動
 
 ---
 

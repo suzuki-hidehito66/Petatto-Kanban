@@ -118,6 +118,7 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 | `display/ui_scale.py` | UI サイズプリセット・スケール係数（FR-026） |
 | `display/ui_scale_labels.py` | UI サイズ UI ラベル |
 | `display/card_layout.py` | カード基準寸法・黄金比（UC-003 / UC-009） |
+| `display/card_frame.py` | カード枠サイズ（幅固定・高さは内容に合わせる） |
 | `display/ui_metrics.py` | UiMetrics 合成（FR-026 + FR-027 + card_layout） |
 | `display/ui_font.py` | UI フォントプリセット（FR-027） |
 | `display/ui_font_labels.py` | UI フォント UI ラベル |
