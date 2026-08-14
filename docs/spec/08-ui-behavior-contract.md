@@ -633,3 +633,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.10.4 | 2026-08-14 | UC-012: Python WndProc を廃止。専用スレッド + `GetMessage` + Tk `poll()` |
 | 2.10.5 | 2026-08-14 | UC-012: Win32 ポンプを `hotkey_pump.py` に分離。セッションは `hotkey.py` |
 | 2.11.0 | 2026-08-14 | UC-002: 他ウィンドウクリックの背面復帰を押下時点に変更（DM-DESKTOP-03） |
+| 2.11.1 | 2026-08-14 | UC-002: 他アプリ判定を `foreign_app` / `mouse_buttons` / `win32_user32` に分割 |

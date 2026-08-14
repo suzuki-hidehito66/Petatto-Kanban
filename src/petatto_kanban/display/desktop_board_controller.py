@@ -9,10 +9,9 @@ from petatto_kanban.display.desktop import (
     bring_board_to_front,
     restore_desktop_board_z_order,
 )
-from petatto_kanban.display.foreground import (
-    is_any_mouse_button_down,
+from petatto_kanban.display.foreign_app import (
     is_foreign_app_foreground,
-    is_foreign_app_under_cursor,
+    is_foreign_pointer_press,
 )
 
 if TYPE_CHECKING:
@@ -41,7 +40,7 @@ class DesktopBoardController:
         self._is_desktop_mode = is_desktop_mode
         self._can_lower = can_lower
         self._lower_after_id: str | None = None
-        self._foreground_poll_after_id: str | None = None
+        self._foreign_app_poll_after_id: str | None = None
         self._elevated = False
 
     @property
@@ -53,12 +52,12 @@ class DesktopBoardController:
         self.stop()
         self._elevated = False
         if desktop:
-            self.start_foreground_watch()
+            self.start_foreign_app_watch()
 
     def stop(self) -> None:
         """ポーリングと降格タイマーを停止する."""
         self._cancel_lower()
-        self._stop_foreground_watch()
+        self._stop_foreign_app_watch()
 
     def bind_focus_handlers(self, *widgets: tk.Misc) -> None:
         """他アプリアクティブ検知用 FocusOut を登録する."""
@@ -77,7 +76,7 @@ class DesktopBoardController:
         bring_board_to_front(self._root)
         self._elevated = True
         self._menu_host.lift()
-        self.start_foreground_watch()
+        self.start_foreign_app_watch()
 
     def on_menu_deactivate(self) -> None:
         """メニュー非アクティブ後、一定時間で背面復帰を予約."""
@@ -98,25 +97,21 @@ class DesktopBoardController:
 
     def lower_on_foreign_pointer_press(self) -> None:
         """DM-DESKTOP-03: 他アプリ上のマウス押下で待機なし背面復帰（離しを待たない）."""
-        if not self._is_desktop_mode():
-            return
-        if not is_any_mouse_button_down() or not is_foreign_app_under_cursor():
+        if not self._is_desktop_mode() or not is_foreign_pointer_press():
             return
         self._restore_if_elevated()
 
     def lower_on_foreign_app_active(self) -> None:
         """DM-DESKTOP-03: 他アプリ前面時は待機なしで背面復帰."""
-        if not self._is_desktop_mode():
-            return
-        if not is_foreign_app_foreground():
+        if not self._is_desktop_mode() or not is_foreign_app_foreground():
             return
         self._restore_if_elevated()
 
-    def start_foreground_watch(self) -> None:
+    def start_foreign_app_watch(self) -> None:
         if not self._is_desktop_mode():
             return
-        self._stop_foreground_watch()
-        self._schedule_foreground_poll()
+        self._stop_foreign_app_watch()
+        self._schedule_foreign_app_poll()
 
     def _restore_if_elevated(self) -> None:
         self._cancel_lower()
@@ -145,26 +140,26 @@ class DesktopBoardController:
             self._root.after_cancel(self._lower_after_id)
             self._lower_after_id = None
 
-    def _stop_foreground_watch(self) -> None:
-        if self._foreground_poll_after_id is not None:
-            self._root.after_cancel(self._foreground_poll_after_id)
-            self._foreground_poll_after_id = None
+    def _stop_foreign_app_watch(self) -> None:
+        if self._foreign_app_poll_after_id is not None:
+            self._root.after_cancel(self._foreign_app_poll_after_id)
+            self._foreign_app_poll_after_id = None
 
     def _poll_interval_ms(self) -> int:
         if self._elevated:
             return MOUSE_PRESS_POLL_MS
         return FOREGROUND_POLL_MS
 
-    def _schedule_foreground_poll(self) -> None:
-        self._foreground_poll_after_id = self._root.after(
+    def _schedule_foreign_app_poll(self) -> None:
+        self._foreign_app_poll_after_id = self._root.after(
             self._poll_interval_ms(),
-            self._on_foreground_poll,
+            self._on_foreign_app_poll,
         )
 
-    def _on_foreground_poll(self) -> None:
-        self._foreground_poll_after_id = None
+    def _on_foreign_app_poll(self) -> None:
+        self._foreign_app_poll_after_id = None
         if not self._is_desktop_mode():
             return
         self.lower_on_foreign_pointer_press()
         self.lower_on_foreign_app_active()
-        self._schedule_foreground_poll()
+        self._schedule_foreign_app_poll()

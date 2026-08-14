@@ -576,7 +576,7 @@ Then 本体はボタンを離す前に通常ウィンドウより背面へ戻る
 And 自アプリのカードまたはメニュー上での押下では背面復帰しない
 ```
 
-**テスト**: `test_desktop_board_controller_lowers_on_foreign_mouse_press_not_release` + 手動（Windows）
+**テスト**: `test_desktop_board_controller_lowers_on_foreign_mouse_press_not_release`, `test_foreign_app.py` + 手動（Windows）
 
 ---
 

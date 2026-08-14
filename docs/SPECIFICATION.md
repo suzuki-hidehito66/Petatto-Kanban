@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |------|------|
 | 文書種別 | Specification-Driven Development（SDD）索引 |
-| 文書バージョン | 2.65.0 |
+| 文書バージョン | 2.66.0 |
 | 最終更新日 | 2026-08-14 |
 | ステータス | Active |
 
@@ -183,3 +183,4 @@ flowchart LR
 | 2.63.0 | 2026-08-14 | FR-030: Python WndProc を廃止。専用スレッドで `GetMessage`（Python 3.14 GIL クラッシュ修正） |
 | 2.64.0 | 2026-08-14 | FR-030 仕様同期。`hotkey_pump` 抽出（セッションと Win32 ポンプを分離） |
 | 2.65.0 | 2026-08-14 | DM-DESKTOP-03: 他ウィンドウクリックの背面復帰を押下時点に変更（離しを待たない） |
+| 2.66.0 | 2026-08-14 | DM-DESKTOP-03 実装リファクタ。`foreign_app` / `mouse_buttons` / `win32_user32` に分割 |

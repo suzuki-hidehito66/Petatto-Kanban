@@ -35,7 +35,7 @@
 | FR-008 | US-006 | AC-008-01 | （M2） | — | deferred |
 | FR-009 | US-006 | AC-009-01 | （M2） | — | deferred |
 | FR-018 | US-008 | AC-018-01 | （M2） | 手動 | deferred |
-| FR-019 | US-009 | AC-019-01, AC-019-02, AC-019-03 | `display/desktop.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreground.py`, `display/modes.py` | `test_display_modes.py` + 手動 | implemented |
+| FR-019 | US-009 | AC-019-01, AC-019-02, AC-019-03 | `display/desktop.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreign_app.py`, `display/mouse_buttons.py`, `display/win32_user32.py`, `display/modes.py` | `test_display_modes.py`, `test_foreign_app.py` + 手動 | implemented |
 | FR-022 | US-008, US-009, US-010 | AC-022-01, AC-022-02 | `display/settings_dialog.py`, `display/settings_dialog_panels.py`, `display/modes.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py` + 手動 | implemented |
 | FR-026 | US-016 | AC-026-01〜04 | `display/ui_scale.py`, `display/ui_scale_labels.py`, `display/card_layout.py`, `display/ui_metrics.py`, `display/ui_chrome.py`, `card_renderer.py`, `settings.py`, `app.py`, `menu_panel_layout.py`, `menu_panel.py`, `due_date_picker.py` | `test_ui_scale.py`, `test_card_layout.py`, `test_ui_scale_labels.py`, `test_settings_dialog.py`, `test_display_settings.py` + 手動 | implemented |
 | FR-027 | US-017 | AC-027-01, AC-027-02, AC-027-03 | `display/ui_font.py`, `display/ui_font_labels.py`, `display/ui_metrics.py`, `display/card_layout.py`, `settings.py`, `app.py`, `display/ui_chrome.py`, `card_renderer.py` | `test_ui_font.py`, `test_settings_dialog.py`, `test_display_settings.py`, `test_settings_actions.py` + 手動 | implemented |
@@ -69,7 +69,7 @@
 | DC-002 | FR-002, FR-007 | `models.py` | `test_create_default_board_is_empty` | verified |
 | DC-003 | FR-021, FR-024, FR-026, FR-027, FR-028, FR-029, FR-030 | `display/settings.py` | `test_display_settings.py` | implemented |
 | UC-001 | FR-001, FR-019, FR-020 | `app.py`, `display/modes.py`, `display/overlay.py`, `display/desktop.py` | 手動 | implemented |
-| UC-002 | FR-003, FR-019, FR-023 | `menu_panel.py`, `menu_panel_layout.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `app.py` | `test_menu_panel.py`, `test_display_modes.py` + 手動 | implemented |
+| UC-002 | FR-003, FR-019, FR-023 | `menu_panel.py`, `menu_panel_layout.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreign_app.py`, `app.py` | `test_menu_panel.py`, `test_display_modes.py`, `test_foreign_app.py` + 手動 | implemented |
 | UC-006 | FR-005, FR-019, FR-020, FR-021, FR-022, FR-023, FR-024, FR-026, FR-027, FR-028, FR-029, FR-030 | `display/settings_dialog.py`, `settings_dialog_tabs.py`, `settings_dialog_labels.py`, `settings_dialog_panels.py`, `settings_actions.py`, `display/ui_scale.py`, `display/ui_font.py`, `display/ui_theme.py`, `system/auto_start.py`, `system/launch_command.py`, `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `mode_labels.py`, `app.py` | `test_display_modes.py`, `test_settings_dialog.py`, `test_settings_actions.py`, `test_auto_start.py`, `test_launch_command.py`, `test_shortcut.py`, `test_hotkey.py`, `test_ui_scale.py`, `test_ui_font.py`, `test_ui_theme.py` + 手動 | implemented |
 | UC-012 | FR-030, FR-003 | `system/shortcut.py`, `system/hotkey.py`, `system/hotkey_pump.py`, `app.py` | `test_shortcut.py`, `test_hotkey.py` + 手動 | implemented |
 | UC-011 | FR-028 | `display/ui_theme.py`, `display/ui_theme_labels.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `display/ui_chrome.py`, `app.py` | `test_ui_theme.py` + 手動 | implemented |
@@ -79,7 +79,7 @@
 | UC-004 | FR-003, FR-030 | `app.py`, `menu_panel.py`, `menu_panel_layout.py`, `new_card_placement.py` | `test_new_card_placement.py`, `test_menu_panel.py` + 手動 | implemented |
 | UC-005 | FR-004 | `app.py` | 手動 | implemented |
 | UC-008 | FR-014 | `app.py`, `due_date_picker.py`, `card_ui.py` | 手動 | implemented |
-| UC-DM-002 | FR-019 | `display/desktop.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreground.py`, `display/modes.py`, `app.py` | `test_display_modes.py` + 手動 | implemented |
+| UC-DM-002 | FR-019 | `display/desktop.py`, `display/menu_panel_host.py`, `display/desktop_board_controller.py`, `display/foreign_app.py`, `display/mouse_buttons.py`, `display/win32_user32.py`, `display/modes.py`, `app.py` | `test_display_modes.py`, `test_foreign_app.py` + 手動 | implemented |
 | UC-DM-003 | FR-020 | `display/overlay.py`, `display/modes.py`, `app.py` | 手動 | implemented |
 | UC-DM-001 | FR-018 | （M2） | 手動 | deferred |
 | UC-DM-004 | FR-022 | `app.py`, `display/modes.py` | `test_display_modes.py` + 手動 | implemented |
