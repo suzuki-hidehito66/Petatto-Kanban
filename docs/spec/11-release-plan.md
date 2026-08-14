@@ -12,7 +12,7 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 
 | 項目 | 値 |
 |------|-----|
-| バージョン | `0.1.6` |
+| バージョン | `0.1.5` |
 | 同期先 | `pyproject.toml` `[project].version`、`src/petatto_kanban/__init__.py` `__version__` |
 
 **main へマージ（PR マージ）時**: `build-windows.yml` が exe をビルドし、未使用の `v{バージョン}` タグで [GitHub Release](https://github.com/suzuki-hidehito66/Petatto-Kanban/releases) を作成する。同じバージョンで再マージする場合は **リリース前にバージョンをインクリメント** すること（タグ重複で CI が失敗する）。
@@ -147,4 +147,3 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 | 2.7.2 | 2026-08-14 | FR-032 GitHub Issue 自動起票を cancelled。診断は FR-031 のみ |
 | 2.7.3 | 2026-08-14 | FR-031 実装（`system/error_log.py`） |
 | 2.7.4 | 2026-08-14 | FR-031 仕様同期。パスと伏せ字を分離 |
-| 2.8.0 | 2026-08-14 | アプリリリースバージョンを 0.1.6 に更新 |

@@ -107,9 +107,7 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 | `display/desktop.py` | 本体ウィンドウ（`-topmost` 解除 + `HWND_BOTTOM`） |
 | `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） |
 | `display/desktop_board_controller.py` | 本体 Z オーダー昇格・降格（DM-DESKTOP-02 / 03） |
-| `display/foreign_app.py` | 他アプリ前面・カーソル下・マウス押下の合成判定 |
-| `display/mouse_buttons.py` | マウスボタン押下（`GetAsyncKeyState`） |
-| `display/win32_user32.py` | user32 の遅延バインド（HWND / カーソル / キー状態 / `GetGUIThreadInfo`） |
+| `display/foreground.py` | 他アプリ前面判定（`GetForegroundWindow`） |
 | `display/modes.py` | `DisplayMode` → 適用関数ディスパッチ |
 | `display/mode_labels.py` | 設定 UI ラベル（tkinter 非依存） |
 | `display/settings_dialog.py` | UC-006 設定ダイアログ（タブ UI シェル） |
@@ -241,13 +239,13 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 |------|-----|
 | 関連 FR | FR-019 |
 | 関連 UC | UC-002, UC-DM-002 |
-| 実装 | `display/desktop.py`, `display/desktop_board_controller.py`, `display/foreign_app.py`, `menu_panel.py`, `app.py` |
+| 実装 | `display/desktop.py`, `display/desktop_board_controller.py`, `display/foreground.py`, `menu_panel.py`, `app.py` |
 
 - **アクティブ** = メニューパネルへホバー、フォーカス、または `<` / 操作ボタンの押下
 - アクティブ中は **本体ウィンドウ（全カード含む）** を一時的に `-topmost` とし、通常ウィンドウより前面に出す
 - メニューパネル Toplevel は引き続き本体より前面（`menu_panel_host.lift()`）
 - **非アクティブ** = メニューからポインタが離れ展開が収納された後、一定時間（1.5s）操作がなければ `HWND_BOTTOM` 相当で背面へ復帰
-- **他アプリがアクティブ** = 他アプリのウィンドウ上でマウスを**押した時点**、または前面ウィンドウが自プロセス外に変わった瞬間。待機時間なしで背面へ復帰（DM-DESKTOP-03）
+- **他アプリがアクティブ** = 前面ウィンドウが自プロセス外に変わった瞬間、待機時間なしで背面へ復帰（DM-DESKTOP-03）
 - カード上にポインタが入った間、またはインライン編集・期限ピッカー・モーダル表示中は背面復帰を延期する
 
 ```
@@ -266,15 +264,10 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 |------|-----|
 | 関連 FR | FR-019 |
 | 関連 UC | UC-DM-002 |
-| 実装 | `display/foreign_app.py`, `display/mouse_buttons.py`, `display/win32_user32.py`, `display/desktop_board_controller.py`, `app.py` |
+| 実装 | `display/foreground.py`, `display/desktop_board_controller.py`, `app.py` |
 
-- デスクトップモードで昇格中、**他アプリケーションのウィンドウ** を操作したら本体（カード等）を **待機なし** で背面 Z オーダーへ戻す
-- **マウスクリック:** 他アプリのウィンドウ（カード・メニュー以外）でボタンを **押した時点**（`<ButtonPress>` 相当）に背面復帰する。**離し**（`<ButtonRelease>`）を待たない
-- **ウィンドウドラッグ:** 他アプリのウィンドウを移動またはサイズ変更している間も、カーソル下が自アプリの透過領域でも **即時** 背面復帰する
-- 自プロセスのカード・メニューパネル上の押下では背面復帰しない
-- **キーボード等:** Alt+Tab などで前面ウィンドウが自プロセス外に変わった場合も同様に即時背面復帰する
-- 判定は `display/foreign_app.py`。クリックはカーソル下ウィンドウ（`WindowFromPoint`）とマウス押下（`GetAsyncKeyState`）。ドラッグは前面スレッドの `GetGUIThreadInfo`（`hwndMoveSize` / `hwndCapture`）。前面切替は `GetForegroundWindow` + `FocusOut` 補完。Win32 呼び出しは `display/win32_user32.py`
-- 昇格中のポーリング間隔は約 16ms（押下を離しより先に捉える）。非昇格中は約 300ms
+- デスクトップモードで **他アプリケーションのウィンドウが前面** になったら、昇格中の本体（カード等）を **待機なし** で背面 Z オーダーへ戻す
+- 判定は Windows の `GetForegroundWindow` と自プロセス ID 比較（約 300ms 間隔のポーリング + `FocusOut` 補完）
 - メニューパネル Toplevel は DM-DESKTOP-01 どおり **引き続き最前面**（＋・⚙・× は他アプリ使用中も操作可能）
 
 ---
@@ -381,6 +374,3 @@ stateDiagram-v2
 | 1.5.0 | 2026-08-13 | DM-DESKTOP-02: メニューアクティブ時にカード等を一時最前面 |
 | 1.6.0 | 2026-08-13 | DM-DESKTOP-03: 他アプリアクティブ時に本体を即時背面復帰 |
 | 1.7.0 | 2026-08-13 | Z オーダー制御を `desktop_board_controller.py` に集約 |
-| 1.8.0 | 2026-08-14 | DM-DESKTOP-03: 他ウィンドウクリックは押下時点で背面復帰（離しを待たない） |
-| 1.9.0 | 2026-08-14 | DM-DESKTOP-03 判定を `foreign_app` / `mouse_buttons` / `win32_user32` に分割 |
-| 1.10.0 | 2026-08-14 | DM-DESKTOP-03: 他ウィンドウのドラッグ中も即時背面復帰 |

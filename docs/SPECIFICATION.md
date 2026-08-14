@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |------|------|
 | 文書種別 | Specification-Driven Development（SDD）索引 |
-| 文書バージョン | 2.74.0 |
+| 文書バージョン | 2.71.0 |
 | 最終更新日 | 2026-08-14 |
 | ステータス | Active |
 
@@ -189,6 +189,3 @@ flowchart LR
 | 2.69.0 | 2026-08-14 | FR-032 GitHub Issue 自動起票を cancelled。診断はローカルログ（FR-031）のみ |
 | 2.70.0 | 2026-08-14 | FR-031 実装。`error_log.py`・例外フック・日次ログ |
 | 2.71.0 | 2026-08-14 | FR-031 仕様同期。`error_log_paths` / `error_log_redact` 抽出 |
-| 2.72.0 | 2026-08-14 | DM-DESKTOP-03: 他ウィンドウクリックの背面復帰を押下時点に変更（離しを待たない） |
-| 2.73.0 | 2026-08-14 | DM-DESKTOP-03 実装リファクタ。`foreign_app` / `mouse_buttons` / `win32_user32` に分割 |
-| 2.74.0 | 2026-08-14 | DM-DESKTOP-03: 他ウィンドウのドラッグ中も即時背面復帰（`GetGUIThreadInfo`） |
