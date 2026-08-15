@@ -3,20 +3,10 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from petatto_kanban.display.ui_theme import UiThemePalette
+from petatto_kanban.display.ui_theme import UiThemePalette, resolved_palette
 
 DUE_DATE_NONE_LABEL = "期限なし"
-DUE_PANEL_OVERDUE_BG = "#ffcdd2"
-DUE_PANEL_OVERDUE_FG = "#b71c1c"
-DUE_PANEL_TODAY_BG = "#fff9c4"
-DUE_PANEL_TODAY_FG = "#f57f17"
-DUE_PANEL_FUTURE_BG = "#f5f5f0"
-DUE_PANEL_FUTURE_FG = "#444444"
-DUE_PANEL_NONE_BG = "#f5f5f0"
-DUE_PANEL_NONE_FG = "#666666"
 
 
 def format_due_date(value: date | None) -> str:
@@ -45,19 +35,12 @@ def due_date_panel_style(
     palette: UiThemePalette | None = None,
 ) -> tuple[str, str]:
     """期限パネルの背景色・文字色を返す."""
+    colors = resolved_palette(palette)
     status = due_date_status(value, today)
     if status == "overdue":
-        if palette is not None:
-            return palette.due_overdue_bg, palette.due_overdue_fg
-        return DUE_PANEL_OVERDUE_BG, DUE_PANEL_OVERDUE_FG
+        return colors.due_overdue_bg, colors.due_overdue_fg
     if status == "today":
-        if palette is not None:
-            return palette.due_today_bg, palette.due_today_fg
-        return DUE_PANEL_TODAY_BG, DUE_PANEL_TODAY_FG
-    if palette is not None:
-        if status == "future":
-            return palette.due_future_bg, palette.due_future_fg
-        return palette.due_none_bg, palette.due_none_fg
+        return colors.due_today_bg, colors.due_today_fg
     if status == "future":
-        return DUE_PANEL_FUTURE_BG, DUE_PANEL_FUTURE_FG
-    return DUE_PANEL_NONE_BG, DUE_PANEL_NONE_FG
+        return colors.due_future_bg, colors.due_future_fg
+    return colors.due_none_bg, colors.due_none_fg

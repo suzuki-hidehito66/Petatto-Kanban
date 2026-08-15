@@ -101,7 +101,8 @@ petatto-kanban/
 │   │   ├── ui_metrics.py         # UiMetrics 合成（FR-026 + FR-027）
 │   │   ├── ui_font.py              # UI フォントプリセット（FR-027）
 │   │   ├── ui_font_labels.py       # UI フォント UI ラベル
-│   │   ├── ui_theme.py             # UI カラーテーマパレット（FR-028）
+│   │   ├── ui_theme.py             # UI カラーテーマ型・解決（FR-028）
+│   │   ├── ui_theme_palettes.py    # 10 種パレット定義
 │   │   ├── ui_theme_labels.py      # UI カラーテーマ UI ラベル
 │   │   ├── ui_chrome.py          # メニュー・期限パネルホスト再構築
 │   │   ├── settings.py           # settings.json
@@ -161,7 +162,8 @@ petatto-kanban/
 | `system/error_log_paths.py` | ログディレクトリ・日次ファイル名・保持期限（FR-031） | 標準ライブラリのみ |
 | `system/error_log_redact.py` | ホームパスの伏せ字（FR-031） | 標準ライブラリのみ |
 | `system/error_log.py` | エラーログ初期化・日次ハンドラ・例外フック（FR-031） | `error_log_paths`, `error_log_redact`, `logging` |
-| `display/ui_theme.py` | UI カラーテーマパレット・トークン解決（FR-028） | 標準ライブラリのみ |
+| `display/ui_theme.py` | UI カラーテーマ型・トークン解決（FR-028） | `ui_theme_palettes` |
+| `display/ui_theme_palettes.py` | 10 種パレット定義（UC-011） | `ui_theme`（型） |
 | `display/ui_theme_labels.py` | UI カラーテーマコンボボックス用ラベル | 標準ライブラリのみ |
 | `display/mode_labels.py` | 表示モード UI ラベル | `settings` |
 | `menu_panel.py` | メニューパネル UI（円形・NE アンカー・ホバー展開） | tkinter, `menu_panel_layout` |

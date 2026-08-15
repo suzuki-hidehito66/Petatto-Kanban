@@ -6,18 +6,25 @@ from petatto_kanban.display.ui_theme import (
     UiTheme,
     palette_for_theme,
     parse_ui_theme,
+    resolved_palette,
 )
 from petatto_kanban.display.ui_theme_labels import (
     selectable_ui_theme_labels,
     ui_theme_from_label,
     ui_theme_label,
 )
+from petatto_kanban.display.ui_theme_palettes import PALETTES
 from petatto_kanban.due_date import due_date_panel_style
 
 
 def test_parse_ui_theme_defaults_to_default() -> None:
     assert parse_ui_theme(None) == UiTheme.DEFAULT
     assert parse_ui_theme("invalid") == UiTheme.DEFAULT
+
+
+def test_resolved_palette_defaults_to_default() -> None:
+    assert resolved_palette(None) == palette_for_theme(UiTheme.DEFAULT)
+    assert set(PALETTES) == set(UiTheme)
 
 
 def test_parse_ui_theme_accepts_presets() -> None:

@@ -3,15 +3,10 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import TYPE_CHECKING, NamedTuple
+from typing import NamedTuple
 
-if TYPE_CHECKING:
-    from petatto_kanban.display.ui_theme import UiThemePalette
+from petatto_kanban.display.ui_theme import UiThemePalette, resolved_palette
 
-CALENDAR_TODAY_BUTTON_BG = "#43a047"
-CALENDAR_TODAY_BUTTON_FG = "#ffffff"
-CALENDAR_TODAY_BUTTON_HOVER_BG = "#2e7d32"
-CALENDAR_TODAY_BUTTON_HOVER_FG = "#ffffff"
 CALENDAR_DAY_CELL_WIDTH = 3
 CALENDAR_DAY_CELL_BD = 1
 CALENDAR_DAY_CELL_HIGHLIGHTTHICKNESS = 0
@@ -49,28 +44,19 @@ def calendar_day_button_style(
     palette: UiThemePalette | None = None,
 ) -> CalendarDayButtonStyle:
     """カレンダー日付ボタンの背景色・文字色・ホバー色・ relief を返す."""
+    colors = resolved_palette(palette)
     reference = today or date.today()
-    bg = default_bg
-    fg = default_fg
-    hover_bg = default_bg
-    hover_fg = default_fg
-    if palette is not None:
-        hover_bg = palette.due_picker_day_hover_bg
-        hover_fg = palette.due_picker_day_hover_fg
-    relief = "flat"
     if day == reference:
-        if palette is not None:
-            bg = palette.calendar_today_bg
-            fg = palette.calendar_today_fg
-            hover_bg = palette.calendar_today_hover_bg
-            hover_fg = palette.calendar_today_hover_fg
-        else:
-            bg = CALENDAR_TODAY_BUTTON_BG
-            fg = CALENDAR_TODAY_BUTTON_FG
-            hover_bg = CALENDAR_TODAY_BUTTON_HOVER_BG
-            hover_fg = CALENDAR_TODAY_BUTTON_HOVER_FG
-    if selected == day:
-        relief = "sunken"
+        bg = colors.calendar_today_bg
+        fg = colors.calendar_today_fg
+        hover_bg = colors.calendar_today_hover_bg
+        hover_fg = colors.calendar_today_hover_fg
+    else:
+        bg = default_bg
+        fg = default_fg
+        hover_bg = colors.due_picker_day_hover_bg
+        hover_fg = colors.due_picker_day_hover_fg
+    relief = "sunken" if selected == day else "flat"
     return CalendarDayButtonStyle(
         bg=bg,
         fg=fg,
