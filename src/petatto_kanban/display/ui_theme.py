@@ -32,6 +32,9 @@ class UiThemePalette:
     menu_fg: str
     menu_outline: str
     progress_track_bg: str
+    progress_fill_low: str
+    progress_fill_mid: str
+    progress_fill_high: str
     due_future_bg: str
     due_future_fg: str
     due_none_bg: str

@@ -124,7 +124,7 @@
 | 進捗バー | ホバー中スクロールダウン | 進捗率 −10%（最小 0%）（FR-025） |
 | 進捗バー | 左クリックドラッグ | 画面上の位置を変更（FR-010） |
 | 進捗バー | 右クリック離し | **削除処理**（FR-005） |
-| 進捗バー | — | 左から塗りつぶし。0%≈赤 / 50%≈黄 / 100%≈緑（**塗り色はテーマ非適用**）。中央に `NN%` 表示。トラック背景はテーマ適用 |
+| 進捗バー | — | 左から塗りつぶし。0%≈赤 / 50%≈黄 / 100%≈緑（明度はテーマに従う — [UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ)）。中央に `NN%` 表示。トラック背景はテーマ適用 |
 | 期限パネル | 左クリックドラッグ | 画面上の位置を変更（FR-010） |
 | 期限パネル | 右クリック離し | **削除処理**（FR-005） |
 | 期限パネル | クリック→離す→クリック→離す | 期限編集パネル（UC-008）。2回目の離しで表示 |
@@ -403,7 +403,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-028, FR-014 |
-| 関連 AC | AC-028-01, AC-028-02, AC-028-03, AC-028-04, AC-014-02, AC-014-03, AC-014-06 |
+| 関連 AC | AC-028-01, AC-028-02, AC-028-03, AC-028-04, AC-014-02, AC-014-03, AC-014-06, AC-025-04 |
 | 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_palettes.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
 
 `ui_theme`（`settings.json`）に応じて、UI 要素の **背景色・文字色** を切り替える。フォント（UC-010）・サイズ（UC-009）とは独立。
@@ -415,6 +415,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | `card_bg` / `card_fg` | カード枠背景、タイトル文字、インライン編集 `Entry` |
 | `menu_fill` / `menu_fg` / `menu_outline` | メニューパネル円ボタンの塗り・文字・枠線 |
 | `progress_track_bg` | 進捗バーの未達部分（トラック） |
+| `progress_fill_low` / `progress_fill_mid` / `progress_fill_high` | 進捗バーの塗り。0%≈赤 / 50%≈黄 / 100%≈緑。線形補間 |
 | `due_future_bg` / `due_future_fg` | カード期限パネル（**未来**の期限） |
 | `due_none_bg` / `due_none_fg` | カード期限パネル（**期限なし**） |
 | `due_today_bg` / `due_today_fg` | カード期限パネル（**当日**）。黄基調 |
@@ -429,26 +430,25 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 - ライトテーマ（`default` / `sandy` / `fancy` / `slate` / `rose`）: 明るい黄/赤背景＋濃い文字（現行に近い）。
 - ダーク系（`dark` / `forest` / `ocean` / `sunset` / `midnight`）: 暗い黄/赤背景＋明るい文字。
 
+**進捗バー塗り（赤 / 黄 / 緑基調）**
+- 色相は維持する（0%≈赤、50%≈黄、100%≈緑）。明度はテーマに合わせる。
+- ライトテーマ: 現行に近い明るい赤/黄/緑（`#dc3c3c` / `#f0c828` / `#3cb450`）。
+- ダーク系: トラックよりコントラストのある、やや暗い赤/黄/緑。
+- `%` 文字色: ライトテーマは従来どおり `progress >= 55` で白、それ以外は `card_fg`。ダーク系は塗りが暗いため常に白。
+
 **カレンダー当日**
 - 全テーマ共通の固定緑（旧 `#43a047`）は使わない。各テーマのアクセントに合わせる。
 - ホバーもテーマトークン。通常日ホバー（`due_picker_day_hover_*`）とは別トークン。
 
 ### テーマ非適用（固定色）
 
-状態識別のため、以下は **全テーマ共通** で現行実装の色を維持する。
-
-| 定数 / 関数 | 色の意味 | 参照 |
-|-------------|----------|------|
-| `progress_color(percent)` | 進捗バー **塗り**（赤→黄→緑） | `progress.py` |
-
-**その他非適用**
 - オーバーレイ透過色 `TRANSPARENT_COLOR`（`transparent.py`）
 - OS 標準の `messagebox` / 確認ダイアログ
 
 ### 可読性
 
 - 各テーマの `*_bg` と `*_fg` の組は、通常テキストで **コントラスト比 4.5:1 以上** を満たすこと（目視 + 実装時に WCAG 2.1 相当で確認）
-- 進捗バー中央 `%` 文字色は、塗り幅に応じた既存のコントラスト判定（`progress >= 55` で白文字）を維持
+- 進捗バー中央 `%` 文字色は、ライトテーマでは塗り幅に応じた判定（`progress >= 55` で白文字）、ダーク系では常に白
 
 ### プリセット一覧（10 種）
 
@@ -476,6 +476,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | card_bg / card_fg | `#fffef8` / `#222222` |
 | menu_fill / menu_fg / menu_outline | `#ffffff` / `#333333` / `#888888` |
 | progress_track_bg | `#e8e8e8` |
+| progress_fill_low / mid / high | `#dc3c3c` / `#f0c828` / `#3cb450` |
 | due_future_bg / due_future_fg | `#f5f5f0` / `#444444` |
 | due_none_bg / due_none_fg | `#f5f5f0` / `#666666` |
 | due_today_bg / due_today_fg | `#fff9c4` / `#f57f17` |
@@ -492,6 +493,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | card_bg / card_fg | `#1a1a1a` / `#f2f2f2` |
 | menu_fill / menu_fg / menu_outline | `#2b2b2b` / `#eeeeee` / `#555555` |
 | progress_track_bg | `#333333` |
+| progress_fill_low / mid / high | `#c45c5c` / `#c9a63a` / `#4aa862` |
 | due_future_bg / due_future_fg | `#242424` / `#cccccc` |
 | due_none_bg / due_none_fg | `#242424` / `#aaaaaa` |
 | due_today_bg / due_today_fg | `#5c4d1a` / `#ffe082` |
@@ -508,6 +510,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | card_bg / card_fg | `#faf6ef` / `#3d3429` |
 | menu_fill / menu_fg / menu_outline | `#fff8ee` / `#4a4035` / `#c4b8a8` |
 | progress_track_bg | `#e8dfd0` |
+| progress_fill_low / mid / high | `#dc3c3c` / `#f0c828` / `#3cb450` |
 | due_future_bg / due_future_fg | `#f0e8da` / `#5c5044` |
 | due_none_bg / due_none_fg | `#f0e8da` / `#7a6f62` |
 | due_today_bg / due_today_fg | `#fff9c4` / `#f57f17` |
@@ -524,6 +527,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | card_bg / card_fg | `#1a2e1f` / `#e8f5e9` |
 | menu_fill / menu_fg / menu_outline | `#243d2c` / `#e0eee2` / `#5a8a68` |
 | progress_track_bg | `#2d4a35` |
+| progress_fill_low / mid / high | `#c45c5c` / `#c9a63a` / `#4aa862` |
 | due_future_bg / due_future_fg | `#1e3224` / `#c8e6c9` |
 | due_none_bg / due_none_fg | `#1e3224` / `#8fb59a` |
 | due_today_bg / due_today_fg | `#5c4d1a` / `#ffe082` |
@@ -540,6 +544,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | card_bg / card_fg | `#faf5ff` / `#3d2a4a` |
 | menu_fill / menu_fg / menu_outline | `#f3e8ff` / `#5b3a6e` / `#b794c9` |
 | progress_track_bg | `#eadcf5` |
+| progress_fill_low / mid / high | `#dc3c3c` / `#f0c828` / `#3cb450` |
 | due_future_bg / due_future_fg | `#efe4f8` / `#4a3560` |
 | due_none_bg / due_none_fg | `#efe4f8` / `#6b5580` |
 | due_today_bg / due_today_fg | `#fff9c4` / `#f57f17` |
@@ -556,6 +561,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | card_bg / card_fg | `#0d2133` / `#e3f2fd` |
 | menu_fill / menu_fg / menu_outline | `#163044` / `#d6ebf8` / `#4a90c0` |
 | progress_track_bg | `#1a3a52` |
+| progress_fill_low / mid / high | `#c45c5c` / `#c9a63a` / `#4aa862` |
 | due_future_bg / due_future_fg | `#102433` / `#bbdefb` |
 | due_none_bg / due_none_fg | `#102433` / `#7aa0b8` |
 | due_today_bg / due_today_fg | `#5c4d1a` / `#ffe082` |
@@ -572,6 +578,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | card_bg / card_fg | `#2a1a18` / `#ffe8e0` |
 | menu_fill / menu_fg / menu_outline | `#3d2420` / `#f5d5cc` / `#c47868` |
 | progress_track_bg | `#4a302c` |
+| progress_fill_low / mid / high | `#c45c5c` / `#c9a63a` / `#4aa862` |
 | due_future_bg / due_future_fg | `#2e1c1a` / `#ffccbc` |
 | due_none_bg / due_none_fg | `#2e1c1a` / `#c4a098` |
 | due_today_bg / due_today_fg | `#5c4d1a` / `#ffe082` |
@@ -588,6 +595,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | card_bg / card_fg | `#f5f7fa` / `#1e293b` |
 | menu_fill / menu_fg / menu_outline | `#eef2f7` / `#334155` / `#94a3b8` |
 | progress_track_bg | `#dde3ea` |
+| progress_fill_low / mid / high | `#dc3c3c` / `#f0c828` / `#3cb450` |
 | due_future_bg / due_future_fg | `#e8edf2` / `#334155` |
 | due_none_bg / due_none_fg | `#e8edf2` / `#64748b` |
 | due_today_bg / due_today_fg | `#fff9c4` / `#f57f17` |
@@ -604,6 +612,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | card_bg / card_fg | `#fff5f7` / `#4a1942` |
 | menu_fill / menu_fg / menu_outline | `#fce4ec` / `#880e4f` / `#f48fb1` |
 | progress_track_bg | `#f8d7e0` |
+| progress_fill_low / mid / high | `#dc3c3c` / `#f0c828` / `#3cb450` |
 | due_future_bg / due_future_fg | `#fdeef2` / `#6b2149` |
 | due_none_bg / due_none_fg | `#fdeef2` / `#8a4560` |
 | due_today_bg / due_today_fg | `#fff9c4` / `#f57f17` |
@@ -620,6 +629,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | card_bg / card_fg | `#12161f` / `#f0f2f8` |
 | menu_fill / menu_fg / menu_outline | `#1c2230` / `#e4e8f0` / `#6a7a98` |
 | progress_track_bg | `#252b3c` |
+| progress_fill_low / mid / high | `#c45c5c` / `#c9a63a` / `#4aa862` |
 | due_future_bg / due_future_fg | `#161a26` / `#c8d0dc` |
 | due_none_bg / due_none_fg | `#161a26` / `#9aa4b4` |
 | due_today_bg / due_today_fg | `#5c4d1a` / `#ffe082` |
@@ -711,3 +721,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.14.0 | 2026-08-15 | UC-011: カレンダー当日・期限当日/超過をテーマトークン化。forest/ocean/sunset/midnight を暗い背景＋明るい文字へ |
 | 2.14.1 | 2026-08-15 | UC-011 / UC-008 実装。当日・超過色はパレット。4 テーマを暗色化 |
 | 2.14.2 | 2026-08-15 | パレット定義を `ui_theme_palettes.py` に分離。未指定時は default パレット |
+| 2.15.0 | 2026-08-15 | UC-011: 進捗バー塗りもテーマ連動（赤/黄/緑基調は維持） |

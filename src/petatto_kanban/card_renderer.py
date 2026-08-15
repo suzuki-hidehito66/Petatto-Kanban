@@ -10,7 +10,7 @@ from petatto_kanban.display.card_frame import resolve_card_frame_size
 from petatto_kanban.display.ui_metrics import UiMetrics
 from petatto_kanban.due_date import due_date_panel_style, format_due_date
 from petatto_kanban.models import Card
-from petatto_kanban.progress import progress_color
+from petatto_kanban.progress import progress_color, progress_label_color
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -115,10 +115,10 @@ class CardRenderer:
                 0,
                 fill_width,
                 height,
-                fill=progress_color(progress),
+                fill=progress_color(progress, palette),
                 outline="",
             )
-        text_color = "#ffffff" if progress >= 55 else palette.card_fg
+        text_color = progress_label_color(progress, palette)
         canvas.create_text(
             width / 2,
             height / 2,

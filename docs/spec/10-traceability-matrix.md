@@ -29,7 +29,7 @@
 | FR-021 | US-010 | AC-021-01 | `display/monitors.py`, `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
 | FR-023 | US-011 | AC-023-01, AC-023-02 | `app.py`, `display/settings.py`, `display/settings_actions.py`, `display/settings_dialog.py` | `test_display_settings.py`, `test_settings_dialog.py`, `test_settings_actions.py` + 手動 | implemented |
 | FR-024 | US-013 | AC-024-01 | `display/settings.py`, `app.py` | `test_display_settings.py` | implemented |
-| FR-025 | US-014 | AC-025-01, AC-025-02, AC-025-03 | `app.py`, `progress.py` | `test_progress.py`, `test_board_roundtrip_dict_with_progress` | implemented |
+| FR-025 | US-014 | AC-025-01, AC-025-02, AC-025-03, AC-025-04 | `app.py`, `progress.py` | `test_progress.py`, `test_board_roundtrip_dict_with_progress` | specified |
 | FR-014 | US-015 | AC-014-01, AC-014-02, AC-014-03, AC-014-04, AC-014-05, AC-014-06 | `app.py`, `due_date.py`, `due_date_calendar.py`, `due_date_picker.py`, `card_ui.py`, `display/ui_theme.py`, `display/ui_theme_palettes.py` | `test_due_date.py`, `test_ui_theme.py`, `test_board_roundtrip_dict_with_due_date` | implemented |
 | FR-006 | US-005 | AC-006-01 | （M2） | — | deferred |
 | FR-008 | US-006 | AC-008-01 | （M2） | — | deferred |

@@ -92,6 +92,14 @@ def test_all_palettes_define_calendar_day_hover() -> None:
         assert palette.due_picker_day_hover_fg.startswith("#")
 
 
+def test_all_palettes_define_progress_fill() -> None:
+    for ui_theme in UiTheme:
+        palette = palette_for_theme(ui_theme)
+        assert palette.progress_fill_low != palette.progress_fill_mid
+        assert palette.progress_fill_mid != palette.progress_fill_high
+        assert palette.progress_fill_low != palette.progress_track_bg
+
+
 def test_all_palettes_define_today_and_calendar_tokens() -> None:
     for ui_theme in UiTheme:
         palette = palette_for_theme(ui_theme)

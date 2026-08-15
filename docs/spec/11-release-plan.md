@@ -155,3 +155,4 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 | 2.8.3 | 2026-08-15 | `test` の main 同期を `sync-test-to-main.yml` で自動化 |
 | 2.9.0 | 2026-08-15 | カレンダー当日・期限当日/超過をテーマ連動。forest/ocean/sunset/midnight を暗い背景＋明るい文字へ（FR-014 / FR-028） |
 | 2.9.1 | 2026-08-15 | FR-014 / FR-028 実装。パレットを `ui_theme_palettes.py` に分離 |
+| 2.9.2 | 2026-08-15 | 進捗バー塗りをテーマ連動（FR-025 / FR-028） |
