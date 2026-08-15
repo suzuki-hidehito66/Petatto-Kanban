@@ -13,8 +13,6 @@ from petatto_kanban.due_date_calendar import (
     CALENDAR_DAY_CELL_BD,
     CALENDAR_DAY_CELL_HIGHLIGHTTHICKNESS,
     CALENDAR_DAY_CELL_WIDTH,
-    CALENDAR_TODAY_BUTTON_BG,
-    CALENDAR_TODAY_BUTTON_HOVER_BG,
     calendar_day_button_style,
     calendar_day_cell_geometry,
 )
@@ -40,7 +38,7 @@ def test_due_date_status_colors() -> None:
     assert overdue_bg != today_bg
 
 
-def test_calendar_day_button_style_today_is_green() -> None:
+def test_calendar_day_button_style_today_uses_default_green_without_palette() -> None:
     today = date(2026, 8, 12)
     style = calendar_day_button_style(
         today,
@@ -48,9 +46,9 @@ def test_calendar_day_button_style_today_is_green() -> None:
         default_bg="#ffffff",
         today=today,
     )
-    assert style.bg == CALENDAR_TODAY_BUTTON_BG
+    assert style.bg == "#43a047"
     assert style.fg == "#ffffff"
-    assert style.hover_bg == CALENDAR_TODAY_BUTTON_HOVER_BG
+    assert style.hover_bg == "#2e7d32"
     assert style.hover_fg == "#ffffff"
     assert style.relief == "flat"
 
@@ -94,7 +92,7 @@ def test_calendar_day_button_style_normal_hover_follows_theme() -> None:
     assert dark_style.hover_bg != default_style.hover_bg
 
 
-def test_calendar_day_button_style_today_hover_ignores_theme() -> None:
+def test_calendar_day_button_style_today_hover_follows_theme() -> None:
     today = date(2026, 8, 12)
     palette = palette_for_theme(UiTheme.DARK)
     style = calendar_day_button_style(
@@ -105,9 +103,13 @@ def test_calendar_day_button_style_today_hover_ignores_theme() -> None:
         today=today,
         palette=palette,
     )
-    assert style.bg == CALENDAR_TODAY_BUTTON_BG
-    assert style.hover_bg == CALENDAR_TODAY_BUTTON_HOVER_BG
+    assert style.bg == palette.calendar_today_bg
+    assert style.fg == palette.calendar_today_fg
+    assert style.hover_bg == palette.calendar_today_hover_bg
+    assert style.hover_fg == palette.calendar_today_hover_fg
+    assert style.hover_bg != style.bg
     assert style.hover_bg != palette.due_picker_day_hover_bg
+    assert style.bg != "#43a047"
 
 
 def test_calendar_day_cell_geometry_is_fixed() -> None:

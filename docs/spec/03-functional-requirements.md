@@ -207,8 +207,8 @@
 | 優先度 | Must |
 | ステータス | implemented |
 | 関連 US | US-014 |
-| 関連 AC | AC-025-01, AC-025-02 |
-| 実装 | `src/petatto_kanban/app.py`, `src/petatto_kanban/progress.py` |
+| 関連 AC | AC-025-01, AC-025-02, AC-025-03, AC-025-04 |
+| 実装 | `src/petatto_kanban/app.py`, `progress.py`, `progress_fill.py` |
 
 **説明**  
 各カードに 0〜100% の進捗率を表示し、ホバー中のマウスホイールで ±10% ずつ変更する。
@@ -216,7 +216,7 @@
 **制約**
 - 進捗率は整数 0〜100 にクランプ
 - バーは左から進捗率に比例して塗りつぶす
-- 色は 0% 付近が赤、50% 付近が黄、100% 付近が緑（線形補間）
+- 色は 0% 付近が赤、50% 付近が黄、100% 付近が緑（線形補間）。明度はカラーテーマ（FR-028 / UC-011 の `progress_fill_low` / `mid` / `high`）に従う。赤・黄・緑の色相は維持する
 - バー中央に `NN%` を表示
 - カード上にマウスホバー中: スクロールアップで +10%、スクロールダウンで −10%
 - 進捗バー上でも左クリックドラッグでカード移動、右クリック離しで削除（FR-005, FR-010）
@@ -233,19 +233,19 @@
 | ステータス | implemented |
 | 関連 US | US-015 |
 | 関連 AC | AC-014-01, AC-014-02, AC-014-03, AC-014-04, AC-014-05, AC-014-06 |
-| 実装 | `src/petatto_kanban/app.py`, `due_date.py`, `due_date_calendar.py`, `due_date_picker.py`, `card_ui.py` |
+| 実装 | `src/petatto_kanban/app.py`, `due_date.py`, `due_date_calendar.py`, `due_date_picker.py`, `card_ui.py`, `display/ui_theme.py`, `display/ui_theme_palettes.py` |
 
 **説明**  
 カードに期限（日付）を設定・表示する。既定は期限なし。
 
 **制約**
 - 期限パネルに `期限なし` または `YYYY/MM/DD` を表示
-- 期限当日はパネル背景を黄色系、期限超過は赤色系で強調
+- 期限当日はパネル背景を黄色基調、期限超過は赤色基調で強調する。明度・文字色はカラーテーマ（FR-028 / UC-011 の `due_today_*` / `due_overdue_*`）に従う
 - 期限パネルで **クリック→離す→クリック→離す**（2回目の `<ButtonRelease-1>`）でカード外のフロート期限編集パネルを開く（別ウィンドウは使用しない）
 - 編集パネル表示中に同一カードの期限パネルを **1回** クリック→離すとキャンセル（変更を保存しない）
 - フロートパネルに月間カレンダーと「期限なし」ボタンを提供
-- カレンダー上の **当日** 日付ボタンは緑色で表示（テーマ非適用）
-- 日付ボタンにマウスオーバーしたとき、背景色（必要なら文字色）が変化する。通常日のホバー色はカラーテーマ（FR-028）に従う。当日のホバーは緑系の固定色（状態識別のためテーマ非適用）
+- カレンダー上の **当日** 日付ボタンは、カラーテーマの `calendar_today_bg` / `calendar_today_fg` で表示する（全テーマ共通の固定緑は使わない）
+- 日付ボタンにマウスオーバーしたとき、背景色（必要なら文字色）が変化する。通常日のホバー色は `due_picker_day_hover_*`、当日のホバー色は `calendar_today_hover_*`。いずれもカラーテーマ（FR-028）に従う
 - 日付ボタンのセル外寸はホバー・押下・選択の前後で変わらない。隣接する日付や空セルがずれない
 - パネル外（カード・メニューパネル・透過領域など）をクリックした場合は「閉じる」と同様にキャンセル（変更を保存しない）
 - 日付選択または「期限なし」確定時に `board.json` へ保存
@@ -534,12 +534,12 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 優先度 | Must |
 | ステータス | implemented |
 | 関連 US | US-018 |
-| 関連 AC | AC-028-01, AC-028-02, AC-028-03 |
-| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_tabs.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
+| 関連 AC | AC-028-01, AC-028-02, AC-028-03, AC-028-04, AC-025-04 |
+| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_palettes.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_tabs.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `progress_fill.py`, `app.py` |
 | UI 契約 | [UC-006 §テーマタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-011 §UI カラーテーマ](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ) |
 
 **説明**  
-設定ダイアログ **「テーマ」タブ** でアプリ全体の **カラーテーマ**（背景色・文字色のプリセット）を選択できる。カード枠・タイトル・メニューパネル・期限編集パネルの枠・**カレンダー通常日のホバー色**・設定ダイアログ等に反映する。**期限の意味色**（カード期限パネルの当日黄・超過赤、カレンダー当日ボタンの緑およびそのホバー）と **進捗バーの塗り色** はテーマの影響を受けない（可読性・状態識別のため固定）。
+設定ダイアログ **「テーマ」タブ** でアプリ全体の **カラーテーマ**（背景色・文字色のプリセット）を選択できる。カード枠・タイトル・メニューパネル・期限編集パネルの枠・**カレンダー通常日のホバー色**・**カレンダー当日セル（通常・ホバー）**・**カード期限パネルの当日・超過色**・**進捗バーの塗り**・設定ダイアログ等に反映する。期限当日は黄基調・超過は赤基調、進捗塗りは赤→黄→緑基調を維持し、明度はテーマに合わせる。`forest` / `ocean` / `sunset` / `midnight` は暗い背景＋明るい文字とする。
 
 **制約**
 - 選択肢（M1）: **10 種** — `default` / `dark` / `sandy` / `forest` / `fancy` / `ocean` / `sunset` / `slate` / `rose` / `midnight`（[UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ) のパレット表）
