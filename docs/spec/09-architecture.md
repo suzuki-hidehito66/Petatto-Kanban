@@ -167,7 +167,8 @@ petatto-kanban/
 | `menu_panel_layout.py` | メニューパネル座標・ヒット判定、`MenuPanelRect` | 標準ライブラリのみ |
 | `new_card_placement.py` | 新規カード初期配置座標（UC-004 / FR-003） | `menu_panel_layout` |
 | `card_ui.py` | カード UI 参照、二回離しクリック判定 | tkinter |
-| `due_date_picker.py` | フロート期限パネル配置・外側クリック | `due_date`, `card_ui` |
+| `due_date.py` | 期限表示・状態、カレンダー日付ボタンの通常/当日/ホバー色 | 標準ライブラリ、`ui_theme`（ホバートークン） |
+| `due_date_picker.py` | フロート期限パネル配置・外側クリック・日付グリッド | `due_date`, `card_ui`, `ui_theme` |
 
 ---
 

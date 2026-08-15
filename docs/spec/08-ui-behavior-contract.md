@@ -226,8 +226,8 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-014 |
-| 関連 AC | AC-014-01, AC-014-02, AC-014-03, AC-014-04 |
+| 関連 FR | FR-014, FR-028 |
+| 関連 AC | AC-014-01, AC-014-02, AC-014-03, AC-014-04, AC-014-05, AC-014-06 |
 
 | 属性 | 値 |
 |------|-----|
@@ -235,10 +235,14 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | 閉じる（同一カード） | 編集中に期限パネルを1回クリック→離す、または「閉じる」/ Escape / パネル外クリック |
 | UI | カード外のフロートパネル（`DueDatePicker` — 別ウィンドウではない） |
 | 配置 | 期限パネル直下（画面端では上側へ自動調整） |
-| カレンダー | 月間表示。日付クリックで確定。**当日の日付ボタンは緑色** |
+| カレンダー | 月間表示（日曜始まり・7 列）。日付クリックで確定。**当日の日付ボタンは緑色**（テーマ非適用） |
+| 日付セル | 当月外のマスは空セル。日付ボタンと空セルは **同じセル外寸**。ホバー・押下・選択で外寸・隣接位置が変わらない |
+| 日付ホバー | マウスオーバーで背景色が変化する。通常日はテーマの `due_picker_day_hover_bg` / `due_picker_day_hover_fg`。当日は緑系の固定ホバー色 |
 | 期限なし | 「期限なし」ボタンで `due_date = null` |
 | 閉じる | 「閉じる」ボタン、Escape、またはパネル外クリックでキャンセル |
 | 保存 | 日付選択・期限なし確定時に `board.json` へ永続化 |
+
+日付グリッドは **色だけ** をホバーで変える。`relief`・`bd`・`highlightthickness` など枠の厚みがホバーや選択で増減するとセルがずれて見えるため、枠線厚は状態によらず固定する。ホバー色の解決は `due_date.calendar_day_button_style`（通常日はパレット、当日は固定緑）とする。
 
 ---
 
@@ -344,6 +348,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | `CARD_TITLE_FRAME_BORDER` | 1 px | タイトル枠線 |
 | `CARD_DUE_PANEL_BORDER` | 1 px | 期限パネル枠線 |
 | `DUE_PICKER_PANEL_WIDTH` | 240 px | 期限編集パネル幅 |
+| `DUE_PICKER_DAY_WIDTH` | 3 文字相当 | 日付ボタン・空セルの幅。ホバー前後で不変 |
 | `MENU_CIRCLE_SIZE` | 36 px | メニューパネル円ボタン（UC-002） |
 | メニュー円フォント pt | **14** bold | ＋ / ⚙ / × / `<` |
 | 期限パネル月ラベル pt | **9** bold | `due_date_picker` |
@@ -412,7 +417,8 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | `progress_track_bg` | 進捗バーの未達部分（トラック） |
 | `due_future_bg` / `due_future_fg` | カード期限パネル（**未来**の期限） |
 | `due_none_bg` / `due_none_fg` | カード期限パネル（**期限なし**） |
-| `due_picker_bg` / `due_picker_fg` | 期限編集パネルの枠・見出し・通常日ボタン（非ハイライト） |
+| `due_picker_bg` / `due_picker_fg` | 期限編集パネルの枠・見出し・通常日ボタン（非ハイライト・非ホバー） |
+| `due_picker_day_hover_bg` / `due_picker_day_hover_fg` | カレンダー **通常日**ボタンのホバー（当日以外） |
 
 ### テーマ非適用（固定色）
 
@@ -424,6 +430,9 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | `DUE_PANEL_OVERDUE_BG` / `DUE_PANEL_OVERDUE_FG` | カード期限パネル **超過**（赤系） | `due_date.py` |
 | `progress_color(percent)` | 進捗バー **塗り**（赤→黄→緑） | `progress.py` |
 | `CALENDAR_TODAY_BUTTON_BG` / `CALENDAR_TODAY_BUTTON_FG` | カレンダー **当日**ボタン（緑） | `due_date.py` |
+| `CALENDAR_TODAY_BUTTON_HOVER_BG` / `CALENDAR_TODAY_BUTTON_HOVER_FG` | カレンダー **当日**ボタンのホバー（緑系） | `due_date.py` |
+
+当日ボタンの固定色: 非ホバー `#43a047` / `#ffffff`、ホバー `#2e7d32` / `#ffffff`。
 
 **その他非適用**
 - オーバーレイ透過色 `TRANSPARENT_COLOR`（`transparent.py`）
@@ -463,6 +472,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | due_future_bg / due_future_fg | `#f5f5f0` / `#444444` |
 | due_none_bg / due_none_fg | `#f5f5f0` / `#666666` |
 | due_picker_bg / due_picker_fg | `#f5f5f0` / `#222222` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#d8d8cc` / `#222222` |
 
 #### dark
 
@@ -474,6 +484,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | due_future_bg / due_future_fg | `#242424` / `#cccccc` |
 | due_none_bg / due_none_fg | `#242424` / `#aaaaaa` |
 | due_picker_bg / due_picker_fg | `#222222` / `#e8e8e8` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#3d3d3d` / `#e8e8e8` |
 
 #### sandy
 
@@ -485,6 +496,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | due_future_bg / due_future_fg | `#f0e8da` / `#5c5044` |
 | due_none_bg / due_none_fg | `#f0e8da` / `#7a6f62` |
 | due_picker_bg / due_picker_fg | `#f5ede3` / `#3d3429` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#e0d0bc` / `#3d3429` |
 
 #### forest
 
@@ -496,6 +508,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | due_future_bg / due_future_fg | `#e0efe0` / `#2d5a3d` |
 | due_none_bg / due_none_fg | `#e0efe0` / `#4a6b55` |
 | due_picker_bg / due_picker_fg | `#edf5ed` / `#1b3d2a` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#c8e0c8` / `#1b3d2a` |
 
 #### fancy
 
@@ -507,6 +520,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | due_future_bg / due_future_fg | `#efe4f8` / `#4a3560` |
 | due_none_bg / due_none_fg | `#efe4f8` / `#6b5580` |
 | due_picker_bg / due_picker_fg | `#f5effa` / `#3d2a4a` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#e0d0f0` / `#3d2a4a` |
 
 #### ocean
 
@@ -518,6 +532,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | due_future_bg / due_future_fg | `#ddeef8` / `#1a5276` |
 | due_none_bg / due_none_fg | `#ddeef8` / `#4a7a9a` |
 | due_picker_bg / due_picker_fg | `#e8f4fc` / `#0d3b5c` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#c5e0f5` / `#0d3b5c` |
 
 #### sunset
 
@@ -529,6 +544,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | due_future_bg / due_future_fg | `#fceee8` / `#6b3a35` |
 | due_none_bg / due_none_fg | `#fceee8` / `#8a5a55` |
 | due_picker_bg / due_picker_fg | `#fff0ea` / `#4a2c2a` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#f0d4c8` / `#4a2c2a` |
 
 #### slate
 
@@ -540,6 +556,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | due_future_bg / due_future_fg | `#e8edf2` / `#334155` |
 | due_none_bg / due_none_fg | `#e8edf2` / `#64748b` |
 | due_picker_bg / due_picker_fg | `#edf1f5` / `#1e293b` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#d0d8e2` / `#1e293b` |
 
 #### rose
 
@@ -551,6 +568,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | due_future_bg / due_future_fg | `#fdeef2` / `#6b2149` |
 | due_none_bg / due_none_fg | `#fdeef2` / `#8a4560` |
 | due_picker_bg / due_picker_fg | `#fef0f3` / `#4a1942` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#f0cdd8` / `#4a1942` |
 
 #### midnight
 
@@ -562,6 +580,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | due_future_bg / due_future_fg | `#252b3a` / `#c0c8d4` |
 | due_none_bg / due_none_fg | `#252b3a` / `#9098a8` |
 | due_picker_bg / due_picker_fg | `#222838` / `#e0e4ec` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#3a4458` / `#e0e4ec` |
 
 **フォールバック**
 - 設定値が不正・欠損 → `default`
@@ -639,3 +658,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.12.0 | 2026-08-14 | UC-006 システムタブ: GitHub Issue 任意起票（FR-032）。エラーログは FR-031 |
 | 2.12.1 | 2026-08-14 | UC-006 システムタブ: 起票可否の ON/OFF・即時適用・永続化を明記（FR-032） |
 | 2.12.2 | 2026-08-14 | FR-032 cancelled。システムタブの GitHub 起票 UI を削除 |
+| 2.13.0 | 2026-08-15 | UC-008: カレンダー日付セルの外寸固定。通常日ホバーはテーマ、当日ホバーは緑系固定 |
