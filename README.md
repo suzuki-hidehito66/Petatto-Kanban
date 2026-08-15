@@ -145,6 +145,8 @@ Release 作成にはリポジトリ Settings → Actions → **Read and write pe
 
 **`main` ブランチ保護（推奨）:** Branch protection で PR 必須に加え、必須ステータスチェックに `check-source-branch`（`Enforce test to main`）と `build`（`Build Windows EXE`）を登録してください。
 
+**`test` ブランチ保護:** force-push を禁止する場合は、`sync-test-to-main.yml` が失敗します。Actions（`github-actions[bot]`）の force-push を許可するか、保護を付けないでください。
+
 ---
 
 ## ドキュメント
