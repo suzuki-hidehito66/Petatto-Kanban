@@ -404,7 +404,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 |------|-----|
 | 関連 FR | FR-028, FR-014 |
 | 関連 AC | AC-028-01, AC-028-02, AC-028-03, AC-028-04, AC-014-02, AC-014-03, AC-014-06 |
-| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_palettes.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
 
 `ui_theme`（`settings.json`）に応じて、UI 要素の **背景色・文字色** を切り替える。フォント（UC-010）・サイズ（UC-009）とは独立。
 
@@ -465,9 +465,9 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | `rose` | ローズ | ローズピンク系 |
 | `midnight` | ミッドナイト | より暗い紺背景・明るい文字 |
 
-### パレット定義（`display/ui_theme.py` 予定）
+### パレット定義（`display/ui_theme_palettes.py`）
 
-色は `#RRGGBB` 形式。実装は `UiThemePalette`（`display/ui_theme.py`）としてコード化する。本改訂のトークン追加と `forest` / `ocean` / `sunset` / `midnight` の暗色化は実装待ち。
+色は `#RRGGBB` 形式。実装は `UiThemePalette`（`display/ui_theme.py`）と `PALETTES`（`display/ui_theme_palettes.py`）としてコード化する。
 
 #### default（現行）
 
@@ -631,7 +631,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 
 **フォールバック**
 - 設定値が不正・欠損 → `default`
-- 実装時、パレット取得 API は `palette_for_theme(UiTheme)` を公開し、描画モジュールは定数直参照をやめてパレット経由にリファクタする
+- パレット取得 API は `palette_for_theme(UiTheme)`。未指定時は `resolved_palette` が default を返す。描画モジュールは定数直参照せずパレット経由とする
 
 ---
 
@@ -709,3 +709,5 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.13.1 | 2026-08-15 | UC-008 実装。日付セルは均等グリッドの Label。ホバーは色のみ変更 |
 | 2.13.2 | 2026-08-15 | UC-008: 日付配色・枠ジオメトリを `due_date_calendar.py` に分離 |
 | 2.14.0 | 2026-08-15 | UC-011: カレンダー当日・期限当日/超過をテーマトークン化。forest/ocean/sunset/midnight を暗い背景＋明るい文字へ |
+| 2.14.1 | 2026-08-15 | UC-011 / UC-008 実装。当日・超過色はパレット。4 テーマを暗色化 |
+| 2.14.2 | 2026-08-15 | パレット定義を `ui_theme_palettes.py` に分離。未指定時は default パレット |

@@ -36,7 +36,7 @@
 | [FR-023](#fr-023-アプリ終了) | アプリ終了（×ボタン） | Must | implemented | M1 |
 | [FR-024](#fr-024-削除確認設定) | 削除確認設定 | Must | implemented | M1 |
 | [FR-025](#fr-025-カード進捗率) | カード進捗率 | Must | implemented | M1 |
-| [FR-014](#fr-014-カード期限) | カード期限 | Must | specified | M1 |
+| [FR-014](#fr-014-カード期限) | カード期限 | Must | implemented | M1 |
 | [FR-008](#fr-008-手動保存) | 手動保存 | Should | deferred | M2 |
 | [FR-009](#fr-009-再読み込み) | 再読み込み | Should | deferred | M2 |
 | [FR-019](#fr-019-デスクトップモード) | デスクトップモード | Should | implemented | M1 拡張 |
@@ -44,7 +44,7 @@
 | [FR-022](#fr-022-表示モード切替) | 表示モード切替 | Should | implemented | M1 拡張 / M2 |
 | [FR-026](#fr-026-uiサイズ設定) | UI サイズ設定 | Must | implemented | M1 拡張 |
 | [FR-027](#fr-027-uiフォント設定) | UI フォント設定 | Must | implemented | M1 拡張 |
-| [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | specified | M1 拡張 |
+| [FR-028](#fr-028-uiカラーテーマ設定) | UI カラーテーマ設定 | Must | implemented | M1 拡張 |
 | [FR-029](#fr-029-windowsログオン時自動起動) | Windows ログオン時自動起動 | Should | implemented | M1 拡張 |
 | [FR-030](#fr-030-キーボードショートカットで新規カード作成) | キーボードショートカットで新規カード作成 | Should | implemented | M1 拡張 |
 | [FR-031](#fr-031-ローカルエラーログ) | ローカルエラーログ | Must | implemented | M1 拡張 |
@@ -230,10 +230,10 @@
 | 属性 | 値 |
 |------|-----|
 | 優先度 | Must |
-| ステータス | specified |
+| ステータス | implemented |
 | 関連 US | US-015 |
 | 関連 AC | AC-014-01, AC-014-02, AC-014-03, AC-014-04, AC-014-05, AC-014-06 |
-| 実装 | `src/petatto_kanban/app.py`, `due_date.py`, `due_date_calendar.py`, `due_date_picker.py`, `card_ui.py` |
+| 実装 | `src/petatto_kanban/app.py`, `due_date.py`, `due_date_calendar.py`, `due_date_picker.py`, `card_ui.py`, `display/ui_theme.py`, `display/ui_theme_palettes.py` |
 
 **説明**  
 カードに期限（日付）を設定・表示する。既定は期限なし。
@@ -532,10 +532,10 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 属性 | 値 |
 |------|-----|
 | 優先度 | Must |
-| ステータス | specified |
+| ステータス | implemented |
 | 関連 US | US-018 |
 | 関連 AC | AC-028-01, AC-028-02, AC-028-03, AC-028-04 |
-| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_tabs.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_palettes.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_tabs.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
 | UI 契約 | [UC-006 §テーマタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-011 §UI カラーテーマ](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ) |
 
 **説明**  

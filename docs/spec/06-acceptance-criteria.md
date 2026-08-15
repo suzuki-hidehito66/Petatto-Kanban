@@ -498,7 +498,7 @@ And board.json に due_date が保存される
 | 関連 FR | FR-014, FR-028 |
 | 関連 US | US-015 |
 | 関連 UC | UC-003, UC-011 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 手動 |
 
 ```gherkin
@@ -520,7 +520,7 @@ Then 期限パネルに「期限なし」と表示される
 | 関連 FR | FR-014, FR-028 |
 | 関連 US | US-015 |
 | 関連 UC | UC-008, UC-011 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 手動 |
 
 ```gherkin
@@ -574,7 +574,7 @@ Then セルの位置・外寸はホバー前と同一である
 | 関連 FR | FR-014, FR-028 |
 | 関連 US | US-015 |
 | 関連 UC | UC-008, UC-011 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動 |
 
 ```gherkin
@@ -939,7 +939,7 @@ And tkinter フォントファミリーは "Segoe UI" になる
 | 関連 FR | FR-028 |
 | 関連 US | US-018 |
 | 関連 UC | UC-006, UC-011 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動 |
 
 ```gherkin
@@ -997,7 +997,7 @@ And 配色は default テーマ（現行既定）になる
 | 関連 FR | FR-028, FR-014 |
 | 関連 US | US-018 |
 | 関連 UC | UC-011, UC-008, UC-003 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動 |
 
 ```gherkin
