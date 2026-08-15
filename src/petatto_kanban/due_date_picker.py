@@ -9,9 +9,17 @@ from datetime import date
 from tkinter import ttk
 
 from petatto_kanban.card_ui import widget_is_descendant
-from petatto_kanban.due_date import DUE_DATE_NONE_LABEL, calendar_day_button_style
+from petatto_kanban.display.ui_theme import UiThemePalette
+from petatto_kanban.due_date import (
+    CALENDAR_DAY_CELL_PADX,
+    CALENDAR_DAY_CELL_PADY,
+    DUE_DATE_NONE_LABEL,
+    calendar_day_button_style,
+    calendar_day_cell_geometry,
+)
 
 _WEEKDAY_LABELS = ("日", "月", "火", "水", "木", "金", "土")
+_CALENDAR_COLUMNS = 7
 
 
 class DueDatePicker(tk.Frame):
@@ -28,12 +36,15 @@ class DueDatePicker(tk.Frame):
         fg: str,
         month_font: tuple[str, int, str] | tuple[str, int] = ("Segoe UI", 9, "bold"),
         weekday_font: tuple[str, int] | tuple[str, int, str] = ("Segoe UI", 8),
+        palette: UiThemePalette | None = None,
     ) -> None:
         super().__init__(parent, bg=bg, bd=1, relief=tk.RIDGE, padx=4, pady=4)
         self._on_apply = on_apply
         self._on_cancel = on_cancel
         self._bg = bg
         self._fg = fg
+        self._weekday_font = weekday_font
+        self._palette = palette
         self._selected = initial
         anchor = initial or date.today()
         self._view_year = anchor.year
@@ -46,20 +57,10 @@ class DueDatePicker(tk.Frame):
         self._month_label.pack(side=tk.LEFT, expand=True)
         ttk.Button(header, text="▶", width=3, command=self._next_month).pack(side=tk.RIGHT)
 
-        weekday_row = tk.Frame(self, bg=bg)
-        weekday_row.pack(fill=tk.X)
-        for label in _WEEKDAY_LABELS:
-            tk.Label(
-                weekday_row,
-                text=label,
-                bg=bg,
-                fg=fg,
-                width=3,
-                font=weekday_font,
-            ).pack(side=tk.LEFT, expand=True)
-
         self._days_frame = tk.Frame(self, bg=bg)
         self._days_frame.pack(fill=tk.X)
+        for column in range(_CALENDAR_COLUMNS):
+            self._days_frame.columnconfigure(column, weight=1, uniform="cal")
 
         actions = tk.Frame(self, bg=bg)
         actions.pack(fill=tk.X, pady=(4, 0))
@@ -102,37 +103,72 @@ class DueDatePicker(tk.Frame):
         for child in self._days_frame.winfo_children():
             child.destroy()
 
+        for column, label in enumerate(_WEEKDAY_LABELS):
+            self._place_cell(self._weekday_label(label), row=0, column=column)
+
         weeks = calendar.Calendar(firstweekday=calendar.SUNDAY).monthdayscalendar(
             self._view_year,
             self._view_month,
         )
-        for week in weeks:
-            row = tk.Frame(self._days_frame, bg=self._bg)
-            row.pack(fill=tk.X)
-            for day_number in week:
-                if day_number == 0:
-                    tk.Label(row, text="", bg=self._bg, width=3).pack(
-                        side=tk.LEFT, expand=True
-                    )
-                    continue
-                day = date(self._view_year, self._view_month, day_number)
-                bg, fg, relief_name = calendar_day_button_style(
-                    day,
-                    selected=self._selected,
-                    default_bg=self._bg,
-                    default_fg=self._fg,
-                )
-                tk.Button(
-                    row,
-                    text=str(day_number),
-                    width=3,
-                    bg=bg,
-                    fg=fg,
-                    activebackground=bg,
-                    activeforeground=fg,
-                    relief=tk.SUNKEN if relief_name == "sunken" else tk.FLAT,
-                    command=lambda picked=day: self._select_day(picked),
-                ).pack(side=tk.LEFT, expand=True, padx=1, pady=1)
+        for row, week in enumerate(weeks, start=1):
+            for column, day_number in enumerate(week):
+                self._place_cell(self._day_cell(day_number), row=row, column=column)
+
+    def _weekday_label(self, text: str) -> tk.Label:
+        return tk.Label(
+            self._days_frame,
+            text=text,
+            bg=self._bg,
+            fg=self._fg,
+            font=self._weekday_font,
+            relief=tk.FLAT,
+            **calendar_day_cell_geometry(),
+        )
+
+    def _day_cell(self, day_number: int) -> tk.Label:
+        if day_number == 0:
+            return tk.Label(
+                self._days_frame,
+                text="",
+                bg=self._bg,
+                relief=tk.FLAT,
+                **calendar_day_cell_geometry(),
+            )
+        day = date(self._view_year, self._view_month, day_number)
+        style = calendar_day_button_style(
+            day,
+            selected=self._selected,
+            default_bg=self._bg,
+            default_fg=self._fg,
+            palette=self._palette,
+        )
+        cell = tk.Label(
+            self._days_frame,
+            text=str(day_number),
+            bg=style.bg,
+            fg=style.fg,
+            font=self._weekday_font,
+            relief=tk.SUNKEN if style.relief == "sunken" else tk.FLAT,
+            cursor="hand2",
+            **calendar_day_cell_geometry(),
+        )
+        cell.bind("<Enter>", lambda _e, widget=cell, s=style: widget.configure(
+            bg=s.hover_bg, fg=s.hover_fg
+        ))
+        cell.bind("<Leave>", lambda _e, widget=cell, s=style: widget.configure(
+            bg=s.bg, fg=s.fg
+        ))
+        cell.bind("<Button-1>", lambda _e, picked=day: self._select_day(picked))
+        return cell
+
+    def _place_cell(self, cell: tk.Label, *, row: int, column: int) -> None:
+        cell.grid(
+            row=row,
+            column=column,
+            sticky="nsew",
+            padx=CALENDAR_DAY_CELL_PADX,
+            pady=CALENDAR_DAY_CELL_PADY,
+        )
 
 
 class DueDatePickerHost:
@@ -147,6 +183,7 @@ class DueDatePickerHost:
         panel_width: int,
         month_font: tuple[str, int, str] | tuple[str, int] = ("Segoe UI", 9, "bold"),
         weekday_font: tuple[str, int] | tuple[str, int, str] = ("Segoe UI", 8),
+        palette: UiThemePalette | None = None,
         on_outside_click: Callable[[], None] | None = None,
     ) -> None:
         self._root = root
@@ -155,6 +192,7 @@ class DueDatePickerHost:
         self._panel_width = panel_width
         self._month_font = month_font
         self._weekday_font = weekday_font
+        self._palette = palette
         self._on_outside_click = on_outside_click
         self._host: tk.Frame | None = None
         self._picker: DueDatePicker | None = None
@@ -222,6 +260,7 @@ class DueDatePickerHost:
             fg=self._fg,
             month_font=self._month_font,
             weekday_font=self._weekday_font,
+            palette=self._palette,
         )
         picker.pack(fill=tk.BOTH, expand=True)
         self._host = host
