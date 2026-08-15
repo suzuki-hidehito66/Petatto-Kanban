@@ -85,6 +85,7 @@ class UiChrome:
             panel_width=self._metrics.due_picker_panel_width,
             month_font=self._metrics.due_picker_month_font,
             weekday_font=self._metrics.due_picker_day_font,
+            palette=palette,
             on_outside_click=self._on_due_picker_outside_click,
         )
 
