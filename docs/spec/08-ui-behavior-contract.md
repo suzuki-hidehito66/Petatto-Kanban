@@ -242,7 +242,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | 閉じる | 「閉じる」ボタン、Escape、またはパネル外クリックでキャンセル |
 | 保存 | 日付選択・期限なし確定時に `board.json` へ永続化 |
 
-日付グリッドは **色だけ** をホバーで変える。`relief`・`bd`・`highlightthickness` など枠の厚みがホバーや選択で増減するとセルがずれて見えるため、枠線厚は状態によらず固定する。ホバー色の解決は `due_date.calendar_day_button_style`（通常日はパレット、当日は固定緑）とする。
+日付グリッドは **色だけ** をホバーで変える。`relief`・`bd`・`highlightthickness` など枠の厚みがホバーや選択で増減するとセルがずれて見えるため、枠線厚は状態によらず固定する。ホバー色の解決は `due_date_calendar.calendar_day_button_style`（通常日はパレット、当日は固定緑）とする。
 
 ---
 
@@ -429,8 +429,8 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | `DUE_PANEL_TODAY_BG` / `DUE_PANEL_TODAY_FG` | カード期限パネル **当日**（黄系） | `due_date.py` |
 | `DUE_PANEL_OVERDUE_BG` / `DUE_PANEL_OVERDUE_FG` | カード期限パネル **超過**（赤系） | `due_date.py` |
 | `progress_color(percent)` | 進捗バー **塗り**（赤→黄→緑） | `progress.py` |
-| `CALENDAR_TODAY_BUTTON_BG` / `CALENDAR_TODAY_BUTTON_FG` | カレンダー **当日**ボタン（緑） | `due_date.py` |
-| `CALENDAR_TODAY_BUTTON_HOVER_BG` / `CALENDAR_TODAY_BUTTON_HOVER_FG` | カレンダー **当日**ボタンのホバー（緑系） | `due_date.py` |
+| `CALENDAR_TODAY_BUTTON_BG` / `CALENDAR_TODAY_BUTTON_FG` | カレンダー **当日**ボタン（緑） | `due_date_calendar.py` |
+| `CALENDAR_TODAY_BUTTON_HOVER_BG` / `CALENDAR_TODAY_BUTTON_HOVER_FG` | カレンダー **当日**ボタンのホバー（緑系） | `due_date_calendar.py` |
 
 当日ボタンの固定色: 非ホバー `#43a047` / `#ffffff`、ホバー `#2e7d32` / `#ffffff`。
 
@@ -659,3 +659,5 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.12.1 | 2026-08-14 | UC-006 システムタブ: 起票可否の ON/OFF・即時適用・永続化を明記（FR-032） |
 | 2.12.2 | 2026-08-14 | FR-032 cancelled。システムタブの GitHub 起票 UI を削除 |
 | 2.13.0 | 2026-08-15 | UC-008: カレンダー日付セルの外寸固定。通常日ホバーはテーマ、当日ホバーは緑系固定 |
+| 2.13.1 | 2026-08-15 | UC-008 実装。日付セルは均等グリッドの Label。ホバーは色のみ変更 |
+| 2.13.2 | 2026-08-15 | UC-008: 日付配色・枠ジオメトリを `due_date_calendar.py` に分離 |

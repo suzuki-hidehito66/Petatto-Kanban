@@ -10,16 +10,17 @@ from tkinter import ttk
 
 from petatto_kanban.card_ui import widget_is_descendant
 from petatto_kanban.display.ui_theme import UiThemePalette
-from petatto_kanban.due_date import (
+from petatto_kanban.due_date import DUE_DATE_NONE_LABEL
+from petatto_kanban.due_date_calendar import (
+    CALENDAR_COLUMNS,
     CALENDAR_DAY_CELL_PADX,
     CALENDAR_DAY_CELL_PADY,
-    DUE_DATE_NONE_LABEL,
+    CalendarDayButtonStyle,
     calendar_day_button_style,
     calendar_day_cell_geometry,
 )
 
 _WEEKDAY_LABELS = ("日", "月", "火", "水", "木", "金", "土")
-_CALENDAR_COLUMNS = 7
 
 
 class DueDatePicker(tk.Frame):
@@ -59,7 +60,7 @@ class DueDatePicker(tk.Frame):
 
         self._days_frame = tk.Frame(self, bg=bg)
         self._days_frame.pack(fill=tk.X)
-        for column in range(_CALENDAR_COLUMNS):
+        for column in range(CALENDAR_COLUMNS):
             self._days_frame.columnconfigure(column, weight=1, uniform="cal")
 
         actions = tk.Frame(self, bg=bg)
@@ -152,12 +153,14 @@ class DueDatePicker(tk.Frame):
             cursor="hand2",
             **calendar_day_cell_geometry(),
         )
-        cell.bind("<Enter>", lambda _e, widget=cell, s=style: widget.configure(
-            bg=s.hover_bg, fg=s.hover_fg
-        ))
-        cell.bind("<Leave>", lambda _e, widget=cell, s=style: widget.configure(
-            bg=s.bg, fg=s.fg
-        ))
+        cell.bind(
+            "<Enter>",
+            lambda _e, widget=cell, s=style: _paint_day_cell(widget, s, hovering=True),
+        )
+        cell.bind(
+            "<Leave>",
+            lambda _e, widget=cell, s=style: _paint_day_cell(widget, s, hovering=False),
+        )
         cell.bind("<Button-1>", lambda _e, picked=day: self._select_day(picked))
         return cell
 
@@ -169,6 +172,19 @@ class DueDatePicker(tk.Frame):
             padx=CALENDAR_DAY_CELL_PADX,
             pady=CALENDAR_DAY_CELL_PADY,
         )
+
+
+def _paint_day_cell(
+    cell: tk.Label,
+    style: CalendarDayButtonStyle,
+    *,
+    hovering: bool,
+) -> None:
+    """ホバー時は色だけ変える（枠線厚・ relief は触らない）."""
+    if hovering:
+        cell.configure(bg=style.hover_bg, fg=style.hover_fg)
+        return
+    cell.configure(bg=style.bg, fg=style.fg)
 
 
 class DueDatePickerHost:

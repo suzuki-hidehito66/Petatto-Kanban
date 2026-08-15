@@ -4,8 +4,8 @@
 |------|------|
 | 対象 | 本リポジトリの Python ソースコード（`src/`, `tests/`） |
 | Python バージョン | 3.11 以上 |
-| 文書バージョン | 1.7.0 |
-| 最終更新日 | 2026-08-14 |
+| 文書バージョン | 1.8.0 |
+| 最終更新日 | 2026-08-15 |
 
 ---
 
@@ -220,3 +220,4 @@ def test_save_and_load_board(tmp_path: Path) -> None:
 | 1.6.0 | 2026-08-14 | GitHub トークン前提の記述を削除（FR-032 cancelled） |
 | 1.6.1 | 2026-08-14 | `system/error_log.py` を配置ルールに追加 |
 | 1.7.0 | 2026-08-14 | `error_log_paths` / `error_log_redact` をエラーログ初期化から分離 |
+| 1.8.0 | 2026-08-15 | `due_date_calendar.py` を期限表示から分離 |

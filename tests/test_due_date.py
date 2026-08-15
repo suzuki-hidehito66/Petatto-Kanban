@@ -4,17 +4,19 @@ from datetime import date
 
 from petatto_kanban.display.ui_theme import UiTheme, palette_for_theme
 from petatto_kanban.due_date import (
+    DUE_DATE_NONE_LABEL,
+    due_date_panel_style,
+    due_date_status,
+    format_due_date,
+)
+from petatto_kanban.due_date_calendar import (
     CALENDAR_DAY_CELL_BD,
     CALENDAR_DAY_CELL_HIGHLIGHTTHICKNESS,
     CALENDAR_DAY_CELL_WIDTH,
     CALENDAR_TODAY_BUTTON_BG,
     CALENDAR_TODAY_BUTTON_HOVER_BG,
-    DUE_DATE_NONE_LABEL,
     calendar_day_button_style,
     calendar_day_cell_geometry,
-    due_date_panel_style,
-    due_date_status,
-    format_due_date,
 )
 
 

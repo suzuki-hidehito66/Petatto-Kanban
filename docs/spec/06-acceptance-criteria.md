@@ -546,7 +546,7 @@ And due_date は変更されない
 | 関連 FR | FR-014 |
 | 関連 US | US-015 |
 | 関連 UC | UC-008 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動 |
 
 ```gherkin
@@ -567,7 +567,7 @@ Then セルの位置・外寸はホバー前と同一である
 | 関連 FR | FR-014, FR-028 |
 | 関連 US | US-015 |
 | 関連 UC | UC-008, UC-011 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動 |
 
 ```gherkin

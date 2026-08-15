@@ -233,7 +233,7 @@
 | ステータス | implemented |
 | 関連 US | US-015 |
 | 関連 AC | AC-014-01, AC-014-02, AC-014-03, AC-014-04, AC-014-05, AC-014-06 |
-| 実装 | `src/petatto_kanban/app.py`, `due_date.py`, `due_date_picker.py`, `card_ui.py` |
+| 実装 | `src/petatto_kanban/app.py`, `due_date.py`, `due_date_calendar.py`, `due_date_picker.py`, `card_ui.py` |
 
 **説明**  
 カードに期限（日付）を設定・表示する。既定は期限なし。

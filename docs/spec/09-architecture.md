@@ -74,6 +74,7 @@ petatto-kanban/
 │   ├── app.py                    # GUI（プレゼンテーション）
 │   ├── card_ui.py                # カードウィジェット参照・クリック判定
 │   ├── due_date.py               # 期限表示・状態
+│   ├── due_date_calendar.py      # カレンダー日付セルの配色・枠ジオメトリ
 │   ├── due_date_picker.py        # フロートカレンダー UI / ホスト
 │   ├── menu_panel.py             # メニューパネル UI
 │   ├── menu_panel_layout.py      # メニューパネル座標・ヒット判定
@@ -167,8 +168,9 @@ petatto-kanban/
 | `menu_panel_layout.py` | メニューパネル座標・ヒット判定、`MenuPanelRect` | 標準ライブラリのみ |
 | `new_card_placement.py` | 新規カード初期配置座標（UC-004 / FR-003） | `menu_panel_layout` |
 | `card_ui.py` | カード UI 参照、二回離しクリック判定 | tkinter |
-| `due_date.py` | 期限表示・状態、カレンダー日付ボタンの通常/当日/ホバー色 | 標準ライブラリ、`ui_theme`（ホバートークン） |
-| `due_date_picker.py` | フロート期限パネル配置・外側クリック・日付グリッド | `due_date`, `card_ui`, `ui_theme` |
+| `due_date.py` | カード期限の表示文字列・状態色 | 標準ライブラリ、`ui_theme` |
+| `due_date_calendar.py` | カレンダー日付ボタンの通常/当日/ホバー色とセル枠ジオメトリ | 標準ライブラリ、`ui_theme`（ホバートークン） |
+| `due_date_picker.py` | フロート期限パネル配置・外側クリック・日付グリッド | `due_date`, `due_date_calendar`, `card_ui`, `ui_theme` |
 
 ---
 
