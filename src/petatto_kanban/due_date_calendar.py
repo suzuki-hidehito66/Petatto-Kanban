@@ -59,10 +59,16 @@ def calendar_day_button_style(
         hover_fg = palette.due_picker_day_hover_fg
     relief = "flat"
     if day == reference:
-        bg = CALENDAR_TODAY_BUTTON_BG
-        fg = CALENDAR_TODAY_BUTTON_FG
-        hover_bg = CALENDAR_TODAY_BUTTON_HOVER_BG
-        hover_fg = CALENDAR_TODAY_BUTTON_HOVER_FG
+        if palette is not None:
+            bg = palette.calendar_today_bg
+            fg = palette.calendar_today_fg
+            hover_bg = palette.calendar_today_hover_bg
+            hover_fg = palette.calendar_today_hover_fg
+        else:
+            bg = CALENDAR_TODAY_BUTTON_BG
+            fg = CALENDAR_TODAY_BUTTON_FG
+            hover_bg = CALENDAR_TODAY_BUTTON_HOVER_BG
+            hover_fg = CALENDAR_TODAY_BUTTON_HOVER_FG
     if selected == day:
         relief = "sunken"
     return CalendarDayButtonStyle(

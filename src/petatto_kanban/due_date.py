@@ -47,8 +47,12 @@ def due_date_panel_style(
     """期限パネルの背景色・文字色を返す."""
     status = due_date_status(value, today)
     if status == "overdue":
+        if palette is not None:
+            return palette.due_overdue_bg, palette.due_overdue_fg
         return DUE_PANEL_OVERDUE_BG, DUE_PANEL_OVERDUE_FG
     if status == "today":
+        if palette is not None:
+            return palette.due_today_bg, palette.due_today_fg
         return DUE_PANEL_TODAY_BG, DUE_PANEL_TODAY_FG
     if palette is not None:
         if status == "future":
