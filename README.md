@@ -123,9 +123,9 @@ scripts\build_exe.bat
 1. `dev_<name>` を `main` から切る（未リリースの `test` 上の変更に依存するときだけ `test` から）
 2. `dev_*` → `test` を **squash マージ**して動作確認する
 3. 確認できたら `test` → `main` の PR を **squash マージ**する（`dev_*` から `main` へは出さない）
-4. **`main` マージ直後**に `test` を `origin/main` へ `reset --hard` し、`--force-with-lease` で push する
+4. **`main` マージ直後**に `test` を `main` へ合わせる。CI（`sync-test-to-main.yml`）が自動で行う。失敗時だけ手動で `reset --hard origin/main` と `--force-with-lease` push
 
-`test` の force-push はリリース後の同期だけ。開発中は squash PR のみ（merge commit なし）。
+`test` の force-push はリリース後の同期だけ。開発中は squash PR のみ（merge commit なし）。`test` を保護する場合は GitHub Actions の force-push を許可してください。
 
 リリース前は `pyproject.toml` / `__init__.py` / `docs/spec/11-release-plan.md` の **3 箇所でバージョンを同期** してください（`tests/test_release_version.py` で検証）。
 
@@ -137,7 +137,7 @@ scripts\build_exe.bat
 |----------|------|
 | `main` 向け PR | Windows でテスト・Lint・exe ビルド |
 | `main` 向け PR（元ブランチ） | **`test` のみ**（`enforce-test-to-main.yml`） |
-| `main` へマージ | GitHub Release 作成（`v{バージョン}` タグ、`Petatto-Kanban.exe` 添付） |
+| `main` へマージ | GitHub Release 作成（`v{バージョン}` タグ、`Petatto-Kanban.exe` 添付）。続けて `sync-test-to-main.yml` が `test` を `main` に揃える |
 
 ### GitHub Actions 権限（メンテナ向け）
 

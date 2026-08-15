@@ -41,7 +41,7 @@ See [README.md](README.md) and [docs/SPECIFICATION.md](docs/SPECIFICATION.md) fo
 1. テーマごとに `dev_<name>` を **`main` から**作成して開発（未リリースの `test` 上の変更に依存するときだけ `test` から切る）
 2. 区切りがついたら **`dev_*` → `test` の PR を squash マージ**する。ローカルで `git merge` しない
 3. `test` で動作確認できたら **`test` → `main` の PR** を作り、**squash マージ**する（`dev_*` から `main` へは出さない）
-4. **`main` マージ直後**に `test` を新しい `main` へ合わせる（これを忘れると次の `test` → `main` がコンフリクトする）
+4. **`main` マージ直後**に `test` を新しい `main` へ合わせる。通常は CI（`sync-test-to-main.yml`）が `reset --hard` 相当の force-with-lease push をする。失敗したときだけ手動:
 
 ```bash
 git fetch origin
@@ -50,6 +50,6 @@ git reset --hard origin/main
 git push --force-with-lease origin test
 ```
 
-`test` の force-push は **このリリース後同期だけ**。開発中の `test` は squash PR のみで進め、merge commit は入れない。
+`test` の force-push は **このリリース後同期だけ**。開発中の `test` は squash PR のみで進め、merge commit は入れない。`test` にブランチ保護を付ける場合は、Actions の force-push を許可する。
 
 `dev_release-*` は使わない。`main` への PR 元は **`test` のみ**。
