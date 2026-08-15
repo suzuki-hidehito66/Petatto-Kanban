@@ -122,7 +122,8 @@ Petatto-Kanban の UI は **3 種類の表示モード** を提供する。
 | `display/ui_metrics.py` | UiMetrics 合成（FR-026 + FR-027 + card_layout） |
 | `display/ui_font.py` | UI フォントプリセット（FR-027） |
 | `display/ui_font_labels.py` | UI フォント UI ラベル |
-| `display/ui_theme.py` | UI カラーテーマパレット（FR-028） |
+| `display/ui_theme.py` | UI カラーテーマ型・解決（FR-028） |
+| `display/ui_theme_palettes.py` | 10 種パレット定義（UC-011） |
 | `display/ui_theme_labels.py` | UI カラーテーマ UI ラベル |
 
 ### DM-COMMON-03: モード切替（M1 拡張）

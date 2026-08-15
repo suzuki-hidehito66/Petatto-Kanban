@@ -12,7 +12,7 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 
 | 項目 | 値 |
 |------|-----|
-| バージョン | `0.1.8` |
+| バージョン | `0.1.9` |
 | 同期先 | `pyproject.toml` `[project].version`、`src/petatto_kanban/__init__.py` `__version__` |
 
 **main へマージ（PR マージ）時**: `build-windows.yml` が exe をビルドし、未使用の `v{バージョン}` タグで [GitHub Release](https://github.com/suzuki-hidehito66/Petatto-Kanban/releases) を作成する。同じバージョンで再マージする場合は **リリース前にバージョンをインクリメント** すること（タグ重複で CI が失敗する）。
@@ -153,3 +153,7 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 | 2.8.1 | 2026-08-15 | FR-014 実装。日付配色を `due_date_calendar.py` に分離 |
 | 2.8.2 | 2026-08-15 | ブランチ戦略 B: `test` → `main` は squash。直後に `test` を `main` へ同期 |
 | 2.8.3 | 2026-08-15 | `test` の main 同期を `sync-test-to-main.yml` で自動化 |
+| 2.9.0 | 2026-08-15 | カレンダー当日・期限当日/超過をテーマ連動。forest/ocean/sunset/midnight を暗い背景＋明るい文字へ（FR-014 / FR-028） |
+| 2.9.1 | 2026-08-15 | FR-014 / FR-028 実装。パレットを `ui_theme_palettes.py` に分離 |
+| 2.9.2 | 2026-08-15 | 進捗バー塗りをテーマ連動（FR-025 / FR-028） |
+| 2.9.3 | 2026-08-15 | 進捗塗りを `progress_fill.py` に分離 |
