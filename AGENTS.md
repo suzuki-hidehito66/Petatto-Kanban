@@ -30,16 +30,26 @@ See [README.md](README.md) and [docs/SPECIFICATION.md](docs/SPECIFICATION.md) fo
 
 ### Git ブランチ運用
 
-| ブランチ | 用途 |
-|----------|------|
-| `dev_*` | 機能開発（例: `dev_new-card-position-tune`） |
-| `test` | 開発ブランチの統合・検証用ステージング |
-| `main` | リリース相当（本番） |
+| ブランチ | 用途 | 履歴 |
+|----------|------|------|
+| `main` | 本番。マージ時に GitHub Release | リリース 1 件 = squash 1 コミット |
+| `test` | 動作確認用の統合 | 機能 1 件 = squash 1 コミット。リリース後は `main` に一致させる |
+| `dev_*` | テーマごとの開発（例: `dev_calendar-panel-fix`） | 作業コミット。マージ後は削除してよい |
 
 **フロー**
 
-1. テーマごとに `dev_<name>` を `main` から作成して開発
-2. 区切りがついたら **`dev_*` → `test` にマージ**（`git checkout test && git merge dev_... && git push origin test`）
-3. `test` で問題なければ、**`test` → `main` 向け PR** を作成してマージ
+1. テーマごとに `dev_<name>` を **`main` から**作成して開発（未リリースの `test` 上の変更に依存するときだけ `test` から切る）
+2. 区切りがついたら **`dev_*` → `test` の PR を squash マージ**する。ローカルで `git merge` しない
+3. `test` で動作確認できたら **`test` → `main` の PR** を作り、**squash マージ**する（`dev_*` から `main` へは出さない）
+4. **`main` マージ直後**に `test` を新しい `main` へ合わせる。通常は CI（`sync-test-to-main.yml`）が `reset --hard` 相当の force-with-lease push をする。失敗したときだけ手動:
 
-`dev_*` から直接 `main` へ PR しない（検証は `test` 経由）。
+```bash
+git fetch origin
+git checkout test
+git reset --hard origin/main
+git push --force-with-lease origin test
+```
+
+`test` の force-push は **このリリース後同期だけ**。開発中の `test` は squash PR のみで進め、merge commit は入れない。`test` にブランチ保護を付ける場合は、Actions の force-push を許可する。
+
+`dev_release-*` は使わない。`main` への PR 元は **`test` のみ**。

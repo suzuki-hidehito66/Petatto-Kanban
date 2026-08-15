@@ -114,10 +114,18 @@ scripts\build_exe.bat
 
 | ブランチ | 用途 |
 |----------|------|
-| `main` | リリース用。マージ時に CI が exe ビルド + GitHub Release |
-| `test` | 統合・検証用 |
-| `dev_*-017d` | 機能開発用（PR は通常 `test` 向け） |
-| `dev_release-*` | `test` → `main` が squash 由来でコンフリクトし、`test` を rebase できないとき。`main` 直下に `test` と同一ツリーを載せる |
+| `main` | 本番。squash マージ 1 回 = リリース 1 件。CI が exe ビルド + GitHub Release |
+| `test` | 動作確認用。`dev_*` の squash を載せる。リリース後は `main` に一致させる |
+| `dev_*` | 機能開発。**`main` から作成**し、PR は **`test` 向け**（squash） |
+
+**流れ**
+
+1. `dev_<name>` を `main` から切る（未リリースの `test` 上の変更に依存するときだけ `test` から）
+2. `dev_*` → `test` を **squash マージ**して動作確認する
+3. 確認できたら `test` → `main` の PR を **squash マージ**する（`dev_*` から `main` へは出さない）
+4. **`main` マージ直後**に `test` を `main` へ合わせる。CI（`sync-test-to-main.yml`）が自動で行う。失敗時だけ手動で `reset --hard origin/main` と `--force-with-lease` push
+
+`test` の force-push はリリース後の同期だけ。開発中は squash PR のみ（merge commit なし）。`test` を保護する場合は GitHub Actions の force-push を許可してください。
 
 リリース前は `pyproject.toml` / `__init__.py` / `docs/spec/11-release-plan.md` の **3 箇所でバージョンを同期** してください（`tests/test_release_version.py` で検証）。
 
@@ -128,14 +136,16 @@ scripts\build_exe.bat
 | イベント | 動作 |
 |----------|------|
 | `main` 向け PR | Windows でテスト・Lint・exe ビルド |
-| `main` 向け PR（元ブランチ） | **`test` または `dev_release-*`**（`enforce-test-to-main.yml`） |
-| `main` へマージ | GitHub Release 作成（`v{バージョン}` タグ、`Petatto-Kanban.exe` 添付） |
+| `main` 向け PR（元ブランチ） | **`test` のみ**（`enforce-test-to-main.yml`） |
+| `main` へマージ | GitHub Release 作成（`v{バージョン}` タグ、`Petatto-Kanban.exe` 添付）。続けて `sync-test-to-main.yml` が `test` を `main` に揃える |
 
 ### GitHub Actions 権限（メンテナ向け）
 
 Release 作成にはリポジトリ Settings → Actions → **Read and write permissions** が必要です。403 になる場合は [Issue](https://github.com/suzuki-hidehito66/Petatto-Kanban/issues) で確認してください。
 
 **`main` ブランチ保護（推奨）:** Branch protection で PR 必須に加え、必須ステータスチェックに `check-source-branch`（`Enforce test to main`）と `build`（`Build Windows EXE`）を登録してください。
+
+**`test` ブランチ保護:** force-push を禁止する場合は、`sync-test-to-main.yml` が失敗します。Actions（`github-actions[bot]`）の force-push を許可するか、保護を付けないでください。
 
 ---
 

@@ -8,11 +8,11 @@ jobs:
   check-source-branch:
     runs-on: ubuntu-latest
     steps:
-      - name: Require PR from test or release replay branch
-        if: github.head_ref != 'test' && !startsWith(github.head_ref, 'dev_release-')
+      - name: Require PR from test
+        if: github.head_ref != 'test'
         run: |
-          echo "::error::main へのマージは test、または squash 後の履歴分岐を解消する dev_release-* からの PR のみ許可されています（現在: ${{ github.head_ref }}）"
+          echo "::error::main へのマージは test からの PR のみ許可されています（現在: ${{ github.head_ref }}）。dev_* は test で検証してから test → main とする。"
           exit 1
       - name: Source branch OK
-        if: github.head_ref == 'test' || startsWith(github.head_ref, 'dev_release-')
-        run: echo "OK merging ${{ github.head_ref }} into main"
+        if: github.head_ref == 'test'
+        run: echo "OK merging test into main"
