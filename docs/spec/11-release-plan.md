@@ -153,3 +153,4 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 | 2.8.1 | 2026-08-15 | FR-014 実装。日付配色を `due_date_calendar.py` に分離 |
 | 2.8.2 | 2026-08-15 | ブランチ戦略 B: `test` → `main` は squash。直後に `test` を `main` へ同期 |
 | 2.8.3 | 2026-08-15 | `test` の main 同期を `sync-test-to-main.yml` で自動化 |
+| 2.9.0 | 2026-08-15 | カレンダー当日・期限当日/超過をテーマ連動。forest/ocean/sunset/midnight を暗い背景＋明るい文字へ（FR-014 / FR-028） |

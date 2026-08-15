@@ -128,7 +128,7 @@
 | 期限パネル | 左クリックドラッグ | 画面上の位置を変更（FR-010） |
 | 期限パネル | 右クリック離し | **削除処理**（FR-005） |
 | 期限パネル | クリック→離す→クリック→離す | 期限編集パネル（UC-008）。2回目の離しで表示 |
-| 期限パネル | — | `期限なし` または `YYYY/MM/DD`。当日=黄 / 超過=赤（**テーマ非適用** — [UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ)） |
+| 期限パネル | — | `期限なし` または `YYYY/MM/DD`。当日=黄基調 / 超過=赤基調（明度・文字色はテーマに従う — [UC-011](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ)） |
 
 **削除**
 - 右ボタンを **離した** とき（`<ButtonRelease-3>`）→ `_delete_card()` を呼び出し
@@ -227,7 +227,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | 属性 | 値 |
 |------|-----|
 | 関連 FR | FR-014, FR-028 |
-| 関連 AC | AC-014-01, AC-014-02, AC-014-03, AC-014-04, AC-014-05, AC-014-06 |
+| 関連 AC | AC-014-01, AC-014-02, AC-014-03, AC-014-04, AC-014-05, AC-014-06, AC-028-04 |
 
 | 属性 | 値 |
 |------|-----|
@@ -235,14 +235,14 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | 閉じる（同一カード） | 編集中に期限パネルを1回クリック→離す、または「閉じる」/ Escape / パネル外クリック |
 | UI | カード外のフロートパネル（`DueDatePicker` — 別ウィンドウではない） |
 | 配置 | 期限パネル直下（画面端では上側へ自動調整） |
-| カレンダー | 月間表示（日曜始まり・7 列）。日付クリックで確定。**当日の日付ボタンは緑色**（テーマ非適用） |
+| カレンダー | 月間表示（日曜始まり・7 列）。日付クリックで確定。**当日の日付ボタンはテーマの `calendar_today_bg` / `calendar_today_fg`**（固定のグローバル緑ではない） |
 | 日付セル | 当月外のマスは空セル。日付ボタンと空セルは **同じセル外寸**。ホバー・押下・選択で外寸・隣接位置が変わらない |
-| 日付ホバー | マウスオーバーで背景色が変化する。通常日はテーマの `due_picker_day_hover_bg` / `due_picker_day_hover_fg`。当日は緑系の固定ホバー色 |
+| 日付ホバー | マウスオーバーで背景色が変化する。通常日は `due_picker_day_hover_bg` / `due_picker_day_hover_fg`。当日は `calendar_today_hover_bg` / `calendar_today_hover_fg`。いずれもカラーテーマ（UC-011）に従う |
 | 期限なし | 「期限なし」ボタンで `due_date = null` |
 | 閉じる | 「閉じる」ボタン、Escape、またはパネル外クリックでキャンセル |
 | 保存 | 日付選択・期限なし確定時に `board.json` へ永続化 |
 
-日付グリッドは **色だけ** をホバーで変える。`relief`・`bd`・`highlightthickness` など枠の厚みがホバーや選択で増減するとセルがずれて見えるため、枠線厚は状態によらず固定する。ホバー色の解決は `due_date_calendar.calendar_day_button_style`（通常日はパレット、当日は固定緑）とする。
+日付グリッドは **色だけ** をホバーで変える。`relief`・`bd`・`highlightthickness` など枠の厚みがホバーや選択で増減するとセルがずれて見えるため、枠線厚は状態によらず固定する。色の解決は `due_date_calendar.calendar_day_button_style`（通常日・当日ともパレット）とする。
 
 ---
 
@@ -402,8 +402,8 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 
 | 属性 | 値 |
 |------|-----|
-| 関連 FR | FR-028 |
-| 関連 AC | AC-028-01, AC-028-02, AC-028-03 |
+| 関連 FR | FR-028, FR-014 |
+| 関連 AC | AC-028-01, AC-028-02, AC-028-03, AC-028-04, AC-014-02, AC-014-03, AC-014-06 |
 | 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
 
 `ui_theme`（`settings.json`）に応じて、UI 要素の **背景色・文字色** を切り替える。フォント（UC-010）・サイズ（UC-009）とは独立。
@@ -417,8 +417,21 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | `progress_track_bg` | 進捗バーの未達部分（トラック） |
 | `due_future_bg` / `due_future_fg` | カード期限パネル（**未来**の期限） |
 | `due_none_bg` / `due_none_fg` | カード期限パネル（**期限なし**） |
+| `due_today_bg` / `due_today_fg` | カード期限パネル（**当日**）。黄基調 |
+| `due_overdue_bg` / `due_overdue_fg` | カード期限パネル（**超過**）。赤基調 |
 | `due_picker_bg` / `due_picker_fg` | 期限編集パネルの枠・見出し・通常日ボタン（非ハイライト・非ホバー） |
 | `due_picker_day_hover_bg` / `due_picker_day_hover_fg` | カレンダー **通常日**ボタンのホバー（当日以外） |
+| `calendar_today_bg` / `calendar_today_fg` | カレンダー **当日**ボタン（非ホバー）。テーマのアクセント色 |
+| `calendar_today_hover_bg` / `calendar_today_hover_fg` | カレンダー **当日**ボタンのホバー。通常時よりコントラストが変わる |
+
+**期限当日・超過（黄 / 赤基調）**
+- 色相は維持する（当日=黄、超過=赤）。明度・彩度・文字色はテーマに合わせる。
+- ライトテーマ（`default` / `sandy` / `fancy` / `slate` / `rose`）: 明るい黄/赤背景＋濃い文字（現行に近い）。
+- ダーク系（`dark` / `forest` / `ocean` / `sunset` / `midnight`）: 暗い黄/赤背景＋明るい文字。
+
+**カレンダー当日**
+- 全テーマ共通の固定緑（旧 `#43a047`）は使わない。各テーマのアクセントに合わせる。
+- ホバーもテーマトークン。通常日ホバー（`due_picker_day_hover_*`）とは別トークン。
 
 ### テーマ非適用（固定色）
 
@@ -426,13 +439,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 
 | 定数 / 関数 | 色の意味 | 参照 |
 |-------------|----------|------|
-| `DUE_PANEL_TODAY_BG` / `DUE_PANEL_TODAY_FG` | カード期限パネル **当日**（黄系） | `due_date.py` |
-| `DUE_PANEL_OVERDUE_BG` / `DUE_PANEL_OVERDUE_FG` | カード期限パネル **超過**（赤系） | `due_date.py` |
 | `progress_color(percent)` | 進捗バー **塗り**（赤→黄→緑） | `progress.py` |
-| `CALENDAR_TODAY_BUTTON_BG` / `CALENDAR_TODAY_BUTTON_FG` | カレンダー **当日**ボタン（緑） | `due_date_calendar.py` |
-| `CALENDAR_TODAY_BUTTON_HOVER_BG` / `CALENDAR_TODAY_BUTTON_HOVER_FG` | カレンダー **当日**ボタンのホバー（緑系） | `due_date_calendar.py` |
-
-当日ボタンの固定色: 非ホバー `#43a047` / `#ffffff`、ホバー `#2e7d32` / `#ffffff`。
 
 **その他非適用**
 - オーバーレイ透過色 `TRANSPARENT_COLOR`（`transparent.py`）
@@ -450,17 +457,17 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | `default` | Default | 現行既定（クリーム地・ダークグレー文字） |
 | `dark` | ダーク | 黒に近い背景・白文字 |
 | `sandy` | サンディ | 砂浜・ベージュ系の暖色 |
-| `forest` | フォレスト | 深緑・アースグリーン系 |
+| `forest` | フォレスト | 暗い緑背景・明るい文字 |
 | `fancy` | ファンシー | ラベンダー・パープル系 |
-| `ocean` | オーシャン | 水色・ネイビー系 |
-| `sunset` | サンセット | コーラル・夕焼け系 |
+| `ocean` | オーシャン | 暗い紺背景・明るい文字 |
+| `sunset` | サンセット | 暗い暖色背景・明るい文字 |
 | `slate` | スレート | クールグレー・スレートブルー系 |
 | `rose` | ローズ | ローズピンク系 |
-| `midnight` | ミッドナイト | 深夜のネイビー・ダークブルー系 |
+| `midnight` | ミッドナイト | より暗い紺背景・明るい文字 |
 
 ### パレット定義（`display/ui_theme.py` 予定）
 
-色は `#RRGGBB` 形式。実装時は本表を `UiThemePalette` 等としてコード化する。
+色は `#RRGGBB` 形式。実装は `UiThemePalette`（`display/ui_theme.py`）としてコード化する。本改訂のトークン追加と `forest` / `ocean` / `sunset` / `midnight` の暗色化は実装待ち。
 
 #### default（現行）
 
@@ -471,8 +478,12 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | progress_track_bg | `#e8e8e8` |
 | due_future_bg / due_future_fg | `#f5f5f0` / `#444444` |
 | due_none_bg / due_none_fg | `#f5f5f0` / `#666666` |
+| due_today_bg / due_today_fg | `#fff9c4` / `#f57f17` |
+| due_overdue_bg / due_overdue_fg | `#ffcdd2` / `#b71c1c` |
 | due_picker_bg / due_picker_fg | `#f5f5f0` / `#222222` |
 | due_picker_day_hover_bg / due_picker_day_hover_fg | `#d8d8cc` / `#222222` |
+| calendar_today_bg / calendar_today_fg | `#43a047` / `#ffffff` |
+| calendar_today_hover_bg / calendar_today_hover_fg | `#2e7d32` / `#ffffff` |
 
 #### dark
 
@@ -483,8 +494,12 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | progress_track_bg | `#333333` |
 | due_future_bg / due_future_fg | `#242424` / `#cccccc` |
 | due_none_bg / due_none_fg | `#242424` / `#aaaaaa` |
+| due_today_bg / due_today_fg | `#5c4d1a` / `#ffe082` |
+| due_overdue_bg / due_overdue_fg | `#5c2a2a` / `#ef9a9a` |
 | due_picker_bg / due_picker_fg | `#222222` / `#e8e8e8` |
 | due_picker_day_hover_bg / due_picker_day_hover_fg | `#3d3d3d` / `#e8e8e8` |
+| calendar_today_bg / calendar_today_fg | `#2e7d32` / `#ffffff` |
+| calendar_today_hover_bg / calendar_today_hover_fg | `#1b5e20` / `#ffffff` |
 
 #### sandy
 
@@ -495,20 +510,28 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | progress_track_bg | `#e8dfd0` |
 | due_future_bg / due_future_fg | `#f0e8da` / `#5c5044` |
 | due_none_bg / due_none_fg | `#f0e8da` / `#7a6f62` |
+| due_today_bg / due_today_fg | `#fff9c4` / `#f57f17` |
+| due_overdue_bg / due_overdue_fg | `#ffcdd2` / `#b71c1c` |
 | due_picker_bg / due_picker_fg | `#f5ede3` / `#3d3429` |
 | due_picker_day_hover_bg / due_picker_day_hover_fg | `#e0d0bc` / `#3d3429` |
+| calendar_today_bg / calendar_today_fg | `#8d6e63` / `#ffffff` |
+| calendar_today_hover_bg / calendar_today_hover_fg | `#6d4c41` / `#ffffff` |
 
-#### forest
+#### forest（ダーク。緑基調の暗い背景＋明るい文字）
 
 | トークン | 値 |
 |----------|-----|
-| card_bg / card_fg | `#f4f9f4` / `#1b3d2a` |
-| menu_fill / menu_fg / menu_outline | `#e8f5e9` / `#1b4332` / `#6b9080` |
-| progress_track_bg | `#d4e8d4` |
-| due_future_bg / due_future_fg | `#e0efe0` / `#2d5a3d` |
-| due_none_bg / due_none_fg | `#e0efe0` / `#4a6b55` |
-| due_picker_bg / due_picker_fg | `#edf5ed` / `#1b3d2a` |
-| due_picker_day_hover_bg / due_picker_day_hover_fg | `#c8e0c8` / `#1b3d2a` |
+| card_bg / card_fg | `#1a2e1f` / `#e8f5e9` |
+| menu_fill / menu_fg / menu_outline | `#243d2c` / `#e0eee2` / `#5a8a68` |
+| progress_track_bg | `#2d4a35` |
+| due_future_bg / due_future_fg | `#1e3224` / `#c8e6c9` |
+| due_none_bg / due_none_fg | `#1e3224` / `#8fb59a` |
+| due_today_bg / due_today_fg | `#5c4d1a` / `#ffe082` |
+| due_overdue_bg / due_overdue_fg | `#5c2a2a` / `#ef9a9a` |
+| due_picker_bg / due_picker_fg | `#1e3224` / `#e8f5e9` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#2f4d38` / `#c8e6c9` |
+| calendar_today_bg / calendar_today_fg | `#2e7d32` / `#ffffff` |
+| calendar_today_hover_bg / calendar_today_hover_fg | `#1b5e20` / `#ffffff` |
 
 #### fancy
 
@@ -519,32 +542,44 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | progress_track_bg | `#eadcf5` |
 | due_future_bg / due_future_fg | `#efe4f8` / `#4a3560` |
 | due_none_bg / due_none_fg | `#efe4f8` / `#6b5580` |
+| due_today_bg / due_today_fg | `#fff9c4` / `#f57f17` |
+| due_overdue_bg / due_overdue_fg | `#ffcdd2` / `#b71c1c` |
 | due_picker_bg / due_picker_fg | `#f5effa` / `#3d2a4a` |
 | due_picker_day_hover_bg / due_picker_day_hover_fg | `#e0d0f0` / `#3d2a4a` |
+| calendar_today_bg / calendar_today_fg | `#8e24aa` / `#ffffff` |
+| calendar_today_hover_bg / calendar_today_hover_fg | `#6a1b9a` / `#ffffff` |
 
-#### ocean
-
-| トークン | 値 |
-|----------|-----|
-| card_bg / card_fg | `#f0f8ff` / `#0d3b5c` |
-| menu_fill / menu_fg / menu_outline | `#e3f2fd` / `#1565c0` / `#64b5f6` |
-| progress_track_bg | `#cce4f5` |
-| due_future_bg / due_future_fg | `#ddeef8` / `#1a5276` |
-| due_none_bg / due_none_fg | `#ddeef8` / `#4a7a9a` |
-| due_picker_bg / due_picker_fg | `#e8f4fc` / `#0d3b5c` |
-| due_picker_day_hover_bg / due_picker_day_hover_fg | `#c5e0f5` / `#0d3b5c` |
-
-#### sunset
+#### ocean（ダーク。青基調の暗い背景＋明るい文字）
 
 | トークン | 値 |
 |----------|-----|
-| card_bg / card_fg | `#fff8f3` / `#4a2c2a` |
-| menu_fill / menu_fg / menu_outline | `#ffe8e0` / `#8b4513` / `#e8a598` |
-| progress_track_bg | `#f5ddd4` |
-| due_future_bg / due_future_fg | `#fceee8` / `#6b3a35` |
-| due_none_bg / due_none_fg | `#fceee8` / `#8a5a55` |
-| due_picker_bg / due_picker_fg | `#fff0ea` / `#4a2c2a` |
-| due_picker_day_hover_bg / due_picker_day_hover_fg | `#f0d4c8` / `#4a2c2a` |
+| card_bg / card_fg | `#0d2133` / `#e3f2fd` |
+| menu_fill / menu_fg / menu_outline | `#163044` / `#d6ebf8` / `#4a90c0` |
+| progress_track_bg | `#1a3a52` |
+| due_future_bg / due_future_fg | `#102433` / `#bbdefb` |
+| due_none_bg / due_none_fg | `#102433` / `#7aa0b8` |
+| due_today_bg / due_today_fg | `#5c4d1a` / `#ffe082` |
+| due_overdue_bg / due_overdue_fg | `#5c2a2a` / `#ef9a9a` |
+| due_picker_bg / due_picker_fg | `#102433` / `#e3f2fd` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#1c3d55` / `#bbdefb` |
+| calendar_today_bg / calendar_today_fg | `#0277bd` / `#ffffff` |
+| calendar_today_hover_bg / calendar_today_hover_fg | `#01579b` / `#ffffff` |
+
+#### sunset（ダーク。暖色基調の暗い背景＋明るい文字）
+
+| トークン | 値 |
+|----------|-----|
+| card_bg / card_fg | `#2a1a18` / `#ffe8e0` |
+| menu_fill / menu_fg / menu_outline | `#3d2420` / `#f5d5cc` / `#c47868` |
+| progress_track_bg | `#4a302c` |
+| due_future_bg / due_future_fg | `#2e1c1a` / `#ffccbc` |
+| due_none_bg / due_none_fg | `#2e1c1a` / `#c4a098` |
+| due_today_bg / due_today_fg | `#5c4d1a` / `#ffe082` |
+| due_overdue_bg / due_overdue_fg | `#5c2a2a` / `#ef9a9a` |
+| due_picker_bg / due_picker_fg | `#2e1c1a` / `#ffe8e0` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#4a2c28` / `#ffccbc` |
+| calendar_today_bg / calendar_today_fg | `#e64a19` / `#ffffff` |
+| calendar_today_hover_bg / calendar_today_hover_fg | `#bf360c` / `#ffffff` |
 
 #### slate
 
@@ -555,8 +590,12 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | progress_track_bg | `#dde3ea` |
 | due_future_bg / due_future_fg | `#e8edf2` / `#334155` |
 | due_none_bg / due_none_fg | `#e8edf2` / `#64748b` |
+| due_today_bg / due_today_fg | `#fff9c4` / `#f57f17` |
+| due_overdue_bg / due_overdue_fg | `#ffcdd2` / `#b71c1c` |
 | due_picker_bg / due_picker_fg | `#edf1f5` / `#1e293b` |
 | due_picker_day_hover_bg / due_picker_day_hover_fg | `#d0d8e2` / `#1e293b` |
+| calendar_today_bg / calendar_today_fg | `#546e7a` / `#ffffff` |
+| calendar_today_hover_bg / calendar_today_hover_fg | `#37474f` / `#ffffff` |
 
 #### rose
 
@@ -567,20 +606,28 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 | progress_track_bg | `#f8d7e0` |
 | due_future_bg / due_future_fg | `#fdeef2` / `#6b2149` |
 | due_none_bg / due_none_fg | `#fdeef2` / `#8a4560` |
+| due_today_bg / due_today_fg | `#fff9c4` / `#f57f17` |
+| due_overdue_bg / due_overdue_fg | `#ffcdd2` / `#b71c1c` |
 | due_picker_bg / due_picker_fg | `#fef0f3` / `#4a1942` |
 | due_picker_day_hover_bg / due_picker_day_hover_fg | `#f0cdd8` / `#4a1942` |
+| calendar_today_bg / calendar_today_fg | `#ec407a` / `#ffffff` |
+| calendar_today_hover_bg / calendar_today_hover_fg | `#c2185b` / `#ffffff` |
 
-#### midnight
+#### midnight（ダーク。より暗い紺背景＋より明るい文字）
 
 | トークン | 値 |
 |----------|-----|
-| card_bg / card_fg | `#1e2433` / `#e8eaf0` |
-| menu_fill / menu_fg / menu_outline | `#2a3142` / `#d0d4de` / `#5c6a82` |
-| progress_track_bg | `#323848` |
-| due_future_bg / due_future_fg | `#252b3a` / `#c0c8d4` |
-| due_none_bg / due_none_fg | `#252b3a` / `#9098a8` |
-| due_picker_bg / due_picker_fg | `#222838` / `#e0e4ec` |
-| due_picker_day_hover_bg / due_picker_day_hover_fg | `#3a4458` / `#e0e4ec` |
+| card_bg / card_fg | `#12161f` / `#f0f2f8` |
+| menu_fill / menu_fg / menu_outline | `#1c2230` / `#e4e8f0` / `#6a7a98` |
+| progress_track_bg | `#252b3c` |
+| due_future_bg / due_future_fg | `#161a26` / `#c8d0dc` |
+| due_none_bg / due_none_fg | `#161a26` / `#9aa4b4` |
+| due_today_bg / due_today_fg | `#5c4d1a` / `#ffe082` |
+| due_overdue_bg / due_overdue_fg | `#5c2a2a` / `#ef9a9a` |
+| due_picker_bg / due_picker_fg | `#161a26` / `#f0f2f8` |
+| due_picker_day_hover_bg / due_picker_day_hover_fg | `#2a3144` / `#e0e4ec` |
+| calendar_today_bg / calendar_today_fg | `#3949ab` / `#ffffff` |
+| calendar_today_hover_bg / calendar_today_hover_fg | `#283593` / `#ffffff` |
 
 **フォールバック**
 - 設定値が不正・欠損 → `default`
@@ -661,3 +708,4 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.13.0 | 2026-08-15 | UC-008: カレンダー日付セルの外寸固定。通常日ホバーはテーマ、当日ホバーは緑系固定 |
 | 2.13.1 | 2026-08-15 | UC-008 実装。日付セルは均等グリッドの Label。ホバーは色のみ変更 |
 | 2.13.2 | 2026-08-15 | UC-008: 日付配色・枠ジオメトリを `due_date_calendar.py` に分離 |
+| 2.14.0 | 2026-08-15 | UC-011: カレンダー当日・期限当日/超過をテーマトークン化。forest/ocean/sunset/midnight を暗い背景＋明るい文字へ |
