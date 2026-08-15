@@ -10,7 +10,7 @@ from petatto_kanban.display.card_frame import resolve_card_frame_size
 from petatto_kanban.display.ui_metrics import UiMetrics
 from petatto_kanban.due_date import due_date_panel_style, format_due_date
 from petatto_kanban.models import Card
-from petatto_kanban.progress import progress_color, progress_label_color
+from petatto_kanban.progress_fill import progress_color, progress_label_color
 
 if TYPE_CHECKING:
     from collections.abc import Callable

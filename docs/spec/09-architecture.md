@@ -79,7 +79,8 @@ petatto-kanban/
 │   ├── menu_panel.py             # メニューパネル UI
 │   ├── menu_panel_layout.py      # メニューパネル座標・ヒット判定
 │   ├── new_card_placement.py     # 新規カード初期配置（tkinter 非依存）
-│   ├── progress.py               # 進捗率ユーティリティ
+│   ├── progress.py               # 進捗率の値域・クランプ
+│   ├── progress_fill.py          # 進捗バー塗りのテーマ連動色
 │   ├── display/                  # 表示モード・モニター
 │   │   ├── transparent.py        # 透過色・全画面シェル
 │   │   ├── overlay.py            # オーバーレイ（最前面）
@@ -134,7 +135,7 @@ petatto-kanban/
 |------------|------|------|
 | `models.py` | ドメインエンティティ、不変条件 | 標準ライブラリのみ |
 | `storage.py` | JSON シリアライズ / デシリアライズ | `models` |
-| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `display`, `menu_panel`, `new_card_placement`, `system/auto_start`, `system/hotkey`, `system/error_log` |
+| `app.py` | UI 描画、ユーザー操作、永続化トリガ | `models`, `storage`, `card_ui`, `due_date*`, `progress`, `progress_fill`, `display`, `menu_panel`, `new_card_placement`, `system/auto_start`, `system/hotkey`, `system/error_log` |
 | `display/transparent.py` | 透過色・全画面シェル（オーバーレイ/デスクトップ共通） | 標準ライブラリ + tkinter |
 | `display/modes.py` | 表示モード適用のディスパッチ | `overlay`, `desktop`, `settings` |
 | `display/menu_panel_host.py` | メニューパネル専用透過 Toplevel（デスクトップ時 `-topmost`） | tkinter, `transparent`, `settings` |
@@ -150,7 +151,7 @@ petatto-kanban/
 | `display/card_layout.py` | カード基準寸法・黄金比・スケール（UC-003 / UC-009） | 標準ライブラリのみ |
 | `display/card_frame.py` | カード枠サイズ（幅固定、高さは内容に合わせて下限以上）（FR-002 / UC-003） | 標準ライブラリのみ |
 | `display/ui_metrics.py` | `UiMetrics` 生成（ui_size + ui_font + card_layout 合成） | `ui_scale`, `ui_font`, `card_layout` |
-| `card_renderer.py` | カード UI 描画（UiMetrics + UiThemePalette）。枠サイズは `card_frame` | tkinter, `ui_metrics`, `ui_theme`, `card_frame`, `due_date`, `progress` |
+| `card_renderer.py` | カード UI 描画（UiMetrics + UiThemePalette）。枠サイズは `card_frame` | tkinter, `ui_metrics`, `ui_theme`, `card_frame`, `due_date`, `progress_fill` |
 | `display/ui_chrome.py` | メニューパネル・期限パネルホストの再構築 | tkinter, `ui_metrics`, `ui_theme`, `menu_panel`, `due_date_picker` |
 | `display/ui_font.py` | UI フォントプリセット・tkinter ファミリー解決（FR-027） | 標準ライブラリのみ |
 | `display/ui_font_labels.py` | UI フォントコンボボックス用ラベル | 標準ライブラリのみ |
@@ -173,6 +174,8 @@ petatto-kanban/
 | `due_date.py` | カード期限の表示文字列・状態色（当日/超過はパレット） | 標準ライブラリ、`ui_theme` |
 | `due_date_calendar.py` | カレンダー日付ボタンの通常/当日/ホバー色とセル枠ジオメトリ | 標準ライブラリ、`ui_theme`（通常日・当日ともパレット） |
 | `due_date_picker.py` | フロート期限パネル配置・外側クリック・日付グリッド | `due_date`, `due_date_calendar`, `card_ui`, `ui_theme` |
+| `progress.py` | 進捗率の値域・クランプ（FR-025） | 標準ライブラリのみ |
+| `progress_fill.py` | 進捗バー塗りのテーマ連動色（FR-025 / FR-028） | `progress`, `ui_theme` |
 
 ---
 

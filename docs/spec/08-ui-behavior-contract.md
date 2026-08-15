@@ -404,7 +404,7 @@ M1 で割り当て可能なアクションは **新規カード作成** のみ�
 |------|-----|
 | 関連 FR | FR-028, FR-014 |
 | 関連 AC | AC-028-01, AC-028-02, AC-028-03, AC-028-04, AC-014-02, AC-014-03, AC-014-06, AC-025-04 |
-| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_palettes.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
+| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_palettes.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `progress_fill.py`, `app.py` |
 
 `ui_theme`（`settings.json`）に応じて、UI 要素の **背景色・文字色** を切り替える。フォント（UC-010）・サイズ（UC-009）とは独立。
 
@@ -722,3 +722,5 @@ M1 では 3 列カンバン UI は提供しない。M2 で FR-012 導入時に�
 | 2.14.1 | 2026-08-15 | UC-011 / UC-008 実装。当日・超過色はパレット。4 テーマを暗色化 |
 | 2.14.2 | 2026-08-15 | パレット定義を `ui_theme_palettes.py` に分離。未指定時は default パレット |
 | 2.15.0 | 2026-08-15 | UC-011: 進捗バー塗りもテーマ連動（赤/黄/緑基調は維持） |
+| 2.15.1 | 2026-08-15 | UC-011 実装。`progress_fill_low` / `mid` / `high` をパレット化 |
+| 2.15.2 | 2026-08-15 | 進捗塗りを `progress_fill.py` に分離。値域は `progress.py` |

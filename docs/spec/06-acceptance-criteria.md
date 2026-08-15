@@ -476,7 +476,7 @@ Then カード削除処理が実行される
 | 関連 FR | FR-025, FR-028 |
 | 関連 US | US-014 |
 | 関連 UC | UC-003, UC-011 |
-| ステータス | specified |
+| ステータス | implemented |
 | 検証 | 自動 + 手動 |
 
 ```gherkin

@@ -5,9 +5,8 @@ from petatto_kanban.progress import (
     PROGRESS_MAX,
     PROGRESS_MIN,
     clamp_progress,
-    progress_color,
-    progress_label_color,
 )
+from petatto_kanban.progress_fill import progress_color, progress_label_color
 
 
 def test_clamp_progress_bounds() -> None:

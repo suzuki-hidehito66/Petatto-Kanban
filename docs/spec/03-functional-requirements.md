@@ -35,7 +35,7 @@
 | [FR-021](#fr-021-ディスプレイ指定) | ディスプレイ指定 | Must | implemented | M1 |
 | [FR-023](#fr-023-アプリ終了) | アプリ終了（×ボタン） | Must | implemented | M1 |
 | [FR-024](#fr-024-削除確認設定) | 削除確認設定 | Must | implemented | M1 |
-| [FR-025](#fr-025-カード進捗率) | カード進捗率 | Must | specified | M1 |
+| [FR-025](#fr-025-カード進捗率) | カード進捗率 | Must | implemented | M1 |
 | [FR-014](#fr-014-カード期限) | カード期限 | Must | implemented | M1 |
 | [FR-008](#fr-008-手動保存) | 手動保存 | Should | deferred | M2 |
 | [FR-009](#fr-009-再読み込み) | 再読み込み | Should | deferred | M2 |
@@ -205,10 +205,10 @@
 | 属性 | 値 |
 |------|-----|
 | 優先度 | Must |
-| ステータス | specified |
+| ステータス | implemented |
 | 関連 US | US-014 |
 | 関連 AC | AC-025-01, AC-025-02, AC-025-03, AC-025-04 |
-| 実装 | `src/petatto_kanban/app.py`, `src/petatto_kanban/progress.py` |
+| 実装 | `src/petatto_kanban/app.py`, `progress.py`, `progress_fill.py` |
 
 **説明**  
 各カードに 0〜100% の進捗率を表示し、ホバー中のマウスホイールで ±10% ずつ変更する。
@@ -534,8 +534,8 @@ M1 では再読み込みボタンは提供しない。次回起動時に `board.
 | 優先度 | Must |
 | ステータス | implemented |
 | 関連 US | US-018 |
-| 関連 AC | AC-028-01, AC-028-02, AC-028-03, AC-028-04 |
-| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_palettes.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_tabs.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `app.py` |
+| 関連 AC | AC-028-01, AC-028-02, AC-028-03, AC-028-04, AC-025-04 |
+| 実装 | `src/petatto_kanban/display/ui_theme.py`, `display/ui_theme_palettes.py`, `display/ui_theme_labels.py`, `display/settings.py`, `display/settings_dialog_tabs.py`, `display/settings_dialog_panels.py`, `display/settings_actions.py`, `display/ui_chrome.py`, `card_renderer.py`, `menu_panel.py`, `due_date_picker.py`, `progress_fill.py`, `app.py` |
 | UI 契約 | [UC-006 §テーマタブ](./08-ui-behavior-contract.md#uc-006-設定ダイアログ), [UC-011 §UI カラーテーマ](./08-ui-behavior-contract.md#uc-011-ui-カラーテーマ) |
 
 **説明**  
