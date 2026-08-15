@@ -1,0 +1,43 @@
+name: Sync test to main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: sync-test-to-main
+  cancel-in-progress: false
+
+jobs:
+  sync-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reset test to main
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          MAIN_SHA=$(git rev-parse origin/main)
+
+          if git fetch origin test; then
+            TEST_SHA=$(git rev-parse origin/test)
+            if [ "$MAIN_SHA" = "$TEST_SHA" ]; then
+              echo "test already matches main ($MAIN_SHA)"
+              exit 0
+            fi
+            echo "Commits on test not in main (will be discarded):"
+            git log --oneline "$MAIN_SHA..$TEST_SHA" || true
+            echo "Updating test $TEST_SHA -> $MAIN_SHA"
+            git push --force-with-lease="refs/heads/test:$TEST_SHA" \
+              origin "$MAIN_SHA:refs/heads/test"
+          else
+            echo "test does not exist; creating from main $MAIN_SHA"
+            git push origin "$MAIN_SHA:refs/heads/test"
+          fi

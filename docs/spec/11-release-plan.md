@@ -17,6 +17,8 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 
 **main へマージ（PR マージ）時**: `build-windows.yml` が exe をビルドし、未使用の `v{バージョン}` タグで [GitHub Release](https://github.com/suzuki-hidehito66/Petatto-Kanban/releases) を作成する。同じバージョンで再マージする場合は **リリース前にバージョンをインクリメント** すること（タグ重複で CI が失敗する）。
 
+`main` への取り込みは **`test` からの PR を squash マージ**する（1 リリース = 1 コミット）。マージ直後は CI（`.github/workflows/sync-test-to-main.yml`）が `test` を `main` に force-with-lease で揃える。失敗時は手動で `reset --hard origin/main` する。詳細は [README.md ブランチ運用](../../README.md#ブランチ運用コントリビュータ向け) と [AGENTS.md](../../AGENTS.md)。
+
 ---
 
 ## マイルストーン一覧
@@ -149,3 +151,5 @@ GitHub Releases のタグ（`v0.1.0` 形式）は **`pyproject.toml` の `[proje
 | 2.7.4 | 2026-08-14 | FR-031 仕様同期。パスと伏せ字を分離 |
 | 2.8.0 | 2026-08-15 | カレンダー日付ボタンの外寸固定とテーマ対応ホバー（FR-014 / UC-008） |
 | 2.8.1 | 2026-08-15 | FR-014 実装。日付配色を `due_date_calendar.py` に分離 |
+| 2.8.2 | 2026-08-15 | ブランチ戦略 B: `test` → `main` は squash。直後に `test` を `main` へ同期 |
+| 2.8.3 | 2026-08-15 | `test` の main 同期を `sync-test-to-main.yml` で自動化 |
