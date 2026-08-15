@@ -62,8 +62,14 @@ def test_due_date_panel_style_keeps_semantic_colors_with_palette() -> None:
 
 
 def test_default_palette_matches_legacy_card_colors() -> None:
-    from petatto_kanban.display.ui_theme import UiTheme, palette_for_theme
-
     palette = palette_for_theme(UiTheme.DEFAULT)
     assert palette.card_bg == "#fffef8"
     assert palette.card_fg == "#222222"
+
+
+def test_all_palettes_define_calendar_day_hover() -> None:
+    for ui_theme in UiTheme:
+        palette = palette_for_theme(ui_theme)
+        assert palette.due_picker_day_hover_bg != palette.due_picker_bg
+        assert palette.due_picker_day_hover_bg.startswith("#")
+        assert palette.due_picker_day_hover_fg.startswith("#")

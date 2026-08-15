@@ -2,13 +2,21 @@
 
 from datetime import date
 
+from petatto_kanban.display.ui_theme import UiTheme, palette_for_theme
 from petatto_kanban.due_date import (
-    CALENDAR_TODAY_BUTTON_BG,
     DUE_DATE_NONE_LABEL,
-    calendar_day_button_style,
     due_date_panel_style,
     due_date_status,
     format_due_date,
+)
+from petatto_kanban.due_date_calendar import (
+    CALENDAR_DAY_CELL_BD,
+    CALENDAR_DAY_CELL_HIGHLIGHTTHICKNESS,
+    CALENDAR_DAY_CELL_WIDTH,
+    CALENDAR_TODAY_BUTTON_BG,
+    CALENDAR_TODAY_BUTTON_HOVER_BG,
+    calendar_day_button_style,
+    calendar_day_cell_geometry,
 )
 
 
@@ -34,23 +42,77 @@ def test_due_date_status_colors() -> None:
 
 def test_calendar_day_button_style_today_is_green() -> None:
     today = date(2026, 8, 12)
-    bg, fg, relief = calendar_day_button_style(
+    style = calendar_day_button_style(
         today,
         selected=None,
         default_bg="#ffffff",
         today=today,
     )
-    assert bg == CALENDAR_TODAY_BUTTON_BG
-    assert fg == "#ffffff"
-    assert relief == "flat"
+    assert style.bg == CALENDAR_TODAY_BUTTON_BG
+    assert style.fg == "#ffffff"
+    assert style.hover_bg == CALENDAR_TODAY_BUTTON_HOVER_BG
+    assert style.hover_fg == "#ffffff"
+    assert style.relief == "flat"
 
 
 def test_calendar_day_button_style_selected_uses_sunken() -> None:
     picked = date(2026, 8, 15)
-    _, _, relief = calendar_day_button_style(
+    style = calendar_day_button_style(
         picked,
         selected=picked,
         default_bg="#ffffff",
         today=date(2026, 8, 12),
     )
-    assert relief == "sunken"
+    assert style.relief == "sunken"
+
+
+def test_calendar_day_button_style_normal_hover_follows_theme() -> None:
+    today = date(2026, 8, 12)
+    day = date(2026, 8, 20)
+    default_palette = palette_for_theme(UiTheme.DEFAULT)
+    dark_palette = palette_for_theme(UiTheme.DARK)
+    default_style = calendar_day_button_style(
+        day,
+        selected=None,
+        default_bg=default_palette.due_picker_bg,
+        default_fg=default_palette.due_picker_fg,
+        today=today,
+        palette=default_palette,
+    )
+    dark_style = calendar_day_button_style(
+        day,
+        selected=None,
+        default_bg=dark_palette.due_picker_bg,
+        default_fg=dark_palette.due_picker_fg,
+        today=today,
+        palette=dark_palette,
+    )
+    assert default_style.hover_bg == default_palette.due_picker_day_hover_bg
+    assert default_style.hover_fg == default_palette.due_picker_day_hover_fg
+    assert default_style.hover_bg != default_style.bg
+    assert dark_style.hover_bg == dark_palette.due_picker_day_hover_bg
+    assert dark_style.hover_bg != default_style.hover_bg
+
+
+def test_calendar_day_button_style_today_hover_ignores_theme() -> None:
+    today = date(2026, 8, 12)
+    palette = palette_for_theme(UiTheme.DARK)
+    style = calendar_day_button_style(
+        today,
+        selected=None,
+        default_bg=palette.due_picker_bg,
+        default_fg=palette.due_picker_fg,
+        today=today,
+        palette=palette,
+    )
+    assert style.bg == CALENDAR_TODAY_BUTTON_BG
+    assert style.hover_bg == CALENDAR_TODAY_BUTTON_HOVER_BG
+    assert style.hover_bg != palette.due_picker_day_hover_bg
+
+
+def test_calendar_day_cell_geometry_is_fixed() -> None:
+    geometry = calendar_day_cell_geometry()
+    assert geometry["width"] == CALENDAR_DAY_CELL_WIDTH
+    assert geometry["bd"] == CALENDAR_DAY_CELL_BD
+    assert geometry["highlightthickness"] == CALENDAR_DAY_CELL_HIGHLIGHTTHICKNESS
+    assert calendar_day_cell_geometry() == geometry
